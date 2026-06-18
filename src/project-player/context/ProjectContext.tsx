@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useRef,
+  useMemo,
 } from 'react';
 import { ProjectData, Task } from '../types/project.types';
 import {
@@ -15,10 +16,38 @@ import { setApiConfig } from '../utils/api';
 import { updateTask as updateTaskAPI } from '../services/projectPlayerService';
 import { MODE } from '@constants/PROJECTDATA';
 import dataService from '../../services/dataService';
+import { updateTaskStatus } from '../utils/taskUtils';
 
-const ProjectContext = createContext<ProjectContextValue | undefined>(
-  undefined,
-);
+// ─── Context value shapes ──────────────────────────────────────────────────────
+
+/**
+ * Stable context — only changes when config / mode changes (rare).
+ * Task-level hooks should subscribe to THIS to avoid re-rendering on task
+ * status updates.
+ */
+type ProjectStableContextValue = Omit<
+  ProjectContextValue,
+  'projectData' | 'addedToPlanTasks'
+> & {
+  /** Ref to the current projectData. Read in callbacks without subscribing. */
+  projectDataRef: React.RefObject<ProjectData | null>;
+};
+
+/**
+ * Data context — changes whenever task data or plan state changes.
+ * Only list-level components (ProjectContent, ProjectComponent) should
+ * subscribe to this.
+ */
+type ProjectDataContextValue = {
+  projectData: ProjectData | null;
+  oldProjectData:ProjectData | null;
+  addedToPlanTasks: Record<string, boolean>;
+};
+
+const ProjectStableContext = createContext<ProjectStableContextValue | undefined>(undefined);
+const ProjectDataContext   = createContext<ProjectDataContextValue   | undefined>(undefined);
+
+// ─── Helper functions ──────────────────────────────────────────────────────────
 
 function isApiErrorResult(
   result: unknown,
@@ -162,22 +191,26 @@ function removeTaskFromProject(prev: ProjectData, taskId: string): ProjectData {
   };
 }
 
+// ─── Provider ─────────────────────────────────────────────────────────────────
+
 export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   children,
   config,
   initialData,
+  oldProjectData,
   onTaskUpdate,
 }) => {
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
+
   const [projectData, setProjectData] = useState<ProjectData | null>(
     initialData,
   );
+  
   const projectDataRef = useRef<ProjectData | null>(initialData);
   const [isLoading] = useState(false);
   const [error] = useState<Error | null>(null);
-  const [addedToPlanTaskIds, setAddedToPlanTaskIds] = useState<string[]>([]);
-  const [taskPlanActionPerformedIds, setTaskPlanActionPerformedIds] = useState<
-    string[]
-  >([]);
+  const [addedToPlanTasks, setAddedToPlanTasks] = useState<Record<string, boolean>>({});
 
   const isEditMode = config.mode === MODE.editMode.mode;
 
@@ -185,7 +218,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     projectDataRef.current = projectData;
   }, [projectData]);
 
-  // Initialize API configuration
   useEffect(() => {
     if (config.baseUrl || config.accessToken) {
       setApiConfig({
@@ -196,183 +228,70 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   }, [config.baseUrl, config.accessToken]);
 
   useEffect(() => {
-    if (
-      !projectData ||
-      addedToPlanTaskIds.length > 0 ||
-      taskPlanActionPerformedIds.length > 0
-    )
-      return;
+    if (!projectData || Object.keys(addedToPlanTasks).length > 0) return;
 
-    const collectAddedToPlanIds = (tasks: Task[] = []): string[] =>
-      tasks.flatMap(task => {
-        const nested = [
-          ...(task?.children ? collectAddedToPlanIds(task.children) : []),
-          ...(task?.tasks ? collectAddedToPlanIds(task.tasks) : []),
-        ];
-        const isAdded = task?.metaInformation?.addedToPlan === true;
-        return [...(isAdded ? [task._id] : []), ...nested];
-      });
+    const collectAddedToPlanTasks = (tasks: Task[] = []): Record<string, boolean> =>
+      tasks.reduce<Record<string, boolean>>((acc, task) => {
+        const nested = {
+          ...(task?.children ? collectAddedToPlanTasks(task.children) : {}),
+          ...(task?.tasks ? collectAddedToPlanTasks(task.tasks) : {}),
+        };
+        if (task?.metaInformation?.addedToPlan === true) {
+          acc[task._id] = true;
+        }
+        return { ...acc, ...nested };
+      }, {});
 
-    const initialIds = collectAddedToPlanIds([
+    const initialTasks = collectAddedToPlanTasks([
       ...(projectData.children || []),
       ...(projectData.tasks || []),
     ]);
 
-    if (initialIds.length > 0) {
-      setAddedToPlanTaskIds(initialIds);
-      setTaskPlanActionPerformedIds(initialIds);
+    if (Object.keys(initialTasks).length > 0) {
+      setAddedToPlanTasks(initialTasks);
     }
-  }, [projectData, addedToPlanTaskIds.length, taskPlanActionPerformedIds.length]);
+  }, [projectData, addedToPlanTasks]);
 
   const updateTask = useCallback(
-    async (taskId: string,participantId:string, updates: Partial<Task>): Promise<void> => {
-      const mergedRef: { task: Task | null; projectId: string | null, participantId:string|null } = {
-        task: null,
-        projectId: null,
-        participantId: null
-      };
-      const isOffline = dataService.isNetworkOffline();
-      setProjectData(prev => {
-        if (!prev) return null;
-
-        mergedRef.projectId = prev._id;
-
-        const updateTaskRecursive = (tasks: Task[]): Task[] => {
-          for (let index = 0; index < tasks.length; index++) {
-            const task = tasks[index];
-
-            /* Direct match */
-            if (task._id === taskId) {
-              const updatedTask = {
-                ...task,
-                ...updates,
-              };
-
-              mergedRef.task = updatedTask;
-
-              // clone only affected level
-              const updatedTasks = [...tasks];
-              updatedTasks[index] = updatedTask;
-
-              return updatedTasks;
-            }
-
-            /* Search nested tasks[] */
-            if (task.tasks?.length) {
-              const updatedNestedTasks = updateTaskRecursive(task.tasks);
-
-              // child updated
-              if (updatedNestedTasks !== task.tasks) {
-                const updatedTasks = [...tasks];
-                updatedTasks[index] = {
-                  ...task,
-                  tasks: updatedNestedTasks,
-                };
-                return updatedTasks;
-              }
-            }
-
-            /* Search nested children[] */
-            if (task.children?.length) {
-              const updatedChildren = updateTaskRecursive(task.children);
-              // child updated
-              if (updatedChildren !== task.children) {
-                const updatedTasks = [...tasks];
-                updatedTasks[index] = {
-                  ...task,
-                  children: updatedChildren,
-                };
-                return updatedTasks;
-              }
-            }
-          }
-
-          // no update found
-          return tasks;
-        };
-
-        /* Structure: prev.children[] */
-        if (prev.children?.length) {
-          const updatedChildren = updateTaskRecursive(prev.children);
-          if (updatedChildren === prev.children) {
-            return prev;
-          }
-          return {
-            ...prev,
-            children: updatedChildren,
-          };
-        }
-
-        if (prev?.tasks?.some(task => task.children?.length)) {
-          let hasUpdated = false;
-          const updatedTasks = prev.tasks.map(task => {
-            if (!task.children?.length) {
-              return task;
-            }
-            const updatedChildren = updateTaskRecursive(task.children);
-            if (updatedChildren !== task.children) {
-              hasUpdated = true;
-              return {
-                ...task,
-                children: updatedChildren,
-              };
-            }
-            return task;
-          });
-
-          if (!hasUpdated) {
-            return prev;
-          }
-
-          return {
-            ...prev,
-            tasks: updatedTasks,
-          };
-        }
-
-        /* Structure:  prev.tasks[] */
-        const updatedTasks = updateTaskRecursive(prev.tasks || []);
-        if (updatedTasks === prev.tasks) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          tasks: updatedTasks,
-        };
-      });
-
-      const updatedTaskObj = mergedRef.task;
-      const currentProjectId = mergedRef.projectId;
+    async (taskId: string, participantId: string, updates: Partial<Task>): Promise<void> => {
+      // Use functional updater to avoid stale projectData closure.
+      const {task,project} = updateTaskStatus({
+        taskId,
+        data: projectData,
+        updatedData: updates,
+      })
+      setProjectData(project);
+      let updatedTaskObj = task;
+      const currentProjectId = projectData?._id;
 
       if (onTaskUpdate && updatedTaskObj) {
         const taskForCallback = updatedTaskObj;
-        setTimeout(() => onTaskUpdate(taskForCallback), 0);
+        setTimeout(() => { if (mountedRef.current) onTaskUpdate(taskForCallback); });
       }
 
       if (!currentProjectId || !updatedTaskObj) {
         return;
       }
 
-      if (updatedTaskObj.isCustomTask && !isEditMode) {
+      if ((updatedTaskObj as any).isCustomTask && !isEditMode) {
         return;
       }
 
       const pillarName = (updates as { pillarName?: string }).pillarName;
 
       const isCustomOrChild =
-        (updatedTaskObj.isCustomTask || updatedTaskObj.parentId) && isEditMode;
+        ((updatedTaskObj as any).isCustomTask || (updatedTaskObj as any).parentId) && isEditMode;
 
       const payloadTask = isCustomOrChild
         ? {
             tasks: [
               {
-                _id: updatedTaskObj.parentId,
+                _id: (updatedTaskObj as any).parentId,
                 name: pillarName,
                 children: [
                   {
                     _id: taskId,
-                    name: updatedTaskObj.name,
+                    name: (updatedTaskObj as any).name,
                     ...updates,
                   },
                 ],
@@ -383,14 +302,15 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
             tasks: [
               {
                 _id: taskId,
-                name: updatedTaskObj.name,
+                name: (updatedTaskObj as any).name,
                 ...updates,
               },
             ],
           };
 
+      const isOffline = dataService.isNetworkOffline();
       let result: unknown;
-
+      
       if (isOffline) {
         await dataService.saveTaskEdit(
           participantId,
@@ -487,61 +407,120 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   );
 
   const saveLocal = useCallback(() => {
-    // TODO: Implement local save logic
     console.log('saveLocal');
   }, []);
 
   const syncToServer = useCallback(async () => {
-    // TODO: Implement sync logic
     console.log('syncToServer');
   }, []);
 
   const setTaskAddedToPlan = useCallback(
     (taskId: string, added: boolean) => {
-      setAddedToPlanTaskIds(prev => {
-        if (added) {
-          return prev.includes(taskId) ? prev : [...prev, taskId];
-        }
-        return prev.filter(id => id !== taskId);
-      });
+      setAddedToPlanTasks(prev => ({ ...prev, [taskId]: added }));
     },
     [],
   );
 
-  const setTaskPlanActionPerformed = useCallback((taskId: string) => {
-    setTaskPlanActionPerformedIds(prev =>
-      prev.includes(taskId) ? prev : [...prev, taskId],
-    );
-  }, []);
+  // Stable value — only recreated when config or callbacks change.
+  // Task-level hooks subscribe here so they never re-render from task updates.
+  const stableValue = useMemo<ProjectStableContextValue>(
+    () => ({
+      isLoading,
+      error,
+      mode: config.mode,
+      config,
+      updateTask,
+      updateProjectInfo,
+      addTask,
+      deleteTask,
+      saveLocal,
+      syncToServer,
+      setTaskAddedToPlan,
+      onTaskUpdate,
+      projectDataRef,
+      oldProjectData
+    }),
+    [
+      isLoading,
+      error,
+      config,
+      updateTask,
+      updateProjectInfo,
+      addTask,
+      deleteTask,
+      saveLocal,
+      syncToServer,
+      setTaskAddedToPlan,
+      onTaskUpdate,
+      oldProjectData
+    ],
+  );
 
-  const value: ProjectContextValue = {
-    projectData,
-    isLoading,
-    error,
-    mode: config.mode,
-    config, // Provide full config to child components
-    updateTask,
-    updateProjectInfo,
-    addTask,
-    deleteTask,
-    saveLocal,
-    syncToServer,
-    addedToPlanTaskIds,
-    setTaskAddedToPlan,
-    taskPlanActionPerformedIds,
-    setTaskPlanActionPerformed,
-    onTaskUpdate,
-  };
+  // Data value — recreated on every task/plan state change.
+  // Only list-level components that render the task tree subscribe here.
+  const dataValue = useMemo<ProjectDataContextValue>(
+    () => ({
+      projectData,
+      oldProjectData,
+      addedToPlanTasks,
+    }),
+    [projectData, oldProjectData, addedToPlanTasks],
+  );
 
   return (
-    <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
+    <ProjectStableContext.Provider value={stableValue}>
+      <ProjectDataContext.Provider value={dataValue}>
+        {children}
+      </ProjectDataContext.Provider>
+    </ProjectStableContext.Provider>
   );
 };
 
-export const useProjectContext = () => {
-  const context = useContext(ProjectContext);
-  if (context === undefined) {
-    throw new Error('useProjectContext must be used within a ProjectProvider');
-  }
-  return context;
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+
+/**
+ * Subscribe to stable context only (mode, config, callbacks).
+ * Use in task-level hooks/components to avoid re-renders on task updates.
+ */
+export const useProjectStable = (): ProjectStableContextValue => {
+  const ctx = useContext(ProjectStableContext);
+  if (!ctx) throw new Error('useProjectStable must be used within a ProjectProvider');
+  return ctx;
+};
+
+/**
+ * Subscribe to data context only (projectData, plan state).
+ * Use in list-level components that need to react to task changes.
+ */
+export const useProjectData = (): ProjectDataContextValue => {
+  const ctx = useContext(ProjectDataContext);
+  if (!ctx) throw new Error('useProjectData must be used within a ProjectProvider');
+  return ctx;
+};
+
+/**
+ * Combined context hook for backward compatibility.
+ * Subscribes to BOTH contexts — only use in components that genuinely
+ * need both stable config and live projectData (e.g. ProjectContent).
+ */
+export const useProjectContext = (): ProjectContextValue => {
+  const stable = useProjectStable();
+  const data   = useProjectData();
+  return {
+    projectData:               data.projectData,
+    oldProjectData:            data.oldProjectData,
+    isLoading:                 stable.isLoading,
+    error:                     stable.error,
+    mode:                      stable.mode,
+    config:                    stable.config,
+    updateTask:                stable.updateTask,
+    updateProjectInfo:         stable.updateProjectInfo,
+    addTask:                   stable.addTask,
+    deleteTask:                stable.deleteTask,
+    saveLocal:                 stable.saveLocal,
+    syncToServer:              stable.syncToServer,
+    addedToPlanTasks:          data.addedToPlanTasks,
+    setTaskAddedToPlan:        stable.setTaskAddedToPlan,
+    onTaskUpdate:              stable.onTaskUpdate,
+  };
 };

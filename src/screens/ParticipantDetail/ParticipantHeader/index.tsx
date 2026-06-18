@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Linking, Platform } from 'react-native';
 import {
   HStack,
@@ -42,6 +42,7 @@ import { updateEntityDetails } from '../../../services/participantService';
 import { useAuth } from '@contexts/AuthContext';
 import { getProjectCategoryList } from '../../../services/projectService';
 import { isNetworkOffline } from '@utils/networkStatus';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
 const getCategoryData = (categories: any[], data: any[]) => {
   let categoryData = {};
@@ -69,8 +70,10 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
   projectData,
   onParticipantRefresh,
   solutions,
+  coachId
 }) => {
   const navigation = useNavigation();
+  const route = useRoute();
   const { t } = useLanguage();
   const { isWeb, isMobile } = usePlatform();
   const { showAlert } = useAlert();
@@ -159,8 +162,15 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
   }, [participantProp?.idpProjectId,projectData]);
 
   const handleBackPress = () => {
-    // @ts-ignore
-    navigation.navigate('participants');
+      // @ts-ignore
+    if (route.params?.redirectUrl) {
+      // @ts-ignore
+      navigation.navigate(route.params?.redirectUrl);
+      return;
+    } else {
+      // @ts-ignore
+      navigation.navigate('participants');
+    }
   };
 
   const handleEnrollParticipant = async () => {
@@ -193,10 +203,10 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
     }
   };
 
-  const handleLogVisitPress = () => {
+  const handleLogVisitPress = (link:string) => {
     const participantId = (participantProp as User)?.id || (participantProp as any)?.id;
     // @ts-ignore
-    navigation.push('log-visit', { id: participantId });
+    navigation.push(link, { id: participantId,...(coachId ? {coachId} : {}) });
   };
 
   const handleCompleteProject = async (solution: any) => {
@@ -254,11 +264,11 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
   }, [effectiveProgress, participantProp?.idpProjectId, status, solutions?.length]);
 
   const renderStatusBadge = () => {
-    if (status === STATUS.DROPOUT || participantProp?.accountUserStatus === USER_STATUS.INACTIVE) {
+    if (status === STATUS.NOT_ELIGIBLE || status === STATUS.DROPOUT || participantProp?.accountUserStatus === USER_STATUS.INACTIVE) {
       return (
         <Box {...participantHeaderStyles.statusBadge}>
           <Text {...participantHeaderStyles.statusBadgeText}>
-            {participantProp?.accountUserStatus === USER_STATUS.INACTIVE ? t('participantDetail.header.inactiveAccount') : t('participantDetail.header.droppedOut')}
+            {participantProp?.accountUserStatus === USER_STATUS.INACTIVE ? t('participantDetail.header.inactiveAccount') : status === STATUS.NOT_ELIGIBLE ? t('participantDetail.header.notEligible') : t('participantDetail.header.droppedOut')}
           </Text>
         </Box>
       );
@@ -286,7 +296,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
    */
   const renderSecondButton = () => {
     // Dropout: No second button
-    if (status === STATUS.DROPOUT || status === STATUS.GRADUATED || participantProp?.accountUserStatus === USER_STATUS.INACTIVE) {
+    if (status === STATUS.DROPOUT || status === STATUS.NOT_ELIGIBLE || status === STATUS.GRADUATED || participantProp?.accountUserStatus === USER_STATUS.INACTIVE) {
       return null;
     }
     // Not Enrolled: Enroll Participant (enabled only if all tasks are completed)
@@ -307,10 +317,20 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
       );
     }
 
+    if(coachId) {
+      // @ts-ignore
+      return <Button variant="outlineghost" onPress={() => {
+        handleLogVisitPress("check-ins-list")
+      }}>
+        <ButtonIcon as={LucideIcon} name="History" size={16} />
+        <ButtonText {...TYPOGRAPHY.bodySmall}>{t('logVisit.viewCheckIns')}</ButtonText>
+      </Button>
+    }
+
     // Enrolled, In Progress, Completed: Log Visit
     return (
       <Button variant="solid" size="sm"
-        onPress={handleLogVisitPress}
+        onPress={() => handleLogVisitPress('log-visit')}
       >
         <ButtonIcon as={LucideIcon} name="FileText" />
         <ButtonText>{t('participantDetail.header.logVisit')}</ButtonText>

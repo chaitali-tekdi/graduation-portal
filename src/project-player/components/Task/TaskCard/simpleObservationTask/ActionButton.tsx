@@ -1,0 +1,76 @@
+import React, { memo } from 'react';
+import { Box, Button, ButtonIcon, ButtonText, HStack, Pressable } from '@ui';
+import { LucideIcon } from '@ui/index';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
+import { taskCardStyles } from '../styles';
+
+export interface ActionButtonProps {
+  showActionButton: boolean; isPreview: boolean; isOptional: boolean;
+  isAddedToPlan: boolean; isRejected: boolean; isReadOnly: boolean;
+  isStatusUpdating: boolean; isWeb: boolean; showAsCard: boolean;
+  isOnboardingTask: boolean; isEdit: boolean; isObservationTask?: boolean; actionIconName: string;
+  handleTaskClick: () => void; handleAcceptTask: () => void; handleRejectTask: () => void; completeFormText:string;
+  buttonLabel?: string; uploadText: string; isCompleted?: boolean; isSyncTaskId?: boolean;
+}
+
+const ActionButton = memo<ActionButtonProps>(({
+  showActionButton, isPreview, isOptional, isAddedToPlan, isRejected,
+  isReadOnly, isStatusUpdating, isWeb, showAsCard, isOnboardingTask, isEdit, isObservationTask,
+  actionIconName, handleTaskClick, handleAcceptTask, handleRejectTask, buttonLabel, uploadText, isCompleted, isSyncTaskId,completeFormText
+}) => {
+  if (!showActionButton) return null;
+
+  if (isPreview && isOptional) {
+    // Sync-dependent tasks are shown but locked — their state is controlled by the primary task.
+    const isLocked = !!isSyncTaskId;
+    return (
+      <HStack space="xs" alignItems="center" opacity={isLocked ? 0.45 : 1}>
+        <Pressable onPress={isLocked ? undefined : handleAcceptTask} disabled={isLocked}>
+          {(state: any) => {
+            const isHovered = !isLocked && (state?.hovered || state?.pressed || false);
+            return (
+              <Box bg={isAddedToPlan ? '$tickButtonActiveBg' : isHovered ? '$success100' : 'transparent'}
+                padding="$2" borderRadius="$lg" borderWidth={1}
+                borderColor={isAddedToPlan ? '$tickButtonActiveBg' : '$success500'}
+                $web-cursor={isLocked ? 'not-allowed' : 'pointer'}>
+                <LucideIcon name="Check" size={16} color={isAddedToPlan ? '$white' : '$success500'} strokeWidth={3} />
+              </Box>
+            );
+          }}
+        </Pressable>
+        <Pressable onPress={isLocked ? undefined : handleRejectTask} disabled={isLocked}>
+          {(state: any) => {
+            const isHovered = !isLocked && (state?.hovered || state?.pressed || false);
+            return (
+              <Box bg={isHovered || isRejected ? '$error100' : 'transparent'}
+                padding="$2" borderRadius="$lg" borderWidth={1}
+                borderColor="$error500"
+                $web-cursor={isLocked ? 'not-allowed' : 'pointer'}>
+                <LucideIcon name="X" size={16} color="$error500" strokeWidth={3} />
+              </Box>
+            );
+          }}
+        </Pressable>
+      </HStack>
+    );
+  }
+
+  // In read-only mode: hide upload/non-observation actions; keep observation button
+  // active so the viewer can open the form. The observation form handles its own permissions.
+  if (isReadOnly && !isObservationTask) return null;
+
+  return (
+    <Button onPress={handleTaskClick} isDisabled={isStatusUpdating}
+      size={isWeb ? (showAsCard || isOnboardingTask ? 'xs' : 'md') : 'xs'}
+      variant={"outlineghost" as any} $web-cursor={isEdit || isReadOnly ? 'pointer' : undefined}>
+      <ButtonIcon name={isObservationTask && isCompleted ? "Eye" :actionIconName} size={16} as={LucideIcon} />
+      <ButtonText {...TYPOGRAPHY.button} {...taskCardStyles.actionButtonText}
+        fontSize={showAsCard || isOnboardingTask || !isWeb ? '$xs' : undefined}>
+        {isObservationTask && isCompleted ? completeFormText : buttonLabel || uploadText}
+      </ButtonText>
+    </Button>
+  );
+});
+
+ActionButton.displayName = 'ActionButton';
+export default ActionButton;

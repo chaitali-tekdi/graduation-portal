@@ -1,81 +1,51 @@
 import React, { useState, useMemo, useEffect, useCallback, memo } from 'react';
 import { Box, VStack, Text, Button, ButtonText, LucideIcon } from '@ui';
-import { Spinner } from '@gluestack-ui/themed';
 import { useLanguage } from '@contexts/LanguageContext';
 import { interventionPlanStyles } from './Styles';
 import ProjectPlayer, {
   ProjectPlayerData,
   ProjectPlayerConfig,
 } from '../../../project-player/index';
-import { Task, ProjectData } from '../../../project-player/types/project.types';
+import { ProjectData, Task } from '../../../project-player/types/project.types';
 import { MODE, PROJECT_PLAYER_CONFIGS } from '@constants/PROJECTDATA';
 import { STATUS } from '@constants/app.constant';
 import type { InterventionPlanProps, StatusType } from '../../../types/screens';
 import { useNavigation } from '@react-navigation/native';
-import dataService from '../../../services/dataService';
+import { sortTasksWithChildren } from '@utils/helper';
 
 const InterventionPlan: React.FC<InterventionPlanProps> = ({
-  participantStatus,
-  participantId,
+  mode,
+  projectData,
   participantProfile,
   onIdpCreation,
   onProgressChange,
-  getProjectData,
-  onTaskCompletionChange
+  onTaskCompletionChange,
 }) => {
   const { t } = useLanguage();
   const navigation = useNavigation();
   const [isEditMode] = useState(true);
   const [addedTasks, setAddedTasks] = useState<Set<string>>(new Set());
+  const [projectSortData,setProjectSortData] = useState<ProjectData>();
   // Local state to track if IDP was just created successfully
   const [localStatus, setLocalStatus] = useState<StatusType | undefined>(
-    participantStatus,
+    participantProfile?.status,
   );
-  // State to store the projectId from IDP creation
-  const [projectId, setProjectId] = useState<string | undefined>(undefined);
-  // Project details fetched inside InterventionPlan (online: API; offline: IndexedDB cache)
-  const [fetchedProjectData, setFetchedProjectData] = useState<ProjectData | null>(null);
-  const [isProjectLoading, setIsProjectLoading] = useState(true);
 
   // Update local status when prop changes
   useEffect(() => {
-    setLocalStatus(participantStatus);
-  }, [participantStatus]);
+    setLocalStatus(participantProfile?.status);
+    if(projectData) {
+      const sortedTasks = sortTasksWithChildren(projectData.tasks);
+      setProjectSortData({...projectData,tasks:sortedTasks});
+    }
+  }, [participantProfile?.status,projectData]);
+
 
   // Define required optional tasks IDs needed for submission
   const REQUIRED_OPTIONAL_TASKS = ['subtask-sp-003', 'subtask-sp-004'];
   const areAllOptionalTasksAdded = REQUIRED_OPTIONAL_TASKS.every(id =>
     addedTasks.has(id),
   );
-
-  const resolvedProjectId = (localStatus === STATUS.NOT_ONBOARDED && participantProfile.onBoardedProjectId) ? participantProfile.onBoardedProjectId : projectId || participantProfile?.idpProjectId;
-  const entityId = participantProfile?.entityId;
-  const userId = participantProfile.userId;
-
-  // Handle project details fetch — supports online and offline.
-  // Online: fetches latest from API via dataService.
-  // Offline: reads from IndexedDB cache; no failing network call is triggered.
-  useEffect(() => {    
-    let cancelled = false;
-    const fun = async () => {
-      if (!resolvedProjectId) {
-        setFetchedProjectData(null);
-        setIsProjectLoading(false);
-        return;
-      }
-      setIsProjectLoading(true);
-      const response = await dataService.getProject<ProjectData>(userId, resolvedProjectId)
-      if (response?.data) {
-        setFetchedProjectData(response.data);
-        getProjectData?.(response.data);
-        setIsProjectLoading(false)
-      } else if (!cancelled) {setIsProjectLoading(false)}
-    }
-    fun();
-    return () => {
-      cancelled = true;
-    };
-  }, [resolvedProjectId, userId, getProjectData]);
 
   // Handle task update callback from ProjectPlayer
   const handleTaskUpdate = (task: Task) => {
@@ -92,9 +62,6 @@ const InterventionPlan: React.FC<InterventionPlanProps> = ({
 
   // Handle successful IDP creation
   const handleIdpCreationSuccess = useCallback((newProjectId: string) => {
-    if (newProjectId) {
-      setProjectId(newProjectId);
-    }
     if (onIdpCreation) {
       onIdpCreation(newProjectId);
     }
@@ -162,6 +129,7 @@ const InterventionPlan: React.FC<InterventionPlanProps> = ({
       [STATUS.IN_PROGRESS]: MODE.editMode,
       [STATUS.COMPLETED]: MODE.readOnlyMode,
       [STATUS.DROPOUT]: MODE.readOnlyMode,
+      [STATUS.NOT_ELIGIBLE]: MODE.readOnlyMode,
       [STATUS.GRADUATED]: MODE.readOnlyMode,
     };
 
@@ -171,20 +139,23 @@ const InterventionPlan: React.FC<InterventionPlanProps> = ({
   // Inject fetched project details into data.data so ProjectPlayer uses them directly,
   const projectPlayerData: ProjectPlayerData = useMemo(
     () => ({
-      projectId: resolvedProjectId,
-      entityId,
+      projectId: projectSortData?._id,
+      entityId: participantProfile?.entityId,
       userStatus: participantProfile?.status,
       pillarCategoryRelation: undefined,
-      data: fetchedProjectData ?? undefined,
+      data: projectSortData ?? undefined,
       province: participantProfile?.province?.value
     }),
-    [resolvedProjectId, entityId, participantProfile?.status,participantProfile?.province?.value, fetchedProjectData],
+    [ participantProfile?.entityId, participantProfile?.status,participantProfile?.province?.value, projectSortData],
   );
   
-  if(!config?.mode){
-    console.log('config is not defined',config);
+  if(projectData && (!config?.mode || !projectSortData)){
+    if(!config?.mode) {
+      console.log(`config is not defined`,config);
+    }
     return;
   }
+
   // Show empty state for ENROLLED status when player is not shown yet
   if (localStatus === STATUS.ENROLLED) {
     return (
@@ -206,7 +177,8 @@ const InterventionPlan: React.FC<InterventionPlanProps> = ({
           <Button
             {...interventionPlanStyles.button}
             onPress={() => {
-              navigation.navigate('template', { id: participantId  });
+              // @ts-ignore
+              navigation.navigate('template', { id: participantProfile?.userId  });
             }}
           >
             <ButtonText {...interventionPlanStyles.buttonText}>
@@ -217,26 +189,19 @@ const InterventionPlan: React.FC<InterventionPlanProps> = ({
       </Box>
     );
   }
-
-// Show loading spinner while fetching project details
-  if (isProjectLoading) {
-    return (
-      <Box flex={1} alignItems="center" justifyContent="center">
-        <Spinner size="large" />
-      </Box>
-    );
-  }
+  
   // Show ProjectPlayer for IN_PROGRESS, COMPLETED, and other statuses
   if (
     localStatus === STATUS.NOT_ONBOARDED ||
     localStatus === STATUS.IN_PROGRESS ||
     localStatus === STATUS.COMPLETED ||
-    localStatus === STATUS.DROPOUT
+    localStatus === STATUS.DROPOUT ||
+    localStatus === STATUS.NOT_ELIGIBLE
   ) {
     return (
       <Box flex={1} mt="$1">
         <ProjectPlayer
-          config={config}
+          config={mode ? {...config,mode} : config}
           data={projectPlayerData}
           onTaskUpdate={handleTaskUpdate}
           onProgressChange={onProgressChange}
@@ -249,4 +214,14 @@ const InterventionPlan: React.FC<InterventionPlanProps> = ({
   return <Text>{t("projectPlayer.failToLoad")}</Text>;
 };
 
-export default memo(InterventionPlan);
+export default memo(
+  InterventionPlan,
+  (prevProps, nextProps) => {
+    return (
+      prevProps.participantProfile?.idpProjectId ===
+        nextProps.participantProfile?.idpProjectId &&
+      prevProps.participantProfile?.status ===
+        nextProps.participantProfile?.status
+    );
+  },
+);

@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { TASK_TYPE } from '../../../../../constants/app.constant';
-import { useProjectContext } from '../../../../context/ProjectContext';
+import { useProjectData } from '../../../../context/ProjectContext';
 import { isTaskCompleted } from '../../shared/helpers';
 import type { Task } from '../../../../types/project.types';
 
@@ -13,20 +13,30 @@ export interface TaskStatusResult {
   isOnboardingCompletedUI: boolean;
   isManualToggleDisabled: boolean;
   isAddedToPlan: boolean;
-  setIsAddedToPlan: (v: boolean) => void;
   isRejected: boolean;
-  setIsRejected: (v: boolean) => void;
+  isSyncTaskId: boolean;
 }
 
+/**
+ * Subscribes to data context for plan state only.
+ * Does NOT re-render when projectData changes (task status updates) — only
+ * re-renders when addedToPlanTasks changes (plan actions, which are rare).
+ */
 export function useTaskStatus(task: Task, isOnboardingTask: boolean): TaskStatusResult {
-  const { addedToPlanTaskIds } = useProjectContext();
+  // Data: only re-renders when plan state changes, not on task status changes.
+  const { addedToPlanTasks } = useProjectData();
 
-  const [isAddedToPlan, setIsAddedToPlan] = useState(Boolean(!task?.isDeletable));
-  const [isRejected, setIsRejected] = useState(false);
+  const taskId = task?._id ?? '';
 
-  useEffect(() => {
-    setIsAddedToPlan(addedToPlanTaskIds.includes(task?._id));
-  }, [addedToPlanTaskIds, task?._id]);
+  const isAddedToPlan = useMemo(
+    () => addedToPlanTasks[taskId] === true,
+    [addedToPlanTasks, taskId],
+  );
+
+  const isRejected = useMemo(
+    () => addedToPlanTasks[taskId] === false,
+    [addedToPlanTasks, taskId],
+  );
 
   const isCompleted = useMemo(() => isTaskCompleted(task?.status), [task?.status]);
 
@@ -65,6 +75,11 @@ export function useTaskStatus(task: Task, isOnboardingTask: boolean): TaskStatus
     [isObservationTask, isEvidenceRequired],
   );
 
+  const isSyncTaskId = useMemo(
+    () => !!(task?.metaInformation?.syncTaskIds?.length),
+    [task?.metaInformation?.syncTaskIds],
+  );
+
   return {
     isCompleted,
     isObservationTask,
@@ -74,8 +89,7 @@ export function useTaskStatus(task: Task, isOnboardingTask: boolean): TaskStatus
     isOnboardingCompletedUI,
     isManualToggleDisabled,
     isAddedToPlan,
-    setIsAddedToPlan,
     isRejected,
-    setIsRejected,
+    isSyncTaskId,
   };
 }

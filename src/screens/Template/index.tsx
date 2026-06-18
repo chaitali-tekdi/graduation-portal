@@ -10,7 +10,6 @@ import {
   Button,
   ButtonText,
   Container,
-  ButtonIcon,
 } from '@ui';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Modal from '@components/ui/Modal';
@@ -46,6 +45,7 @@ const DevelopInterventionPlan: React.FC = () => {
   const { user, setNavbarData } = useAuth();
 
   const participantId = (route.params as { id?: string })?.id || '';
+  const existingProjectId = (route.params as { projectId?: string })?.projectId;
 
   /* -------------------- STATE -------------------- */
   const [templates, setTemplates] = useState<any[]>([]);
@@ -67,7 +67,6 @@ const DevelopInterventionPlan: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [idpCreated, setIdpCreated] = useState(false);
-  const [projectId, setProjectId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   /* -------------------- DERIVED -------------------- */
@@ -106,14 +105,14 @@ const DevelopInterventionPlan: React.FC = () => {
   //   const selectedCategory = categories.find(c => c.id === pillarCategoryId);
   //   return selectedCategory?.subcategories || [];
   // };
-
   const handleIdpCreation = useCallback(async (newProjectId: any) => {
     // console.log('handleIdpCreation -  Project ID:', newProjectId);
     setIdpCreated(true);
-    if (newProjectId) {
+    if(existingProjectId) {
+      // @ts-ignore
+      navigation.navigate('participant-detail' as never, { id: route.params?.id as never });
+    } else if (newProjectId) {
       // Extract project ID from the response
-      setProjectId(projectId);
-
 
       const response = await getProjectDetails(newProjectId);
       const project = response?.data;
@@ -130,15 +129,15 @@ const DevelopInterventionPlan: React.FC = () => {
       });
 
        // create user program Mapping for the participant
-      await createOrUpdateProgramUserMapping({
-        userId: participantId,
-        programId: process.env.GLOBAL_LC_PROGRAM_ID,
-        metaInformation: {
-          idpProjectId: newProjectId,
-          idpProjectCreatedAt: thisDate,
-        },
-        status: STATUS.IN_PROGRESS
-      });
+      // await createOrUpdateProgramUserMapping({
+      //   userId: participantId,
+      //   programId: process.env.GLOBAL_LC_PROGRAM_ID,
+      //   metaInformation: {
+      //     idpProjectId: newProjectId,
+      //     idpProjectCreatedAt: thisDate,
+      //   },
+      //   status: STATUS.IN_PROGRESS
+      // });
 
       // create user program Mapping for the participant
       await createOrUpdateProgramUserMapping({
@@ -164,7 +163,7 @@ const DevelopInterventionPlan: React.FC = () => {
       // @ts-ignore
       navigation.navigate('participant-detail' as never, { id: route.params?.id as never });
     }
-  }, [navigation, participantId, projectId, user?.userId, route.params?.id]);
+  }, [navigation, participantId, user?.userId, route.params?.id]);
 
   const handleChangePathway = useCallback(() => {
     setShowProjectPlayerPreview(false);
@@ -230,7 +229,7 @@ const DevelopInterventionPlan: React.FC = () => {
   // Determine ProjectPlayer config and data based on participant status
 
   const config = PROJECT_PLAYER_CONFIGS;
-  const selectedMode = participant?.status === STATUS.IN_PROGRESS ? MODE.editMode : MODE.previewMode;
+  const selectedMode = participant?.status === STATUS.IN_PROGRESS && !existingProjectId ? MODE.editMode : MODE.previewMode;
 
   const configData = {
     ...config,
@@ -247,24 +246,24 @@ const DevelopInterventionPlan: React.FC = () => {
     const selectedSubCategoryIds = Object.values(selectionByPillar)
       .map(selection => selection.subCategoryId || selection.categoryId)
       .filter((id): id is string => Boolean(id)); // Filter out empty strings/undefined
-
     // Combine pillar IDs without categories + selected subcategory IDs
     return [...pillarIdsToGetIdp, ...selectedSubCategoryIds];
   }, [pillarIdsToGetIdp, selectionByPillar]);
 
   const ProjectPlayerConfigData: ProjectPlayerData = useMemo(
     () => ({
-      projectId: projectId || participant?.idpProjectId,
+      projectId: participant?.idpProjectId,
       categoryIds: categoryIdsArray,
       selectedPathway: selectedPathway,
       pillarCategoryRelation: getPillarCategoryRelationships,
+      oldProjectId: existingProjectId
     }),
     [
       categoryIdsArray,
-      projectId,
       selectedPathway,
       getPillarCategoryRelationships,
-      participant?.idpProjectId
+      participant?.idpProjectId,
+      existingProjectId
     ],
   );
 
@@ -286,9 +285,14 @@ const DevelopInterventionPlan: React.FC = () => {
       try {
         setIsLoading(true);
         setError(null);
+        let categories = [];
+        if(existingProjectId) {
+          const response = await getProjectDetails(existingProjectId);
+          categories = response?.data?.categories || [];
+        }
 
-        const templatesData = await getProjectCategoryList();
-
+        const templatesResponse = await getProjectCategoryList();
+        const templatesData = templatesResponse.filter((item:any) => !categories.find((cat:any) => cat.externalId === item.externalId))
         if (!isMounted) return;
         setTemplates(templatesData || []);
       } catch (err) {
@@ -324,11 +328,6 @@ const DevelopInterventionPlan: React.FC = () => {
 
     if (allPillarsHaveSelections) {
       // Log the pillar-category relationships
-      console.log(
-        'Pillar-Category Relationships:',
-        getPillarCategoryRelationships,
-      );
-
       setIsModalOpen(false);
       setShowProjectPlayerPreview(true);
     }
@@ -413,7 +412,7 @@ const DevelopInterventionPlan: React.FC = () => {
   };
 
   /* -------------------- UI -------------------- */
-  
+
   return (
     <VStack flex={1} {...(templateStyles.container as any)}>
       <PageHeader
@@ -435,11 +434,13 @@ const DevelopInterventionPlan: React.FC = () => {
       >
         <VStack {...(templateStyles.headerContent as any)}>
           <Text {...(TYPOGRAPHY.h4 as any)}>
-            {t('template.pageTitle')}
+            {t(existingProjectId ? "template.updatePageTitle" :'template.pageTitle')}
           </Text>
-          <Text {...(TYPOGRAPHY.bodySmall as any)}>
-            {t('template.pageSubtitle', { name: participantName })}
-          </Text>
+          {!existingProjectId && (
+            <Text {...(TYPOGRAPHY.bodySmall as any)}>
+              {t('template.pageSubtitle', { name: participantName })}
+            </Text>
+          )}
         </VStack>
       </PageHeader>
 
