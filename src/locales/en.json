@@ -54,7 +54,13 @@
     "show6MonthlyTrend": "Show 6-Monthly Trend",
     "showMonthlyTrend": "Show Monthly Trend",
     "serverError500": "Something went wrong. Try again.",
-    "somethingWentWrong": "Something went wrong. Try again."
+    "somethingWentWrong": "Something went wrong. Try again.",
+    "downloadAsPdf": "Download as PDF",
+    "downloadAsJpg": "Download as JPG",
+    "downloadAs": "Download As",
+    "downloadAllGraphs": "Download All Graphs",
+    "generatingFile": "Downloading Graphs Screenshot",
+    "pleaseWait": "Please wait, this may take a moment"
   },
   "projectPlayer": {
     "onboarding": "Onboarding the",
@@ -218,6 +224,9 @@
     "selectIndicatorType": "Select Indicator Type",
     "indicatorTypeDescription": "Choose between Output or Outcome indicators to view relevant topics",
     "backToIndicatorTypes": "Back to Indicator Types",
+    "graphsDownloadPdf": "Graphs Download PDF",
+    "downloadFormat": "Download Format",
+    "chooseFormat": "Choose a format to download the graphs:",
     "outputIndicators": {
       "title": "Output Indicators",
       "description": "Direct program activities and deliverables: enrollment processes, Coach performance tracking, and immediate program outputs.",
@@ -1973,7 +1982,9 @@
     "observationLogs": "Observation Logs",
     "viewAllActivity": "View all activity and history for {{name}}",
     "viewAndDownloadCertificate": "View & Download Certificate",
-    "observation":{"forms":"Observation From"},
+    "observation": {
+      "forms": "Observation From"
+    },
     "downloadOffline": "Download Offline",
     "download": "Download",
     "downloadHint": "Download this participant for offline use",
