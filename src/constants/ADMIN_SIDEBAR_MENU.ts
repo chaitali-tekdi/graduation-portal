@@ -46,6 +46,6 @@ export const QUICK_ACTION_MENU_ITEMS: SidebarItem[] = [
     key: 'new-lc',
     label: 'admin.menu.createUser',
     icon: AddIcon,
-    route: 'NewLC',
+    route: 'create-user',
   },
 ];

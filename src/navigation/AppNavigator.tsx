@@ -12,6 +12,7 @@ import HomeScreen from '../screens/Home';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import SelectLanguageScreen from '../screens/Language/Index';
 import WelcomePage from '../screens/Welcome/index';
+import CreateUserScreen from '../screens/CreateUser';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,11 @@ const getAccessPages = (
     case 'admin':
       return [
         { name: 'home', path: '/', component: HomeScreen },
+        {
+          name: 'create-user',
+          path: '/create-user',
+          component: CreateUserScreen,
+        },
         {
           name: 'select-language',
           path: '/select-language',
