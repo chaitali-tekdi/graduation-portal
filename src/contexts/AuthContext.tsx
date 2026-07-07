@@ -344,6 +344,35 @@ export const useIsSupervisor = (): boolean => {
   }, [user, currentUserRole]);
 };
 
+export const useCanAccessAdmin = (): boolean => {
+  const { user } = useAuth();
+  const currentUserRole = user?.role;
+
+  return useMemo(() => {
+    // Check mapped role first
+    if (currentUserRole === 'Supervisor' || currentUserRole?.toLowerCase() === 'supervisor' || currentUserRole?.toLowerCase() === 'admin' || currentUserRole?.toLowerCase() === 'tenant_admin') {
+      return true;
+    }
+    
+    // Also check user's actual organizations for supervisor role titles
+    if (user && (user as any).organizations) {
+      const organizations = (user as any).organizations;
+      const hasSupervisorRole = organizations.some((org: any) => {
+        if (!org?.roles || !Array.isArray(org.roles)) {
+          return false;
+        }
+        return org.roles.some((role: any) => {
+          const roleTitle = role?.title?.toLowerCase() || '';
+          return roleTitle === 'tenant_admin' || roleTitle === 'supervisor' || roleTitle === 'admin';
+        });
+      });
+      return hasSupervisorRole;
+    }
+    
+    return false;
+  }, [user, currentUserRole]);
+};
+
 export const useIsdminPanalAccess = (): boolean => {
   const { user } = useAuth();
   const currentUserRole = user?.role;

@@ -76,7 +76,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
   const [mockData, setMockData] = useState<any>();
   const [submission, setSubmission] = useState<any>(null);
   const taskAutoCompletedRef = useRef(false);
-  
+
   useEffect(() => {
     taskAutoCompletedRef.current = false;
   }, [taskId, participant]);
@@ -161,7 +161,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
       }
 
       if (!observationSolution) {
-        
+
         const entityParticiapnt = entityType === ENTITY_TYPE.LINKAGE_CHAMPION;
         const response = await getObservationSolution({
           observationId,
@@ -192,7 +192,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
       );
     }
   };
-  
+
   const setLoadingOff = () => {
     setTimeout(() => {
       setLoading(false);
@@ -475,7 +475,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
                 // @ts-ignore - afterSubmitCallback exists in web version
                 afterSubmitCallback={handleAfterSubmit}
                 playerConfig={playerConfigMemoized}
-                // {..._webComponent}
+              // {..._webComponent}
               />
             }
           </Box>
@@ -513,20 +513,20 @@ const buildDefaultValuesFromObservation = (
         if (question.responseType === 'pageQuestions' && Array.isArray(question.pageQuestions)) {
           for (const pageQuestion of question.pageQuestions) {
             // pageQuestion.question is an array of strings, key is a string. Compare lowercase.
-            const keyFound = userDataKeys.find(key => 
+            const keyFound = userDataKeys.find(key =>
               key === pageQuestion.createdFromQuestionId || key === pageQuestion.entityFieldName
-               || (Array.isArray(pageQuestion?.question)
+              || (Array.isArray(pageQuestion?.question)
                 ? pageQuestion.question
-                    .map((q: string) => (typeof q === 'string' ? q?.toLowerCase() : ''))
-                    .some(
-                      (qString: string) =>
-                        (typeof key === 'string' && typeof qString === 'string'
-                          ? key.toLowerCase() === qString.toLowerCase()
-                          : false)
-                    )
-                : (() => { 
-                    throw new Error("pageQuestion.question is not an array"); 
-                  })())
+                  .map((q: string) => (typeof q === 'string' ? q?.toLowerCase() : ''))
+                  .some(
+                    (qString: string) =>
+                    (typeof key === 'string' && typeof qString === 'string'
+                      ? key.toLowerCase() === qString.toLowerCase()
+                      : false)
+                  )
+                : (() => {
+                  throw new Error("pageQuestion.question is not an array");
+                })())
             );
             if (keyFound !== undefined) {
               let value = typeof userData[keyFound] === "string" ? userData[keyFound] : userData[keyFound]?.value;
