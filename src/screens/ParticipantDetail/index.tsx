@@ -77,7 +77,7 @@ export default function ParticipantDetail() {
   const [status, setStatus] = useState('');
   const [idpCreated, setIdpCreated] = useState(false);
   const [participant, setParticipant] = useState<User | undefined>();
-  const resolvedCoachId = coachId || participant?.extra?.hierarchy?.find((item: any) => item.level === 0)?.id;
+  const resolvedCoachId = coachId || participant?.hierarchy?.[0] || participant?.extra?.hierarchy?.find((item: any) => item.level === 0)?.id;
   const [areAllTasksCompleted, setAreAllTasksCompleted] = useState(false);
   const [updatedProgress, setUpdatedProgress] = useState<number | undefined>(
     undefined,

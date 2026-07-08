@@ -3,7 +3,7 @@ import { VStack, Box, ScrollView, Text, Spinner } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import { assessmentSurveysStyles } from './Styles';
 import { AssessmentCard } from '@components/ObservationCards';
-import { useAuth, useCanAccessAdmin } from '@contexts/AuthContext';
+import { useAuth, useIsdminPanalAccess } from '@contexts/AuthContext';
 import type {
   AssessmentSurveyCardData,
   ParticipantData,
@@ -41,7 +41,7 @@ const AssessmentSurveys: React.FC<AssessmentSurveysProps> = ({
   coachId
 }) => {
   const { t } = useLanguage();
-  const canAccessAdmin = useCanAccessAdmin();
+  const canAccessAdmin = useIsdminPanalAccess();
 
   const [solutions, setSolutions] = useState<AssessmentSurveyCardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

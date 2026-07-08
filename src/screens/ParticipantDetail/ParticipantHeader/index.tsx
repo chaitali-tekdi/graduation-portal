@@ -39,7 +39,7 @@ import {
 } from '../../../project-player/services/projectPlayerService';
 import { ENDLINE_KEYWORD } from '@constants/LOG_VISIT_CARDS';
 import { updateEntityDetails } from '../../../services/participantService';
-import { useAuth,useCanAccessAdmin } from '@contexts/AuthContext';
+import { useAuth, useIsdminPanalAccess } from '@contexts/AuthContext';
 import { getProjectCategoryList } from '../../../services/projectService';
 import { isNetworkOffline } from '@utils/networkStatus';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
@@ -76,7 +76,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
   const { isWeb, isMobile } = usePlatform();
   const { showAlert } = useAlert();
   const { user } = useAuth();
-  const canAccessAdmin = useCanAccessAdmin();
+  const canAccessAdmin = useIsdminPanalAccess();
   const [status, setStatus] = useState(participantProp?.status || '')
   const [graduationProgress, setGraduationProgress] = useState(0)
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false)
@@ -260,7 +260,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
     }
     // participantProp?.idpProgress?.projectStatus,
     // @ts-ignore
-  }, [effectiveProgress, participantProp?.idpProjectId, status, solutions]);
+  }, [effectiveProgress, participantProp?.idpProjectId, status, solutions?.length]);
 
   const renderStatusBadge = () => {
     if (status === STATUS.NOT_ELIGIBLE || status === STATUS.DROPOUT || participantProp?.accountUserStatus === USER_STATUS.INACTIVE) {
