@@ -584,43 +584,18 @@ const buildDefaultValuesFromObservation = (
 };
 
 /**
- * Recursively injects the coach's userId into the apiEndPoint configured for dynamic option questions.
+ * Injects the coach's userId and programId into the apiEndPoint for dynamic participant lookup.
  */
 const injectCoachUserIdIntoApiEndPoint = (schema: any, coachUserId: string) => {
-  if (!schema?.assessment?.evidences || !coachUserId) return schema;
-
+  if (!schema || !coachUserId) return schema;
   // @ts-ignore
   const programId = process.env.GLOBAL_LC_PROGRAM_ID || '';
-
   try {
-    const updatedSchema = JSON.parse(JSON.stringify(schema));
-
-    for (const evidence of updatedSchema.assessment.evidences) {
-      if (!evidence.sections) continue;
-      for (const section of evidence.sections) {
-        if (!section.questions) continue;
-        for (const question of section.questions) {
-          if (question.responseType === 'pageQuestions' && Array.isArray(question.pageQuestions)) {
-            for (const pageQuestion of question.pageQuestions) {
-              if (
-                pageQuestion.metaInformation?.config?.apiEndPoint &&
-                pageQuestion.metaInformation.config.apiEndPoint.includes('programUsers/entities')
-              ) {
-                const baseEndPoint = pageQuestion.metaInformation.config.apiEndPoint.split('?')[0];
-                pageQuestion.metaInformation.config.apiEndPoint = `${baseEndPoint}?userId=${coachUserId}&programId=${programId}&limit=1000&type=user`;
-              }
-            }
-          } else if (
-            question.metaInformation?.config?.apiEndPoint &&
-            question.metaInformation.config.apiEndPoint.includes('programUsers/entities')
-          ) {
-            const baseEndPoint = question.metaInformation.config.apiEndPoint.split('?')[0];
-            question.metaInformation.config.apiEndPoint = `${baseEndPoint}?userId=${coachUserId}&programId=${programId}&limit=1000&type=user`;
-          }
-        }
-      }
-    }
-    return updatedSchema;
+    const replaced = JSON.stringify(schema).replace(
+      /programUsers\/entities[^"]*/g,
+      `programUsers/entities?userId=${coachUserId}&programId=${programId}&limit=1000&type=user`
+    );
+    return JSON.parse(replaced);
   } catch (error) {
     logger.error('Failed to inject coachUserId into apiEndPoint', error);
     return schema;
