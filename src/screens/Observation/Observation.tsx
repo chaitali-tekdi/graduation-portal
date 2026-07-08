@@ -43,12 +43,20 @@ const Observation: React.FC = () => {
   const navigation = useNavigation<any>();
   const { returnTo, returnParams } = route.params || {};
 
+  const getQueryParam = (paramName: string) => {
+    if (typeof window !== 'undefined' && window.location) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(paramName);
+    }
+    return null;
+  };
+
   // Use props if provided, otherwise fall back to route params
   const routeParams = route.params as ObservationRouteParams | undefined;
   const id = routeParams?.id || '';
   const solutionId = routeParams?.solutionId || '';
   const submissionNumber = routeParams?.submissionNumber;
-  const entityType = routeParams?.entityType;
+  const entityType = routeParams?.entityType || getQueryParam('entityType') || undefined;
   const taskId = routeParams?.taskId;
   const [userData, setUserData] = useState<any>(null);
   const [participant, setParticipant] = useState<ParticipantData | undefined>(undefined);

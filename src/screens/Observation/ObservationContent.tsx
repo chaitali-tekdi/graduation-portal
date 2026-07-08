@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import WebComponentPlayer from '@components/WebComponent/WebComponentPlayer';
 import { Container, Spinner, VStack, Box } from '@ui';
 import { getToken } from '../../services/api';
@@ -23,6 +23,7 @@ import { PARTICIPANT_KEYS } from '@constants/STORAGE_KEYS';
 import type { ObservationFormData } from '@app-types/offline';
 import { isNetworkOffline } from '@utils/networkStatus';
 import { shouldFetchOnline } from '@utils/helper';
+import { useAuth } from '@contexts/AuthContext';
 
 interface ObservationData {
   entityId: string;
@@ -69,6 +70,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
   _webComponent
 }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [observation, setObservation] = useState<ObservationData | null>(null);
   const [defaultValuesLocal, setDefaultValuesLocal] = useState<any>({});
   const [loading, setLoading] = useState(true);
@@ -78,6 +80,24 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
   const [submission, setSubmission] = useState<any>(null);
   const taskAutoCompletedRef = useRef(false);
 
+  const mockDataWithCoachUserId = useMemo(() => {
+    if (!mockData) return null;
+    
+    const resolvedEntityType = entityType || (typeof window !== 'undefined' && window.location ? new URLSearchParams(window.location.search).get('entityType') : null);
+    const isLinkageChampionEntity = resolvedEntityType === ENTITY_TYPE.LINKAGE_CHAMPION;
+    
+    const coachUserId = submission?.createdBy || 
+                        mockData?.submission?.createdBy ||
+                        (isLinkageChampionEntity ? (participant?.userId || participant?.id || (participant as any)?._id) : undefined) ||
+                        participant?.hierarchy?.[0] || 
+                        participant?.extra?.hierarchy?.find((item: any) => item.level === 0)?.id || 
+                        (user?.role?.toLowerCase() === 'supervisor' || user?.role?.toLowerCase() === 'admin' ? undefined : user?.id);
+                        
+    const targetUserId = coachUserId || user?.id;
+    if (!targetUserId) return mockData;
+    return injectCoachUserIdIntoApiEndPoint(mockData, targetUserId);
+  }, [mockData, participant, user, submission, entityType]);
+
   useEffect(() => {
     taskAutoCompletedRef.current = false;
   }, [taskId, participant]);
@@ -86,11 +106,11 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
     const participantKey = participant?.userId || (participant as any)?._id || (participant as any)?.id;
     if (progress === 100 && !taskAutoCompletedRef.current && dataService.isNetworkOffline() && taskId && participantKey) {
       taskAutoCompletedRef.current = true;
-      dataService.saveTaskEdit(participantKey, { _id: taskId, status: TASK_STATUS.COMPLETED })
+      dataService.saveTaskEdit(participantKey, solutionId, { tasks: [{ _id: taskId, status: TASK_STATUS.COMPLETED }] })
         .then(() => logger.info('ObservationContent: task auto-completed at 100% offline', taskId))
         .catch(err => logger.warn('ObservationContent: failed to auto-complete task at 100%', err));
     }
-  }, [progress, taskId, participant]);
+  }, [progress, taskId, participant, solutionId]);
 
   // Use ref to store progress callback to avoid prop changes causing rerenders
   const progressCallbackRef =
@@ -389,8 +409,10 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
       if (taskId) {
         try {
           await dataService.saveTaskEdit(participantKey,submissionId, {
-            _id: taskId,
-            status: TASK_STATUS.COMPLETED,
+            tasks: [{
+              _id: taskId,
+              status: TASK_STATUS.COMPLETED,
+            }]
           });
           logger.info('ObservationContent: task auto-marked completed offline', taskId);
         } catch (err) {
@@ -412,17 +434,17 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
       solutionType: 'observation' as const,
       observationId: observation?.observationId,
       entityId: observation?.entityId,
-      evidenceCode: mockData?.assessment?.evidences[0]?.code,
+      evidenceCode: mockDataWithCoachUserId?.assessment?.evidences[0]?.code,
       index: 0,
       submissionNumber: submissionNumber,
       solutionId: observation?.observationId,
       showSaveDraftButton: true,
       progressCountOptionalFields:false,
       progressCalculationLevel: 'input' as const,
-      mockData: mockData,
+      mockData: mockDataWithCoachUserId,
       defaultValues: defaultValuesLocal,
       // Section 5.8: signal web component to use offline form when schema is pre-loaded
-      offlineMode: mockData != null,
+      offlineMode: mockDataWithCoachUserId != null,
       usePageQuestionsGrid: true,
       showPrivacyPopup: false,
       showToast: false,
@@ -434,7 +456,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
         }
       }
     }),
-    [token, observation?.observationId, observation?.entityId, mockData, submissionNumber, defaultValuesLocal],
+    [token, observation?.observationId, observation?.entityId, mockDataWithCoachUserId, submissionNumber, defaultValuesLocal],
   );
 
   // Bridge: save form edits into offlineStorage when web component reports a save/submit.
@@ -462,7 +484,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
         <Header
           hideElements={hideElements?.header}
           _css={_css?._header}
-          title={mockData?.solution?.name || ''}
+          title={mockDataWithCoachUserId?.solution?.name || mockData?.solution?.name || ''}
           progress={progress}
           participantInfo={participant as any}
           onBackPress={handleBackPress}
@@ -472,7 +494,7 @@ const ObservationContent: React.FC<ObservationContentProps> = ({
         <Container flex={1}>
           {/* Web Component Player */}
           <Box {...observationStyles.webComponentPlayerContainer}>
-            {mockData &&
+            {mockDataWithCoachUserId &&
               <WebComponentPlayer
                 getProgress={handleProgressUpdate}
                 getToast={handleToast}
@@ -559,4 +581,48 @@ const buildDefaultValuesFromObservation = (
   }
 
   return defaultValues;
+};
+
+/**
+ * Recursively injects the coach's userId into the apiEndPoint configured for dynamic option questions.
+ */
+const injectCoachUserIdIntoApiEndPoint = (schema: any, coachUserId: string) => {
+  if (!schema?.assessment?.evidences || !coachUserId) return schema;
+
+  // @ts-ignore
+  const programId = process.env.GLOBAL_LC_PROGRAM_ID || '';
+
+  try {
+    const updatedSchema = JSON.parse(JSON.stringify(schema));
+
+    for (const evidence of updatedSchema.assessment.evidences) {
+      if (!evidence.sections) continue;
+      for (const section of evidence.sections) {
+        if (!section.questions) continue;
+        for (const question of section.questions) {
+          if (question.responseType === 'pageQuestions' && Array.isArray(question.pageQuestions)) {
+            for (const pageQuestion of question.pageQuestions) {
+              if (
+                pageQuestion.metaInformation?.config?.apiEndPoint &&
+                pageQuestion.metaInformation.config.apiEndPoint.includes('programUsers/entities')
+              ) {
+                const baseEndPoint = pageQuestion.metaInformation.config.apiEndPoint.split('?')[0];
+                pageQuestion.metaInformation.config.apiEndPoint = `${baseEndPoint}?userId=${coachUserId}&programId=${programId}&limit=1000&type=user`;
+              }
+            }
+          } else if (
+            question.metaInformation?.config?.apiEndPoint &&
+            question.metaInformation.config.apiEndPoint.includes('programUsers/entities')
+          ) {
+            const baseEndPoint = question.metaInformation.config.apiEndPoint.split('?')[0];
+            question.metaInformation.config.apiEndPoint = `${baseEndPoint}?userId=${coachUserId}&programId=${programId}&limit=1000&type=user`;
+          }
+        }
+      }
+    }
+    return updatedSchema;
+  } catch (error) {
+    logger.error('Failed to inject coachUserId into apiEndPoint', error);
+    return schema;
+  }
 };
