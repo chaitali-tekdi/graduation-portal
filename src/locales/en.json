@@ -2400,6 +2400,61 @@
         "continue": "Continue"
       }
     },
+    "assetSupport": {
+      "changeType": "Change Type",
+      "pageTitle": "Create Asset",
+      "badgeText": "Asset",
+      "progressLabel": "Progress",
+      "tabs": {
+        "assetDetails": "Asset Details",
+        "reviewPublish": "Review & Publish"
+      },
+      "step1": {
+        "heading": "Asset Details",
+        "subheading": "Fields marked * are required",
+        "province": "Province",
+        "provincePlaceholder": "Select province",
+        "site": "Site",
+        "sitePlaceholder": "Select province first",
+        "assetType": "Asset Type",
+        "assetTypeOptions": {
+          "cash": "Cash",
+          "inKind": "In-kind",
+          "voucher": "Voucher"
+        },
+        "categoryLivelihoods": "Category of Livelihoods",
+        "categoryLivelihoodsPlaceholder": "Select livelihood category",
+        "assetTitle": "Asset Title",
+        "assetTitlePlaceholder": "Name of this asset...",
+        "assetDescription": "Asset Description",
+        "assetDescriptionPlaceholder": "Describe this asset, its purpose, and how it benefits the recipient...",
+        "estimatedValue": "Estimated Asset Value (Rands)",
+        "estimatedValuePlaceholder": "R 0.00",
+        "availability": "Availability",
+        "optionalTag": "(optional)",
+        "startDate": "Start Date",
+        "startDatePlaceholder": "dd/mm/yyyy",
+        "startTime": "Start Time",
+        "startTimePlaceholder": "--:--",
+        "endDate": "End Date",
+        "endDatePlaceholder": "dd/mm/yyyy",
+        "endTime": "End Time",
+        "endTimePlaceholder": "--:--"
+      },
+      "step2": {
+        "heading": "Review & Publish",
+        "assetDetailsCardTitle": "Asset Details",
+        "infoTitle": "Before you publish:",
+        "infoBullet1": "This support will be visible to all Coaches in the GBL network",
+        "infoBullet2": "Coaches can submit requests on behalf of participants",
+        "infoBullet3": "You'll receive notifications when requests are submitted",
+        "publishButton": "Publish Support"
+      },
+      "buttons": {
+        "previous": "Previous",
+        "continue": "Continue"
+      }
+    },
     "forms": {
       "sessionTitle": "Session Title *",
       "sessionTitlePlaceholder": "e.g. Financial Literacy & Business Management Workshop",

@@ -4,29 +4,57 @@ import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
 
+export interface StepperTabItem {
+  key: number;
+  label: string;
+  iconName: string;
+}
+
 interface FormStepperHeaderProps {
   activeStep: number;
   setActiveStep: (step: number) => void;
   onNavigateBack: () => void;
+  title?: string;
+  badgeText?: string;
+  tabs?: StepperTabItem[];
 }
 
 export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
   activeStep,
   setActiveStep,
   onNavigateBack,
+  title,
+  badgeText: customBadgeText,
+  tabs: customTabs,
 }) => {
   const { t } = useLanguage();
   const { branding } = SUPPORT_PROVIDER_CONFIG;
   const primaryColor = branding.themePrimaryColor || '#8B2842';
 
   const changeTypeText = t('supportProvider.trainingSession.changeType') || 'Change Type';
-  const pageTitleText = t('supportProvider.trainingSession.pageTitle') || 'Create Training Session';
-  const badgeText = t('supportProvider.trainingSession.badgeText') || 'Training Session';
+  const pageTitleText = title || t('supportProvider.trainingSession.pageTitle') || 'Create Training Session';
+  const badgeText = customBadgeText || t('supportProvider.trainingSession.badgeText') || 'Training Session';
   const progressLabelText = t('supportProvider.trainingSession.progressLabel') || 'Progress';
 
-  const tabDetailsText = t('supportProvider.trainingSession.tabs.sessionDetails') || 'Session Details';
-  const tabScheduleText = t('supportProvider.trainingSession.tabs.scheduleFormat') || 'Schedule & Format';
-  const tabReviewText = t('supportProvider.trainingSession.tabs.reviewPublish') || 'Review & Publish';
+  const defaultTabs: StepperTabItem[] = [
+    {
+      key: 1,
+      label: t('supportProvider.trainingSession.tabs.sessionDetails') || 'Session Details',
+      iconName: 'FileText',
+    },
+    {
+      key: 2,
+      label: t('supportProvider.trainingSession.tabs.scheduleFormat') || 'Schedule & Format',
+      iconName: 'Calendar',
+    },
+    {
+      key: 3,
+      label: t('supportProvider.trainingSession.tabs.reviewPublish') || 'Review & Publish',
+      iconName: 'Check',
+    },
+  ];
+
+  const activeTabs = customTabs && customTabs.length > 0 ? customTabs : defaultTabs;
 
   return (
     <Box width="100%" bg="$white">
@@ -78,8 +106,17 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
               {pageTitleText}
             </Text>
 
-            <Box bg="#E0F2FE" px="$2.5" py="$1" borderRadius="$full">
-              <Text color="#0284C7" fontWeight="$bold" fontSize="$xs">
+            <Box
+              bg={badgeText === 'Asset' || badgeText === 'Assets' ? '#DCFCE7' : '#E0F2FE'}
+              px="$2.5"
+              py="$1"
+              borderRadius="$full"
+            >
+              <Text
+                color={badgeText === 'Asset' || badgeText === 'Assets' ? '#15803D' : '#0284C7'}
+                fontWeight="$bold"
+                fontSize="$xs"
+              >
                 {badgeText}
               </Text>
             </Box>
@@ -126,7 +163,7 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
 
         <Box width="100%" height={1} bg="$borderLight100" mb="$3" />
 
-        {/* 3 Step Tabs Bar - Responsive FlexWrap for Mobile (Moves to next line if needed) */}
+        {/* Dynamic Step Tabs Bar */}
         <Box
           w="$full"
           maxWidth={860}
@@ -141,80 +178,35 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
             alignItems="center"
             rowGap="$3"
           >
-            {/* Tab 1 */}
-            <Pressable
-              onPress={() => setActiveStep(1)}
-              pb="$3"
-              borderBottomWidth={activeStep === 1 ? 2 : 0}
-              borderColor={primaryColor}
-              zIndex={2}
-              $web-style={{ cursor: 'pointer' }}
-            >
-              <HStack alignItems="center" space="xs">
-                <LucideIcon
-                  name="FileText"
-                  size={16}
-                  color={activeStep === 1 ? primaryColor : '#9CA3AF'}
-                />
-                <Text
-                  color={activeStep === 1 ? primaryColor : '$textDark500'}
-                  fontWeight={activeStep === 1 ? '$bold' : '$normal'}
-                  fontSize="$sm"
+            {activeTabs.map(tab => {
+              const isActive = activeStep === tab.key;
+              return (
+                <Pressable
+                  key={tab.key}
+                  onPress={() => setActiveStep(tab.key)}
+                  pb="$3"
+                  borderBottomWidth={isActive ? 2 : 0}
+                  borderColor={primaryColor}
+                  zIndex={2}
+                  $web-style={{ cursor: 'pointer' }}
                 >
-                  {tabDetailsText}
-                </Text>
-              </HStack>
-            </Pressable>
-
-            {/* Tab 2 */}
-            <Pressable
-              onPress={() => setActiveStep(2)}
-              pb="$3"
-              borderBottomWidth={activeStep === 2 ? 2 : 0}
-              borderColor={primaryColor}
-              zIndex={2}
-              $web-style={{ cursor: 'pointer' }}
-            >
-              <HStack alignItems="center" space="xs">
-                <LucideIcon
-                  name="Calendar"
-                  size={16}
-                  color={activeStep === 2 ? primaryColor : '#9CA3AF'}
-                />
-                <Text
-                  color={activeStep === 2 ? primaryColor : '$textDark500'}
-                  fontWeight={activeStep === 2 ? '$bold' : '$normal'}
-                  fontSize="$sm"
-                >
-                  {tabScheduleText}
-                </Text>
-              </HStack>
-            </Pressable>
-
-            {/* Tab 3 */}
-            <Pressable
-              onPress={() => setActiveStep(3)}
-              pb="$3"
-              borderBottomWidth={activeStep === 3 ? 2 : 0}
-              borderColor={primaryColor}
-              zIndex={2}
-              $web-style={{ cursor: 'pointer' }}
-            >
-              <HStack alignItems="center" space="xs">
-                <LucideIcon
-                  name="Check"
-                  size={16}
-                  color={activeStep === 3 ? primaryColor : '#9CA3AF'}
-                />
-                <Text
-                  color={activeStep === 3 ? primaryColor : '$textDark500'}
-                  fontWeight={activeStep === 3 ? '$bold' : '$normal'}
-                  fontSize="$sm"
-                >
-                  {tabReviewText}
-                </Text>
-              </HStack>
-            </Pressable>
+                  <HStack alignItems="center" space="xs">
+                    <LucideIcon
+                      name={tab.iconName}
+                      size={16}
+                      color={isActive ? primaryColor : '#9CA3AF'}
+                    />
+                    <Text
+                      color={isActive ? primaryColor : '$textDark500'}
+                      fontWeight={isActive ? '$bold' : '$normal'}
+                      fontSize="$sm"
+                    >
+                      {tab.label}
+                    </Text>
+                  </HStack>
+                </Pressable>
+              );
+            })}
           </HStack>
         </Box>
       </Box>
