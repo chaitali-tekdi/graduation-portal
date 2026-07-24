@@ -35,7 +35,29 @@ export const CreateTrainingSessionScreen: React.FC<
   // Step 1 Form States with Required Defaults
   const [province, setProvince] = useState('');
   const [site, setSite] = useState('');
-  const [pillar, setPillar] = useState('Livelihoods');
+  const [pillar, setPillar] = useState('');
+  const PILLAR_SESSION_TYPES: Record<string, string[]> = {
+    'Social Empowerment': [
+      'Personal Mastery Training',
+      'Parenting Skills Training',
+      'GBV Awareness Session',
+      'Substance Abuse Awareness Session',
+    ],
+    'Financial Inclusion': [
+      'Financial Literacy Training',
+    ],
+    'Livelihoods': [
+      'Generate Your Business Idea Training',
+      'Start Your Business Training',
+      'Diversification Strategy',
+      'Market Growth Strategy',
+      'Livelihood Specific Training',
+      'Job Readiness Training',
+      'Technical/Vocational Training',
+    ],
+  };
+
+  const [isSessionTypeOpen, setIsSessionTypeOpen] = useState(false);
   const [sessionType, setSessionType] = useState('');
   const [description, setDescription] = useState('');
   const [learningObjectives, setLearningObjectives] = useState('');
@@ -212,7 +234,11 @@ export const CreateTrainingSessionScreen: React.FC<
                     return (
                       <Pressable
                         key={option}
-                        onPress={() => setPillar(option)}
+                        onPress={() => {
+                          setPillar(option);
+                          setSessionType('');
+                          setIsSessionTypeOpen(false);
+                        }}
                         px="$4"
                         py="$2.5"
                         borderRadius="$md"
@@ -238,27 +264,110 @@ export const CreateTrainingSessionScreen: React.FC<
                 </HStack>
               </VStack>
 
-              {/* Training / Session Type Dropdown */}
-              <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
-                  {t('supportProvider.trainingSession.step1.sessionType') || 'Training / Session Type'}{' '}
-                  <Text color="#DC2626">*</Text>
-                </Text>
-                <Input
-                  borderRadius="$md"
-                  borderColor="$borderLight300"
-                  $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                >
-                  <InputField
-                    placeholder={t('supportProvider.trainingSession.step1.sessionTypePlaceholder') || 'Select session type'}
-                    value={sessionType}
-                    onChangeText={setSessionType}
-                  />
-                  <Box pr="$3" justifyContent="center">
-                    <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
-                  </Box>
-                </Input>
-              </VStack>
+              {/* Training / Session Type Dropdown (Appears only after Pillar selection) */}
+              {pillar !== '' && (
+                pillar === 'Others' || pillar === (t('supportProvider.trainingSession.step1.pillars.others') || 'Others') ? (
+                  <VStack space="xs">
+                    <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                      {t('supportProvider.trainingSession.step1.sessionTitle') || 'Training / Session Title'}{' '}
+                      <Text color="#DC2626">*</Text>
+                    </Text>
+                    <Input
+                      borderRadius="$md"
+                      borderColor="$borderLight300"
+                      $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
+                    >
+                      <InputField
+                        placeholder={t('supportProvider.trainingSession.step1.sessionTitlePlaceholder') || 'Describe this session...'}
+                        value={sessionType}
+                        onChangeText={setSessionType}
+                      />
+                    </Input>
+                  </VStack>
+                ) : (
+                  <VStack space="xs" position="relative" zIndex={10}>
+                    <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                      {t('supportProvider.trainingSession.step1.sessionType') || 'Training / Session Type'}{' '}
+                      <Text color="#DC2626">*</Text>
+                    </Text>
+                    <Pressable
+                      onPress={() => setIsSessionTypeOpen(prev => !prev)}
+                      $web-style={{ cursor: 'pointer' }}
+                    >
+                      <Input
+                        borderRadius="$md"
+                        borderColor={isSessionTypeOpen ? primaryColor : '$borderLight300'}
+                        isReadOnly
+                        pointerEvents="none"
+                        $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
+                      >
+                        <InputField
+                          placeholder={t('supportProvider.trainingSession.step1.sessionTypePlaceholder') || 'Select session type'}
+                          value={sessionType}
+                          editable={false}
+                        />
+                        <Box pr="$3" justifyContent="center">
+                          <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                        </Box>
+                      </Input>
+                    </Pressable>
+
+                    {/* Filtered Dropdown Panel based on Selected Pillar */}
+                    {isSessionTypeOpen && (
+                      <Box
+                        position="absolute"
+                        top="100%"
+                        left={0}
+                        right={0}
+                        mt="$1"
+                        bg="#ffffff"
+                        borderRadius="$lg"
+                        borderWidth={1}
+                        borderColor="$borderLight200"
+                        shadowColor="$shadowColor"
+                        shadowOffset={{ width: 0, height: 4 }}
+                        shadowOpacity={0.1}
+                        shadowRadius={12}
+                        elevation={5}
+                        zIndex={100}
+                        overflow="hidden"
+                      >
+                        <VStack py="$1">
+                          {(
+                            PILLAR_SESSION_TYPES[pillar] ||
+                            PILLAR_SESSION_TYPES['Social Empowerment'] ||
+                            []
+                          ).map(option => {
+                            const isSelected = sessionType === option;
+                            return (
+                              <Pressable
+                                key={option}
+                                onPress={() => {
+                                  setSessionType(option);
+                                  setIsSessionTypeOpen(false);
+                                }}
+                                px="$4"
+                                py="$3"
+                                bg={isSelected ? '#FEF2F2' : '#ffffff'}
+                                $hover={{ bg: isSelected ? '#FEF2F2' : '#F9FAFB' }}
+                                $web-style={{ cursor: 'pointer' }}
+                              >
+                                <Text
+                                  color={isSelected ? primaryColor : '$textDark800'}
+                                  fontWeight={isSelected ? '$bold' : '$medium'}
+                                  fontSize="$sm"
+                                >
+                                  {option}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </VStack>
+                      </Box>
+                    )}
+                  </VStack>
+                )
+              )}
 
               {/* Training / Session Description */}
               <VStack space="xs">
