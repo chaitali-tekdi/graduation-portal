@@ -1788,7 +1788,7 @@
     "pleaseEnterBothEmailAndPassword": "Enter email and password.",
     "invalidEmailOrPassword": "Email or password is incorrect. Try again.",
     "anErrorOccurredDuringLogin": "Something went wrong. Try logging in again.",
-    "lcLogin": "Login as Coach / Supervisor",
+    "lcLogin": "Login as Coach / Supervisor / Support Provider",
     "testAccounts": "Test Accounts:",
     "welcomeToYourAccount": "Welcome To Your Account",
     "welcomeToYourAccountAdmin": "Welcome To Your Account Admin / Supervisor",
@@ -2249,5 +2249,172 @@
     "pageUnavailableOffline": "This page is not available offline.",
     "dataNotDownloaded": "Offline data has not been downloaded for this participant.",
     "goBack": "Go Back"
+  },
+  "supportProvider": {
+    "branding": {
+      "brandTitle": "GBL Partner Platform",
+      "orgName": "NYDA",
+      "roleBadge": "GBL Partner"
+    },
+    "menu": {
+      "dashboard": "Dashboard",
+      "trainingSessions": "Training Sessions",
+      "supportOfferings": "Support Offerings",
+      "requests": "Requests",
+      "materialsLibrary": "Materials Library",
+      "profile": "Profile"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your impact and activities",
+      "createSupport": "Create Support for Participants",
+      "impactOverview": {
+        "title": "Support Impact Overview",
+        "subtitle": "Tracking participants across the support pipeline"
+      }
+    },
+    "metrics": {
+      "actuallyNeededCategory": "ACTUALLY NEEDED",
+      "onboardedParticipants": "Onboarded participants",
+      "participantsUnit": "participants",
+      "plannedSessions": "31 sessions planned to serve them",
+      "committedCategory": "COMMITTED",
+      "scheduledDeliver": "Scheduled — yet to deliver",
+      "scheduledSessions": "7 sessions scheduled",
+      "committedSubText": "21% of needed",
+      "deliveredCategory": "DELIVERED",
+      "deliveredBadge": "↑ 14%",
+      "completedSessionsLabel": "Completed sessions",
+      "completedSessionsMeta": "19 sessions completed",
+      "deliveredSubText": "57% of needed"
+    },
+    "createSupport": {
+      "back": "Back to Dashboard",
+      "title": "Create New Support",
+      "subtitle": "Choose the type of support you want to create"
+    },
+    "cards": {
+      "trainingsSessions": {
+        "title": "Trainings & Sessions",
+        "description": "Structured learning sessions with a schedule, objectives, and participant capacity."
+      },
+      "additionalServices": {
+        "title": "Additional Services",
+        "description": "Advisory, legal, healthcare, or specialist services for participants."
+      },
+      "assets": {
+        "title": "Assets",
+        "description": "Cash, in-kind, or voucher support for livelihood activities."
+      }
+    },
+    "trainingSession": {
+      "changeType": "Change Type",
+      "pageTitle": "Create Training Session",
+      "badgeText": "Training Session",
+      "progressLabel": "Progress",
+      "tabs": {
+        "sessionDetails": "Session Details",
+        "scheduleFormat": "Schedule & Format",
+        "reviewPublish": "Review & Publish"
+      },
+      "step1": {
+        "heading": "Training Session Details",
+        "subheading": "Fields marked * are required",
+        "province": "Province",
+        "provincePlaceholder": "Select province",
+        "site": "Site",
+        "sitePlaceholder": "Select province first",
+        "pillar": "Pillar",
+        "pillars": {
+          "socialEmpowerment": "Social Empowerment",
+          "financialInclusion": "Financial Inclusion",
+          "livelihoods": "Livelihoods",
+          "others": "Others"
+        },
+        "sessionType": "Training / Session Type",
+        "sessionTypePlaceholder": "Select session type",
+        "description": "Training / Session Description",
+        "descriptionPlaceholder": "Describe what this session covers and what participants will learn...",
+        "learningObjectives": "Learning Objectives",
+        "optionalTag": "(optional)",
+        "learningObjectivesPlaceholder": "List the key learning outcomes, one per line...",
+        "targetAudience": "Target Audience",
+        "targetAudienceOptions": {
+          "coach": "Coach",
+          "participant": "Participant",
+          "both": "Both"
+        },
+        "certificate": "Certificate Provided",
+        "certificateOptions": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "maxCapacity": "Maximum Capacity",
+        "maxCapacityPlaceholder": "e.g. 20",
+        "recurringSession": "Recurring Session",
+        "recurringToggle": "Yes — recurring session",
+        "recurringToggleNo": "No — one-off session",
+        "resourceContent": "Resource Content",
+        "resourceUploadSub": "Upload PDF or DOC training materials",
+        "uploadPrompt": "Click to upload PDF / DOC",
+        "maxSize": "Max 10 MB"
+      },
+      "step2": {
+        "heading": "Schedule & Format",
+        "subheading": "Set when and how the session will be delivered",
+        "startDate": "Start Date",
+        "startDatePlaceholder": "dd/mm/yyyy",
+        "startTime": "Start Time",
+        "startTimePlaceholder": "--:--",
+        "endDate": "End Date",
+        "endDatePlaceholder": "dd/mm/yyyy",
+        "endTime": "End Time",
+        "endTimePlaceholder": "--:--",
+        "type": "Type",
+        "typeOptions": {
+          "offline": "Offline",
+          "online": "Online",
+          "hybrid": "Hybrid"
+        },
+        "venueLocation": "Venue Location",
+        "venuePlaceholder": "Venue name and address..."
+      },
+      "step3": {
+        "heading": "Review & Publish",
+        "sessionDetailsTitle": "Session Details",
+        "pillarLabel": "Pillar:",
+        "scheduleTitle": "Schedule",
+        "recurringLabel": "Recurring:",
+        "startLabel": "Start:",
+        "endLabel": "End:",
+        "formatLabel": "Format:",
+        "atText": "at",
+        "infoTitle": "Before you publish:",
+        "infoBullet1": "This support will be visible to all Coaches in the GBL network",
+        "infoBullet2": "Coaches can submit requests on behalf of participants",
+        "infoBullet3": "You'll receive notifications when requests are submitted",
+        "publishButton": "Publish Support"
+      },
+      "buttons": {
+        "previous": "Previous",
+        "continue": "Continue"
+      }
+    },
+    "forms": {
+      "sessionTitle": "Session Title *",
+      "sessionTitlePlaceholder": "e.g. Financial Literacy & Business Management Workshop",
+      "category": "Category / Sector *",
+      "categoryPlaceholder": "e.g. Livelihood & Skills",
+      "capacity": "Max Participant Capacity *",
+      "capacityPlaceholder": "e.g. 50",
+      "description": "Objectives & Description",
+      "descriptionPlaceholder": "Provide details about session goals, topics covered, and prerequisites...",
+      "cancel": "Cancel",
+      "createSession": "Create Session",
+      "successTitle": "Training Session Created Successfully!",
+      "successSub": "Redirecting back to dashboard...",
+      "returnToDashboard": "Return to Dashboard",
+      "genericDesc": "Manage and view your section configured for the Support Provider platform."
+    }
   }
 }
