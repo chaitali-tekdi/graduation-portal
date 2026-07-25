@@ -2333,6 +2333,8 @@
         },
         "sessionType": "Training / Session Type",
         "sessionTypePlaceholder": "Select session type",
+        "sessionTitle": "Training / Session Title",
+        "sessionTitlePlaceholder": "Describe this session...",
         "description": "Training / Session Description",
         "descriptionPlaceholder": "Describe what this session covers and what participants will learn...",
         "learningObjectives": "Learning Objectives",
@@ -2444,6 +2446,61 @@
       "step2": {
         "heading": "Review & Publish",
         "assetDetailsCardTitle": "Asset Details",
+        "infoTitle": "Before you publish:",
+        "infoBullet1": "This support will be visible to all Coaches in the GBL network",
+        "infoBullet2": "Coaches can submit requests on behalf of participants",
+        "infoBullet3": "You'll receive notifications when requests are submitted",
+        "publishButton": "Publish Support"
+      },
+      "buttons": {
+        "previous": "Previous",
+        "continue": "Continue"
+      }
+    },
+    "additionalService": {
+      "changeType": "Change Type",
+      "pageTitle": "Create Additional Service",
+      "badgeText": "Additional Service",
+      "progressLabel": "Progress",
+      "tabs": {
+        "serviceDetails": "Service Details",
+        "reviewPublish": "Review & Publish"
+      },
+      "step1": {
+        "heading": "Additional Service Details",
+        "subheading": "Fields marked * are required",
+        "province": "Province",
+        "provincePlaceholder": "Select province",
+        "site": "Site",
+        "sitePlaceholder": "Select province first",
+        "servicesCategory": "Services Category",
+        "servicesCategoryOptions": {
+          "specialAttention": "Special Attention",
+          "immediateAttention": "Immediate Attention",
+          "other": "Other"
+        },
+        "servicesTitle": "Services Title",
+        "servicesTitlePlaceholder": "Name of this service...",
+        "servicesDescription": "Services Description",
+        "servicesDescriptionPlaceholder": "Describe what this service provides and who it benefits...",
+        "serviceAvailability": "Service Availability",
+        "optionalTag": "(optional)",
+        "startDate": "Start Date",
+        "startDatePlaceholder": "dd/mm/yyyy",
+        "startTime": "Start Time",
+        "startTimePlaceholder": "--:--",
+        "endDate": "End Date",
+        "endDatePlaceholder": "dd/mm/yyyy",
+        "endTime": "End Time",
+        "endTimePlaceholder": "--:--",
+        "location": "Location where service is provided",
+        "locationPlaceholder": "Address or indicate 'Online / Remote'...",
+        "eligibility": "Eligibility Criteria",
+        "eligibilityPlaceholder": "Who can access this service? Any specific requirements?"
+      },
+      "step2": {
+        "heading": "Review & Publish",
+        "serviceDetailsCardTitle": "Service Details",
         "infoTitle": "Before you publish:",
         "infoBullet1": "This support will be visible to all Coaches in the GBL network",
         "infoBullet2": "Coaches can submit requests on behalf of participants",
