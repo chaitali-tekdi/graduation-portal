@@ -55,7 +55,14 @@
     "show6MonthlyTrend": "Show 6-Monthly Trend",
     "showMonthlyTrend": "Show Monthly Trend",
     "serverError500": "Something went wrong. Try again.",
-    "somethingWentWrong": "Something went wrong. Try again."
+    "somethingWentWrong": "Something went wrong. Try again.",
+    "incompleteModal": {
+      "title": "Incomplete Form",
+      "message": "Please complete all required fields.",
+      "instruction": "Click on any field below to jump directly to it:",
+      "ok": "Go Back to Form",
+      "icon": "AlertCircle"
+    }
   },
   "projectPlayer": {
     "onboarding": "Onboarding the",
@@ -2418,6 +2425,7 @@
         "provincePlaceholder": "Select province",
         "site": "Site",
         "sitePlaceholder": "Select province first",
+        "selectSitePlaceholder": "Select site",
         "assetType": "Asset Type",
         "assetTypeOptions": {
           "cash": "Cash",

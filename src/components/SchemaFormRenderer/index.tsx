@@ -28,6 +28,8 @@ import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { styles } from '../../screens/UserManagement/Styles';
 import { FORM_FIELD_TYPES } from '@constants/CREATE_USER_FORM_SCHEMA';
 import type { FormSection, FormField, ValidationRule } from '@constants/CREATE_USER_FORM_SCHEMA';
+import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
 
 // ─── Local FastInputField ─────────────────────────────────────────────────────
 // Inlined here to avoid a circular import from the parent screen module.
@@ -108,6 +110,14 @@ export interface SchemaFormRendererProps {
   t: (key: string, fallback?: string) => string;
   /** Optional ref forwarded to the first autoFocus field */
   firstNameRef?: React.RefObject<any>;
+  /** Overrides styles for standard text/textarea/date inputs */
+  inputStyle?: any;
+  /** Overrides styles for select dropdown inputs */
+  selectStyle?: any;
+  /** Overrides default label typography/style props */
+  labelStyle?: any;
+  /** Set to true to hide the default section header text/icon */
+  hideSectionHeaders?: boolean;
 }
 
 // ─── Validation Engine ────────────────────────────────────────────────────────
@@ -128,6 +138,15 @@ function isVisible(
     return ['supervisor', 'org_admin', 'lc', 'linkage champion', 'tenant_admin'].some(
       (k: string) => roleLabel.includes(k)
     );
+  }
+  // Training session: show sessionType when pillar is set and NOT 'Others'
+  if (visibleWhen.flag === 'pillarIsNotOthers') {
+    const p = (values.pillar || '').trim();
+    return p !== '' && p !== 'Others';
+  }
+  // Training session: show sessionTitle text-input when pillar IS 'Others'
+  if (visibleWhen.flag === 'pillarIsOthers') {
+    return (values.pillar || '').trim() === 'Others';
   }
   return true;
 }
@@ -278,6 +297,9 @@ interface FieldRendererProps {
   autoFocusRef?: React.RefObject<any>;
   isNested?: boolean;
   isEditMode?: boolean;
+  /** Propagated from SchemaFormRendererProps */
+  inputStyle?: any;
+  selectStyle?: any;
 }
 
 const FieldRenderer: React.FC<FieldRendererProps> = ({
@@ -295,7 +317,10 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   autoFocusRef,
   isNested = false,
   isEditMode = false,
+  inputStyle,
+  selectStyle,
 }) => {
+  const activeInputStyle = inputStyle || styles.createUserFormInput;
   const isFieldDisabled = disabled || !!field.disabled || (isEditMode && field.name === 'roleId');
 
   useEffect(() => {
@@ -333,7 +358,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
       <HStack
-        {...(styles.createUserFormInput as any)}
+        {...(activeInputStyle as any)}
         isInvalid={!!combinedError}
         isDisabled={disabled || field.disabled}
         alignItems="center"
@@ -360,6 +385,8 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
               toggleVisibilityGroup={toggleVisibilityGroup}
               autoFocusRef={autoFocusRef}
               isNested={true}
+              inputStyle={inputStyle}
+              selectStyle={selectStyle}
             />
           </React.Fragment>
         ))}
@@ -389,6 +416,97 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     );
   }
 
+  const primaryColor = SUPPORT_PROVIDER_CONFIG.branding.themePrimaryColor || theme.tokens.colors.primary500;
+
+  // ── Pills Selector ──────────────────────────────────────────────────────────
+  if (field.type === ('pills' as any)) {
+    const rawOptions = field.optionsSource ? (optionsMap[field.optionsSource] ?? []) : [];
+    const isPillar = field.name === 'pillar';
+
+    return (
+      <HStack space="xs" flexWrap="wrap" gap="$2" width="100%">
+        {rawOptions.map((option: any) => {
+          const isSelected = value === option.value;
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => onChange(field.name || '', option.value)}
+              flex={isPillar ? undefined : 1}
+              px={isPillar ? '$10' : undefined}
+              py="$2.5"
+              minWidth={isPillar ? 150 : undefined}
+              borderRadius="$md"
+              borderWidth={isPillar ? 1.5 : 1}
+              borderColor={isSelected ? primaryColor : '$borderLight300'}
+              bg={theme.tokens.colors.backgroundPrimary.light}
+              alignItems="center"
+              justifyContent="center"
+              $hover={{ borderColor: primaryColor }}
+              $web-style={{
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <HStack alignItems="center" space="xs">
+                {option.icon && (
+                  <LucideIcon
+                    name={option.icon}
+                    size={14}
+                    color={isSelected ? primaryColor : theme.tokens.colors.textMuted}
+                  />
+                )}
+                <Text
+                  color={isSelected ? primaryColor : '$textDark700'}
+                  {...TYPOGRAPHY.caption}
+                  fontWeight={isSelected ? '$bold' : '$medium'}
+                >
+                  {option.label}
+                </Text>
+              </HStack>
+            </Pressable>
+          );
+        })}
+      </HStack>
+    );
+  }
+
+  // ── Toggle Selector (Recurring Session) ────────────────────────────────────
+  if (field.type === ('toggle' as any)) {
+    const isSelected = value === 'Yes';
+    return (
+      <Pressable
+        onPress={() => onChange(field.name || '', isSelected ? 'No' : 'Yes')}
+        py="$2.5"
+        px="$3"
+        borderRadius="$md"
+        borderWidth={1.5}
+        borderColor={isSelected ? primaryColor : '$borderLight300'}
+        bg={theme.tokens.colors.backgroundPrimary.light}
+        $web-style={{ cursor: 'pointer' }}
+      >
+        <HStack alignItems="center" space="xs">
+          <Box
+            width={16}
+            height={16}
+            borderRadius={8}
+            borderWidth={isSelected ? 5 : 1.5}
+            borderColor={isSelected ? primaryColor : theme.tokens.colors.textMuted}
+            bg={theme.tokens.colors.backgroundPrimary.light}
+          />
+          <Text
+            color={isSelected ? primaryColor : '$textDark700'}
+            {...TYPOGRAPHY.caption}
+            fontWeight="$medium"
+          >
+            {isSelected
+              ? t('supportProvider.trainingSession.step1.recurringToggle', 'Yes — recurring session')
+              : t('supportProvider.trainingSession.step1.recurringToggleNo', 'No — one-off session')}
+          </Text>
+        </HStack>
+      </Pressable>
+    );
+  }
+
   const placeholder = field.placeholder?.fallback ?? '';
 
   // ── Select ──────────────────────────────────────────────────────────────────
@@ -412,7 +530,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box width={isNested ? 95 : '100%'} zIndex={field.zIndex ?? (isNested ? 1000 : 1)}>
         <Select
-          {...(isNested ? {} : styles.createUserFormSelect)}
+          {...(isNested ? {} : (selectStyle || styles.createUserFormSelect))}
           options={options}
           value={value}
           onChange={(val: string, _lbl: string) => onChange(field.name || '', val)}
@@ -433,7 +551,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box zIndex={field.zIndex ?? 999}>
         <DatePicker
-          {...styles.createUserFormInput}
+          {...(activeInputStyle as any)}
           placeholder={placeholder || 'YYYY-MM-DD'}
           value={displayValue}
           onChange={(date: string) => onChange(field.name || '', date.replace(/-/g, '_'))}
@@ -456,7 +574,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box position="relative">
         <Input
-          {...styles.createUserFormInput}
+          {...(activeInputStyle as any)}
           isInvalid={!!error}
           isDisabled={disabled || field.disabled}
           isReadOnly={field.isReadOnly}
@@ -494,7 +612,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
       <Textarea
-        {...(styles.createUserFormInput as any)}
+        {...(activeInputStyle as any)}
         isInvalid={!!error}
         isDisabled={disabled || field.disabled}
         isReadOnly={field.isReadOnly}
@@ -520,7 +638,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   return (
     <Input
-      {...(isNested ? {} : (styles.createUserFormInput as any))}
+      {...(isNested ? {} : (activeInputStyle as any))}
       isInvalid={!!error}
       isDisabled={isFieldDisabled}
       isReadOnly={field.isReadOnly}
@@ -563,6 +681,10 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   t,
   mode = "edit",
   firstNameRef,
+  inputStyle,
+  selectStyle,
+  labelStyle,
+  hideSectionHeaders = false,
 }) => {
   // Track password visibility per group
   const [visibilityGroups, setVisibilityGroups] = useState<Record<string, boolean>>({});
@@ -575,13 +697,15 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
     <VStack space="md" width="100%">
       {schema.map(section => (
         <VStack key={section.id} space="sm">
-          {/* Section header */}
-          <HStack space="xs" alignItems="center">
-            <LucideIcon name={section.icon as any} size={16} color="$textMutedForeground" />
-            <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontWeight="$normal">
-              {t(`admin.users.createUser.${section.title.key}`, section.title.fallback)}
-            </Text>
-          </HStack>
+          {/* Section header — hidden if hideSectionHeaders is true */}
+          {!hideSectionHeaders && (
+            <HStack space="xs" alignItems="center">
+              <LucideIcon name={section.icon as any} size={16} color="$textMutedForeground" />
+              <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontWeight="$normal">
+                {t(`admin.users.createUser.${section.title.key}`, section.title.fallback)}
+              </Text>
+            </HStack>
+          )}
 
           {/* Section rows */}
           {section.rows.map((row, rowIdx) => {
@@ -640,13 +764,28 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
 
                   // ── Normal form mode ──
                   return (
-                    <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
+                    <VStack
+                      key={field.name || field.label.key}
+                      id={field.name || undefined}
+                      nativeID={field.name || undefined}
+                      space="xs"
+                      flex={isMultiField ? 1 : undefined}
+                      width={!isMultiField ? '100%' : undefined}
+                    >
                       {/* Field label */}
                       {field.type !== FORM_FIELD_TYPES.NOTE && (
-                        <Text {...TYPOGRAPHY.caption} color="$textForeground" fontWeight="$bold">
-                          {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
-                          {field.required ? ' *' : ''}
-                        </Text>
+                        labelStyle ? (
+                          // Custom label style
+                          <Text {...labelStyle}>
+                            {field.label.fallback}
+                            {field.required ? <Text color="$error600"> *</Text> : ''}
+                          </Text>
+                        ) : (
+                          <Text {...TYPOGRAPHY.caption} color="$textForeground" fontWeight="$bold">
+                            {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                            {field.required ? ' *' : ''}
+                          </Text>
+                        )
                       )}
 
                       {/* Field input */}
@@ -663,6 +802,8 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
                         visibilityGroups={visibilityGroups}
                         toggleVisibilityGroup={toggleVisibilityGroup}
                         autoFocusRef={firstNameRef}
+                        inputStyle={inputStyle}
+                        selectStyle={selectStyle}
                       />
 
                       {/* Field error */}

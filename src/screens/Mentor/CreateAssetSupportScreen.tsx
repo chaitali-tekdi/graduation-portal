@@ -27,13 +27,21 @@ export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> =
     },
   ];
 
+  const handlePrev = () => {
+    if (activeStep > 1) {
+      setActiveStep(prev => prev - 1);
+    } else {
+      onNavigate('create_support');
+    }
+  };
+
   return (
     <ScrollView flex={1} bg="$backgroundLight50">
       {/* Top Stepper Header with Assets Tabs */}
       <FormStepperHeader
         activeStep={activeStep}
         setActiveStep={setActiveStep}
-        onNavigateBack={() => onNavigate('create_support')}
+        onNavigateBack={handlePrev}
         title={t('supportProvider.assetSupport.pageTitle') || 'Create Asset'}
         badgeText={t('supportProvider.assetSupport.badgeText') || 'Asset'}
         tabs={assetStepperTabs}

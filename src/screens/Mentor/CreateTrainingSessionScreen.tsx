@@ -1,17 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   HStack,
   Text,
   VStack,
-  Pressable,
   ScrollView,
-  Input,
-  InputField,
-  Textarea,
-  TextareaInput,
   Button,
   ButtonText,
+  Pressable,
 } from '@gluestack-ui/themed';
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
@@ -19,10 +15,47 @@ import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
 import { theme } from '@config/theme';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import FormStepperHeader from './components/FormStepperHeader';
+import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
+import { getSitesByProvince } from '../../services/usersService';
+import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
+import {
+  TRAINING_SESSION_STEP1_SCHEMA,
+  TRAINING_SESSION_STEP2_SCHEMA,
+} from '@constants/TRAINING_SESSION_DETAILS_SCHEMA';
+
+
+const MENTOR_INPUT_STYLE = {
+  variant: 'outline' as const,
+  size: 'md' as const,
+  bg: '$white' as const,
+  borderRadius: '$md' as const,
+  borderWidth: 1,
+  borderColor: '$borderLight300' as const,
+};
 
 interface CreateTrainingSessionScreenProps {
   onNavigate: (route: string) => void;
 }
+
+// ─── Pillar → Session Type mapping ───────────────────────────────────────────
+const PILLAR_SESSION_TYPES: Record<string, string[]> = {
+  'Social Empowerment': [
+    'Personal Mastery Training',
+    'Parenting Skills Training',
+    'GBV Awareness Session',
+    'Substance Abuse Awareness Session',
+  ],
+  'Financial Inclusion': ['Financial Literacy Training'],
+  Livelihoods: [
+    'Generate Your Business Idea Training',
+    'Start Your Business Training',
+    'Diversification Strategy',
+    'Market Growth Strategy',
+    'Livelihood Specific Training',
+    'Job Readiness Training',
+    'Technical/Vocational Training',
+  ],
+};
 
 export const CreateTrainingSessionScreen: React.FC<
   CreateTrainingSessionScreenProps
@@ -34,63 +67,143 @@ export const CreateTrainingSessionScreen: React.FC<
   // Active step tab (1: Details, 2: Schedule & Format, 3: Review & Publish)
   const [activeStep, setActiveStep] = useState<number>(1);
 
-  // Step 1 Form States with Required Defaults
-  const [province, setProvince] = useState('');
-  const [site, setSite] = useState('');
-  const [pillar, setPillar] = useState('');
-  const PILLAR_SESSION_TYPES: Record<string, string[]> = {
-    'Social Empowerment': [
-      'Personal Mastery Training',
-      'Parenting Skills Training',
-      'GBV Awareness Session',
-      'Substance Abuse Awareness Session',
-    ],
-    'Financial Inclusion': [
-      'Financial Literacy Training',
-    ],
-    'Livelihoods': [
-      'Generate Your Business Idea Training',
-      'Start Your Business Training',
-      'Diversification Strategy',
-      'Market Growth Strategy',
-      'Livelihood Specific Training',
-      'Job Readiness Training',
-      'Technical/Vocational Training',
-    ],
-  };
-
-  const [isSessionTypeOpen, setIsSessionTypeOpen] = useState(false);
-  const [sessionType, setSessionType] = useState('');
-  const [description, setDescription] = useState('');
-  const [learningObjectives, setLearningObjectives] = useState('');
-  const [targetAudience, setTargetAudience] = useState('Participant'); // Participant selected by default
-  const [certificateProvided, setCertificateProvided] = useState('Yes'); // Yes selected by default
-  const [maxCapacity, setMaxCapacity] = useState('20');
-  const [isRecurring, setIsRecurring] = useState(false); // Can be toggled Yes/No matching Image 7 & 9
+  // Dynamic Province & Site
+  const { provinces: dynamicProvinces } = useUserManagementFilters({});
+  const [dynamicSites, setDynamicSites] = useState<any[]>([]);
 
   // File Upload State
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  // Step 2 Form States
-  const [startDate, setStartDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [formatType, setFormatType] = useState('Offline');
-  const [venueLocation, setVenueLocation] = useState('');
+  // ─── Unified form state ───────────────────────────────────────────────────
+  const [values, setValues] = useState<Record<string, string>>({
+    province: '',
+    site: '',
+    pillar: '',
+    sessionType: '',
+    sessionTitle: '',
+    description: '',
+    learningObjectives: '',
+    targetAudience: '',
+    certificateProvided: '',
+    maxCapacity: '',
+    recurringSession: 'Yes',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    formatType: 'Offline',
+    venueLocation: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Step 3 Submission State
+  const handleFieldChange = useCallback((name: string, value: string) => {
+    setValues(prev => {
+      const next = { ...prev, [name]: value };
+      // When province changes, reset site
+      if (name === 'province') next.site = '';
+      // When pillar changes, reset session type/title
+      if (name === 'pillar') {
+        next.sessionType = '';
+        next.sessionTitle = '';
+      }
+      return next;
+    });
+    setErrors(prev => ({ ...prev, [name]: '' }));
+  }, []);
+
+  // Fetch sites when province changes
+  useEffect(() => {
+    if (!values.province) {
+      setDynamicSites([]);
+      return;
+    }
+    getSitesByProvince({ provinceId: values.province, page: 1, limit: 100 })
+      .then(res => setDynamicSites(res.result?.data || []))
+      .catch(() => setDynamicSites([]));
+  }, [values.province]);
+
+  // ─── Options map ─────────────────────────────────────────────────────────
+  const optionsMap = useMemo(() => {
+    const provinceOpts =
+      dynamicProvinces && dynamicProvinces.length > 0
+        ? dynamicProvinces.map((p: any) => ({
+          value: p._id || p.id || p.name,
+          label: p.name || p.label,
+        }))
+        : [];
+
+    const siteOpts = dynamicSites
+      ? dynamicSites.map((s: any) => ({
+        value: s._id || s.id || s.name,
+        label: s.name || s.label,
+      }))
+      : [];
+
+    // Session types filtered by selected pillar
+    const selectedPillar = values.pillar;
+    const sessionTypeOpts = selectedPillar && selectedPillar !== 'Others'
+      ? (PILLAR_SESSION_TYPES[selectedPillar] || []).map(v => ({ value: v, label: v }))
+      : [];
+
+    return {
+      provinces: provinceOpts,
+      sites: siteOpts,
+      pillars: [
+        { value: 'Social Empowerment', label: t('supportProvider.trainingSession.step1.pillars.socialEmpowerment') || 'Social Empowerment' },
+        { value: 'Financial Inclusion', label: t('supportProvider.trainingSession.step1.pillars.financialInclusion') || 'Financial Inclusion' },
+        { value: 'Livelihoods', label: t('supportProvider.trainingSession.step1.pillars.livelihoods') || 'Livelihoods' },
+        { value: 'Others', label: t('supportProvider.trainingSession.step1.pillars.others') || 'Others' },
+      ],
+      sessionTypes: sessionTypeOpts,
+      targetAudienceOptions: [
+        { value: 'Coach', label: t('supportProvider.trainingSession.step1.targetAudienceOptions.coach') || 'Coach' },
+        { value: 'Participant', label: t('supportProvider.trainingSession.step1.targetAudienceOptions.participant') || 'Participant' },
+        { value: 'Both', label: t('supportProvider.trainingSession.step1.targetAudienceOptions.both') || 'Both' },
+      ],
+      certificateOptions: [
+        { value: 'Yes', label: t('supportProvider.trainingSession.step1.certificateOptions.yes') || 'Yes' },
+        { value: 'No', label: t('supportProvider.trainingSession.step1.certificateOptions.no') || 'No' },
+      ],
+      recurringOptions: [
+        { value: 'Yes', label: t('supportProvider.trainingSession.step1.recurringToggle') || 'Yes — recurring session' },
+        { value: 'No', label: t('supportProvider.trainingSession.step1.recurringToggleNo') || 'No — one-off session' },
+      ],
+      formatOptions: [
+        { value: 'Offline', label: t('supportProvider.trainingSession.step2.typeOptions.offline') || 'Offline', icon: 'MapPin' },
+        { value: 'Online', label: t('supportProvider.trainingSession.step2.typeOptions.online') || 'Online', icon: 'Video' },
+        { value: 'Hybrid', label: t('supportProvider.trainingSession.step2.typeOptions.hybrid') || 'Hybrid', icon: 'Users' },
+      ],
+    };
+  }, [dynamicProvinces, dynamicSites, values.pillar, t]);
+
+
+  const validateStep = useCallback((schemaToValidate: any[]) => {
+    const validationErrs = validateSchema(schemaToValidate, values, optionsMap);
+    if (Object.keys(validationErrs).length > 0) {
+      setErrors(validationErrs);
+      return false;
+    }
+    setErrors({});
+    return true;
+  }, [values, optionsMap]);
+
+  // ─── Step navigation ──────────────────────────────────────────────────────
   const [isPublished, setIsPublished] = useState(false);
-
-  // Button text
   const previousText = t('supportProvider.trainingSession.buttons.previous') || 'Previous';
   const continueText = t('supportProvider.trainingSession.buttons.continue') || 'Continue';
 
   const handleNext = () => {
-    if (activeStep < 3) {
-      setActiveStep(prev => prev + 1);
+    if (activeStep === 1) {
+      const isValid = validateStep(TRAINING_SESSION_STEP1_SCHEMA);
+      if (!isValid) return;
+      setActiveStep(2);
+    } else if (activeStep === 2) {
+      const isValid = validateStep(TRAINING_SESSION_STEP2_SCHEMA);
+      if (!isValid) return;
+      setActiveStep(3);
     } else {
+      setErrors({});
       setIsPublished(true);
       setTimeout(() => {
         onNavigate('dashboard');
@@ -108,9 +221,7 @@ export const CreateTrainingSessionScreen: React.FC<
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFileName(file.name);
-    }
+    if (file) setSelectedFileName(file.name);
   };
 
   const handleUploadClick = () => {
@@ -119,7 +230,7 @@ export const CreateTrainingSessionScreen: React.FC<
 
   return (
     <ScrollView flex={1} bg="$backgroundLight50">
-      {/* Hidden Native File Input for Cross-Platform Web Support */}
+      {/* Hidden Native File Input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -128,11 +239,11 @@ export const CreateTrainingSessionScreen: React.FC<
         onChange={handleFileChange}
       />
 
-      {/* Modular Form Header & Stepper Section with Full-Width Divider */}
+      {/* Form Header & Stepper */}
       <FormStepperHeader
         activeStep={activeStep}
         setActiveStep={setActiveStep}
-        onNavigateBack={() => onNavigate('create_support')}
+        onNavigateBack={handlePrev}
       />
 
       {/* Main Container - Aligned to Form Width (760px) */}
@@ -162,7 +273,7 @@ export const CreateTrainingSessionScreen: React.FC<
           elevation={2}
           mb="$6"
         >
-          {/* STEP 1: Session Details */}
+          {/* ── STEP 1: Session Details ─────────────────────────────────── */}
           {activeStep === 1 && (
             <VStack space="lg">
               <VStack space="xs" mb="$2">
@@ -174,388 +285,21 @@ export const CreateTrainingSessionScreen: React.FC<
                 </Text>
               </VStack>
 
-              {/* Province & Site Row */}
-              <HStack space="md" flexDirection="column" $md-flexDirection="row">
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step1.province') || 'Province'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input
-                    borderRadius="$md"
-                    borderColor="$borderLight300"
-                    $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                  >
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step1.provincePlaceholder') || 'Select province'}
-                      value={province}
-                      onChangeText={setProvince}
-                    />
-                    <Box pr="$3" justifyContent="center">
-                      <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
-                    </Box>
-                  </Input>
-                </VStack>
+              {/* All Step 1 fields — schema-driven */}
+              <SchemaFormRenderer
+                schema={TRAINING_SESSION_STEP1_SCHEMA}
+                values={values}
+                errors={errors}
+                onFieldChange={handleFieldChange}
+                optionsMap={optionsMap}
+                t={t}
+                inputStyle={MENTOR_INPUT_STYLE}
+                selectStyle={MENTOR_INPUT_STYLE}
+                labelStyle={{ fontSize: '$sm', fontWeight: '$medium', color: '$textDark800' }}
+                hideSectionHeaders={true}
+              />
 
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step1.site') || 'Site'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input
-                    borderRadius="$md"
-                    borderColor="$borderLight300"
-                    $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                  >
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step1.sitePlaceholder') || 'Select province first'}
-                      value={site}
-                      onChangeText={setSite}
-                    />
-                    <Box pr="$3" justifyContent="center">
-                      <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
-                    </Box>
-                  </Input>
-                </VStack>
-              </HStack>
-
-              {/* Pillar Selector Pills */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step1.pillar') || 'Pillar'}{' '}
-                  <Text color={theme.tokens.colors.error600}>*</Text>
-                </Text>
-                <HStack space="xs" flexWrap="wrap" gap="$2">
-                  {[
-                    t('supportProvider.trainingSession.step1.pillars.socialEmpowerment') || 'Social Empowerment',
-                    t('supportProvider.trainingSession.step1.pillars.financialInclusion') || 'Financial Inclusion',
-                    t('supportProvider.trainingSession.step1.pillars.livelihoods') || 'Livelihoods',
-                    t('supportProvider.trainingSession.step1.pillars.others') || 'Others',
-                  ].map(option => {
-                    const isSelected = pillar === option;
-                    return (
-                      <Pressable
-                        key={option}
-                        onPress={() => {
-                          setPillar(option);
-                          setSessionType('');
-                          setIsSessionTypeOpen(false);
-                        }}
-                        px="$4"
-                        py="$2.5"
-                        borderRadius="$md"
-                        borderWidth={1.5}
-                        borderColor={isSelected ? primaryColor : '$borderLight300'}
-                        bg={theme.tokens.colors.backgroundPrimary.light}
-                        $hover={{ borderColor: primaryColor }}
-                        $web-style={{
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        <Text
-                          color={isSelected ? primaryColor : '$textDark700'}
-                          {...TYPOGRAPHY.caption}
-                          fontWeight={isSelected ? '$bold' : '$medium'}
-                        >
-                          {option}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </HStack>
-              </VStack>
-
-              {/* Training / Session Type Dropdown (Appears only after Pillar selection) */}
-              {pillar !== '' && (
-                pillar === 'Others' || pillar === (t('supportProvider.trainingSession.step1.pillars.others') || 'Others') ? (
-                  <VStack space="xs">
-                    <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                      {t('supportProvider.trainingSession.step1.sessionTitle') || 'Training / Session Title'}{' '}
-                      <Text color={theme.tokens.colors.error600}>*</Text>
-                    </Text>
-                    <Input
-                      borderRadius="$md"
-                      borderColor="$borderLight300"
-                      $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                    >
-                      <InputField
-                        placeholder={t('supportProvider.trainingSession.step1.sessionTitlePlaceholder') || 'Describe this session...'}
-                        value={sessionType}
-                        onChangeText={setSessionType}
-                      />
-                    </Input>
-                  </VStack>
-                ) : (
-                  <VStack space="xs" position="relative" zIndex={10}>
-                    <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                      {t('supportProvider.trainingSession.step1.sessionType') || 'Training / Session Type'}{' '}
-                      <Text color={theme.tokens.colors.error600}>*</Text>
-                    </Text>
-                    <Pressable
-                      onPress={() => setIsSessionTypeOpen(prev => !prev)}
-                      $web-style={{ cursor: 'pointer' }}
-                    >
-                      <Input
-                        borderRadius="$md"
-                        borderColor={isSessionTypeOpen ? primaryColor : '$borderLight300'}
-                        isReadOnly
-                        pointerEvents="none"
-                        $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                      >
-                        <InputField
-                          placeholder={t('supportProvider.trainingSession.step1.sessionTypePlaceholder') || 'Select session type'}
-                          value={sessionType}
-                          editable={false}
-                        />
-                        <Box pr="$3" justifyContent="center">
-                          <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
-                        </Box>
-                      </Input>
-                    </Pressable>
-
-                    {/* Filtered Dropdown Panel based on Selected Pillar */}
-                    {isSessionTypeOpen && (
-                      <Box
-                        position="absolute"
-                        top="100%"
-                        left={0}
-                        right={0}
-                        mt="$1"
-                        bg={theme.tokens.colors.backgroundPrimary.light}
-                        borderRadius="$lg"
-                        borderWidth={1}
-                        borderColor="$borderLight200"
-                        shadowColor="$shadowColor"
-                        shadowOffset={{ width: 0, height: 4 }}
-                        shadowOpacity={0.1}
-                        shadowRadius={12}
-                        elevation={5}
-                        zIndex={100}
-                        overflow="hidden"
-                      >
-                        <VStack py="$1">
-                          {(
-                            PILLAR_SESSION_TYPES[pillar] ||
-                            PILLAR_SESSION_TYPES['Social Empowerment'] ||
-                            []
-                          ).map(option => {
-                            const isSelected = sessionType === option;
-                            return (
-                              <Pressable
-                                key={option}
-                                onPress={() => {
-                                  setSessionType(option);
-                                  setIsSessionTypeOpen(false);
-                                }}
-                                px="$4"
-                                py="$3"
-                                bg={isSelected ? theme.tokens.colors.primary100 : theme.tokens.colors.backgroundPrimary.light}
-                                $hover={{ bg: isSelected ? theme.tokens.colors.primary100 : theme.tokens.colors.hoverBackground }}
-                                $web-style={{ cursor: 'pointer' }}
-                              >
-                                <Text
-                                  color={isSelected ? primaryColor : '$textDark800'}
-                                  {...TYPOGRAPHY.bodySmall}
-                                  fontWeight={isSelected ? '$bold' : '$medium'}
-                                >
-                                  {option}
-                                </Text>
-                              </Pressable>
-                            );
-                          })}
-                        </VStack>
-                      </Box>
-                    )}
-                  </VStack>
-                )
-              )}
-
-              {/* Training / Session Description */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step1.description') || 'Training / Session Description'}{' '}
-                  <Text color={theme.tokens.colors.error600}>*</Text>
-                </Text>
-                <Textarea
-                  borderRadius="$md"
-                  borderColor="$borderLight300"
-                  minHeight={90}
-                  $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                >
-                  <TextareaInput
-                    placeholder={
-                      t('supportProvider.trainingSession.step1.descriptionPlaceholder') ||
-                      'Describe what this session covers and what participants will learn...'
-                    }
-                    value={description}
-                    onChangeText={setDescription}
-                  />
-                </Textarea>
-              </VStack>
-
-              {/* Learning Objectives */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step1.learningObjectives') || 'Learning Objectives'}{' '}
-                  <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
-                    {t('supportProvider.trainingSession.step1.optionalTag') || '(optional)'}
-                  </Text>
-                </Text>
-                <Textarea
-                  borderRadius="$md"
-                  borderColor="$borderLight300"
-                  minHeight={90}
-                  $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                >
-                  <TextareaInput
-                    placeholder={
-                      t('supportProvider.trainingSession.step1.learningObjectivesPlaceholder') ||
-                      'List the key learning outcomes, one per line...'
-                    }
-                    value={learningObjectives}
-                    onChangeText={setLearningObjectives}
-                  />
-                </Textarea>
-              </VStack>
-
-              {/* Target Audience Pills (Participant selected by default) */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step1.targetAudience') || 'Target Audience'}{' '}
-                  <Text color={theme.tokens.colors.error600}>*</Text>
-                </Text>
-                <HStack space="xs" gap="$2">
-                  {[
-                    t('supportProvider.trainingSession.step1.targetAudienceOptions.coach') || 'Coach',
-                    t('supportProvider.trainingSession.step1.targetAudienceOptions.participant') || 'Participant',
-                    t('supportProvider.trainingSession.step1.targetAudienceOptions.both') || 'Both',
-                  ].map(option => {
-                    const isSelected = targetAudience === option;
-                    return (
-                      <Pressable
-                        key={option}
-                        onPress={() => setTargetAudience(option)}
-                        flex={1}
-                        py="$2.5"
-                        borderRadius="$md"
-                        borderWidth={1}
-                        borderColor={isSelected ? primaryColor : '$borderLight300'}
-                        bg={theme.tokens.colors.backgroundPrimary.light}
-                        alignItems="center"
-                        $web-style={{ cursor: 'pointer' }}
-                      >
-                        <Text
-                          color={isSelected ? primaryColor : '$textDark700'}
-                          {...TYPOGRAPHY.caption}
-                          fontWeight={isSelected ? '$bold' : '$medium'}
-                        >
-                          {option}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </HStack>
-              </VStack>
-
-              {/* Certificate Provided Pills (Yes selected by default) */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step1.certificate') || 'Certificate Provided'}{' '}
-                  <Text color={theme.tokens.colors.error600}>*</Text>
-                </Text>
-                <HStack space="xs" gap="$2">
-                  {[
-                    t('supportProvider.trainingSession.step1.certificateOptions.yes') || 'Yes',
-                    t('supportProvider.trainingSession.step1.certificateOptions.no') || 'No',
-                  ].map(option => {
-                    const isSelected = certificateProvided === option;
-                    return (
-                      <Pressable
-                        key={option}
-                        onPress={() => setCertificateProvided(option)}
-                        flex={1}
-                        py="$2.5"
-                        borderRadius="$md"
-                        borderWidth={1}
-                        borderColor={isSelected ? primaryColor : '$borderLight300'}
-                        bg={theme.tokens.colors.backgroundPrimary.light}
-                        alignItems="center"
-                        $web-style={{ cursor: 'pointer' }}
-                      >
-                        <Text
-                          color={isSelected ? primaryColor : '$textDark700'}
-                          {...TYPOGRAPHY.caption}
-                          fontWeight={isSelected ? '$bold' : '$medium'}
-                        >
-                          {option}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </HStack>
-              </VStack>
-
-              {/* Capacity & Recurring Session Row matching Image 7 & Image 9 */}
-              <HStack space="md" flexDirection="column" $md-flexDirection="row" alignItems="flex-end">
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step1.maxCapacity') || 'Maximum Capacity'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input
-                    borderRadius="$md"
-                    borderColor="$borderLight300"
-                    $focus={{ borderColor: primaryColor, shadowColor: primaryColor, shadowOpacity: 0.1 }}
-                  >
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step1.maxCapacityPlaceholder') || 'e.g. 20'}
-                      keyboardType="numeric"
-                      value={maxCapacity}
-                      onChangeText={setMaxCapacity}
-                    />
-                  </Input>
-                </VStack>
-
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step1.recurringSession') || 'Recurring Session'}
-                  </Text>
-                  <Pressable
-                    onPress={() => setIsRecurring(prev => !prev)}
-                    py="$2.5"
-                    px="$3"
-                    borderRadius="$md"
-                    borderWidth={1.5}
-                    borderColor={isRecurring ? primaryColor : '$borderLight300'}
-                    bg={theme.tokens.colors.backgroundPrimary.light}
-                    $web-style={{ cursor: 'pointer' }}
-                  >
-                    <HStack alignItems="center" space="xs">
-                      {/* Radio button icon matching Image 7 & 9 */}
-                      <Box
-                        width={16}
-                        height={16}
-                        borderRadius={8}
-                        borderWidth={isRecurring ? 5 : 1.5}
-                        borderColor={isRecurring ? primaryColor : theme.tokens.colors.textMuted}
-                        bg={theme.tokens.colors.backgroundPrimary.light}
-                      />
-                      <Text
-                        color={isRecurring ? primaryColor : '$textDark700'}
-                        {...TYPOGRAPHY.caption}
-                        fontWeight="$medium"
-                      >
-                        {isRecurring
-                          ? t('supportProvider.trainingSession.step1.recurringToggle') || 'Yes — recurring session'
-                          : t('supportProvider.trainingSession.step1.recurringToggleNo') || 'No — one-off session'}
-                      </Text>
-                    </HStack>
-                  </Pressable>
-                </VStack>
-              </HStack>
-
-              {/* Resource Content Upload Box matching Reference Images */}
+              {/* Resource Content Upload (no schema equivalent — file input) */}
               <VStack space="xs">
                 <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.resourceContent') || 'Resource Content'}{' '}
@@ -568,7 +312,6 @@ export const CreateTrainingSessionScreen: React.FC<
                 </Text>
 
                 <Pressable
-                  onPress={handleUploadClick}
                   borderWidth={1}
                   borderStyle="dashed"
                   borderColor="$borderLight300"
@@ -579,9 +322,10 @@ export const CreateTrainingSessionScreen: React.FC<
                   bg="$backgroundLight50"
                   $hover={{ bg: '$backgroundLight100', borderColor: primaryColor }}
                   $web-style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
+                  onPress={handleUploadClick}
                 >
                   <VStack alignItems="center" space="xs">
-                    <LucideIcon name="UploadCloud" size={28} color={theme.tokens.colors.textMuted} />
+                    <LucideIcon name="Upload" size={28} color={theme.tokens.colors.textMuted} />
                     <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium" mt="$1">
                       {selectedFileName || (t('supportProvider.trainingSession.step1.uploadPrompt') || 'Click to upload PDF / DOC')}
                     </Text>
@@ -594,7 +338,7 @@ export const CreateTrainingSessionScreen: React.FC<
             </VStack>
           )}
 
-          {/* STEP 2: Schedule & Format */}
+          {/* ── STEP 2: Schedule & Format ───────────────────────────────── */}
           {activeStep === 2 && (
             <VStack space="lg">
               <VStack space="xs" mb="$2">
@@ -606,141 +350,23 @@ export const CreateTrainingSessionScreen: React.FC<
                 </Text>
               </VStack>
 
-              {/* Start Date & Time */}
-              <HStack space="md" flexDirection="column" $md-flexDirection="row">
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step2.startDate') || 'Start Date'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input borderRadius="$md" borderColor="$borderLight100">
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step2.startDatePlaceholder') || 'dd/mm/yyyy'}
-                      value={startDate}
-                      onChangeText={setStartDate}
-                    />
-                  </Input>
-                </VStack>
-
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step2.startTime') || 'Start Time'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input borderRadius="$md" borderColor="$borderLight100">
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step2.startTimePlaceholder') || '--:--'}
-                      value={startTime}
-                      onChangeText={setStartTime}
-                    />
-                  </Input>
-                </VStack>
-              </HStack>
-
-              {/* End Date & Time */}
-              <HStack space="md" flexDirection="column" $md-flexDirection="row">
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step2.endDate') || 'End Date'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input borderRadius="$md" borderColor="$borderLight300">
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step2.endDatePlaceholder') || 'dd/mm/yyyy'}
-                      value={endDate}
-                      onChangeText={setEndDate}
-                    />
-                  </Input>
-                </VStack>
-
-                <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                    {t('supportProvider.trainingSession.step2.endTime') || 'End Time'}{' '}
-                    <Text color={theme.tokens.colors.error600}>*</Text>
-                  </Text>
-                  <Input borderRadius="$md" borderColor="$borderLight300">
-                    <InputField
-                      placeholder={t('supportProvider.trainingSession.step2.endTimePlaceholder') || '--:--'}
-                      value={endTime}
-                      onChangeText={setEndTime}
-                    />
-                  </Input>
-                </VStack>
-              </HStack>
-
-              {/* Type (Offline, Online, Hybrid) */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step2.type') || 'Type'}{' '}
-                  <Text color={theme.tokens.colors.error600}>*</Text>
-                </Text>
-                <HStack space="xs" gap="$2">
-                  {[
-                    {
-                      label: t('supportProvider.trainingSession.step2.typeOptions.offline') || 'Offline',
-                      icon: 'MapPin',
-                    },
-                    {
-                      label: t('supportProvider.trainingSession.step2.typeOptions.online') || 'Online',
-                      icon: 'Video',
-                    },
-                    {
-                      label: t('supportProvider.trainingSession.step2.typeOptions.hybrid') || 'Hybrid',
-                      icon: 'Users',
-                    },
-                  ].map(option => (
-                    <Pressable
-                      key={option.label}
-                      onPress={() => setFormatType(option.label)}
-                      flex={1}
-                      py="$2.5"
-                      borderRadius="$md"
-                      borderWidth={1}
-                      borderColor={formatType === option.label ? primaryColor : '$borderLight300'}
-                      bg={theme.tokens.colors.backgroundPrimary.light}
-                      alignItems="center"
-                      $web-style={{ cursor: 'pointer' }}
-                    >
-                      <HStack alignItems="center" space="xs">
-                        <LucideIcon
-                          name={option.icon}
-                          size={14}
-                          color={formatType === option.label ? primaryColor : theme.tokens.colors.textMuted}
-                        />
-                        <Text
-                          color={formatType === option.label ? primaryColor : '$textDark700'}
-                          {...TYPOGRAPHY.caption}
-                          fontWeight={formatType === option.label ? '$bold' : '$medium'}
-                        >
-                          {option.label}
-                        </Text>
-                      </HStack>
-                    </Pressable>
-                  ))}
-                </HStack>
-              </VStack>
-
-              {/* Venue Location */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step2.venueLocation') || 'Venue Location'}{' '}
-                  <Text color={theme.tokens.colors.error600}>*</Text>
-                </Text>
-                <Input borderRadius="$md" borderColor="$borderLight300">
-                  <InputField
-                    placeholder={
-                      t('supportProvider.trainingSession.step2.venuePlaceholder') ||
-                      'Venue name and address...'
-                    }
-                    value={venueLocation}
-                    onChangeText={setVenueLocation}
-                  />
-                </Input>
-              </VStack>
+              {/* All Step 2 fields — schema-driven */}
+              <SchemaFormRenderer
+                schema={TRAINING_SESSION_STEP2_SCHEMA}
+                values={values}
+                errors={errors}
+                onFieldChange={handleFieldChange}
+                optionsMap={optionsMap}
+                t={t}
+                inputStyle={MENTOR_INPUT_STYLE}
+                selectStyle={MENTOR_INPUT_STYLE}
+                labelStyle={{ fontSize: '$sm', fontWeight: '$medium', color: '$textDark800' }}
+                hideSectionHeaders={true}
+              />
             </VStack>
           )}
 
-          {/* STEP 3: Review & Publish matching Image 8 */}
+          {/* ── STEP 3: Review & Publish ────────────────────────────────── */}
           {activeStep === 3 && (
             <VStack space="lg">
               <VStack space="xs" mb="$2">
@@ -768,7 +394,7 @@ export const CreateTrainingSessionScreen: React.FC<
                 </Box>
               ) : (
                 <VStack space="md">
-                  {/* Session Details Summary matching Image 8 */}
+                  {/* Session Details Summary */}
                   <Box
                     borderWidth={1}
                     borderColor="$borderLight200"
@@ -785,7 +411,7 @@ export const CreateTrainingSessionScreen: React.FC<
                           {t('supportProvider.trainingSession.step3.pillarLabel') || 'Pillar:'}
                         </Text>
                         <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {pillar}
+                          {values.pillar || '-'}
                         </Text>
                       </HStack>
 
@@ -794,13 +420,13 @@ export const CreateTrainingSessionScreen: React.FC<
                           {t('supportProvider.trainingSession.step3.recurringLabel') || 'Recurring:'}
                         </Text>
                         <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {isRecurring ? 'Yes' : 'No'}
+                          {values.recurringSession || 'No'}
                         </Text>
                       </HStack>
                     </VStack>
                   </Box>
 
-                  {/* Schedule Summary matching Image 8 */}
+                  {/* Schedule Summary */}
                   <Box
                     borderWidth={1}
                     borderColor="$borderLight200"
@@ -817,7 +443,7 @@ export const CreateTrainingSessionScreen: React.FC<
                           {t('supportProvider.trainingSession.step3.startLabel') || 'Start:'}
                         </Text>
                         <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {startDate} {startDate && startTime ? t('supportProvider.trainingSession.step3.atText') || 'at' : ''} {startTime}
+                          {values.startDate}{values.startDate && values.startTime ? ` ${t('supportProvider.trainingSession.step3.atText') || 'at'} ` : ''}{values.startTime}
                         </Text>
                       </HStack>
 
@@ -826,7 +452,7 @@ export const CreateTrainingSessionScreen: React.FC<
                           {t('supportProvider.trainingSession.step3.endLabel') || 'End:'}
                         </Text>
                         <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {endDate} {endDate && endTime ? t('supportProvider.trainingSession.step3.atText') || 'at' : ''} {endTime}
+                          {values.endDate}{values.endDate && values.endTime ? ` ${t('supportProvider.trainingSession.step3.atText') || 'at'} ` : ''}{values.endTime}
                         </Text>
                       </HStack>
 
@@ -835,13 +461,13 @@ export const CreateTrainingSessionScreen: React.FC<
                           {t('supportProvider.trainingSession.step3.formatLabel') || 'Format:'}
                         </Text>
                         <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {formatType}
+                          {values.formatType}
                         </Text>
                       </HStack>
                     </VStack>
                   </Box>
 
-                  {/* Info Warning Banner matching Image 8 */}
+                  {/* Info Banner */}
                   <Box
                     bg={theme.tokens.colors.blue50}
                     borderWidth={1}
@@ -874,7 +500,7 @@ export const CreateTrainingSessionScreen: React.FC<
           )}
         </Box>
 
-        {/* Bottom Action Navigation Buttons OUTSIDE the form container matching Images 7, 8, 9 */}
+        {/* Bottom Action Navigation Buttons */}
         <HStack justifyContent="space-between" alignItems="center" width="100%">
           <Button
             variant="outline"
