@@ -257,13 +257,13 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                   </HStack>
                   <VStack space="xs" pl="$5">
                     <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
-                      • {t('supportProvider.assetsForm.step3.infoBullet1') || 'This support will be visible to all Coaches in the GBL network'}
+                      {t('supportProvider.assetSupport.step2.infoBullet1', 'This support will be visible to all Coaches in the GBL network')}
                     </Text>
                     <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
-                      • {t('supportProvider.assetsForm.step3.infoBullet2') || 'Coaches can submit requests on behalf of participants'}
+                      {t('supportProvider.assetSupport.step2.infoBullet2', 'Coaches can submit requests on behalf of participants')}
                     </Text>
                     <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
-                      • {t('supportProvider.assetsForm.step3.infoBullet3') || "You'll receive notifications when requests are submitted"}
+                      {t('supportProvider.assetSupport.step2.infoBullet3', "You'll receive notifications when requests are submitted")}
                     </Text>
                   </VStack>
                 </Box>

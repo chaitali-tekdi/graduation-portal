@@ -11,20 +11,25 @@
 
 export interface ValidationRule {
   rule:
-    | 'required'
-    | 'email'
-    | 'minLength'
-    | 'maxLength'
-    | 'pattern'
-    | 'matchField'
-    | 'dateNotInFuture';
+  | 'required'
+  | 'email'
+  | 'minLength'
+  | 'maxLength'
+  | 'pattern'
+  | 'matchField'
+  | 'dateNotInFuture';
   /** Numeric or string payload depending on rule (e.g. minLength value, pattern string, field name) */
   value?: number | string;
   message: { key: string; fallback: string };
 }
 
 export interface VisibleWhenFlag {
-  flag: string;
+  /** Named flag for complex logic (e.g. role-based checks). Use field/value for simple comparisons. */
+  flag?: string;
+  /** Show the row/field only when this form field's value equals `value` (or differs, when `not: true`) */
+  field?: string;
+  value?: string;
+  not?: boolean;
 }
 
 export interface DisabledWhenCondition {
@@ -158,7 +163,7 @@ export const CREATE_USER_FORM_SCHEMA: FormSection[] = [
             validation: [
               {
                 rule: 'required',
-                message: {key: 'errors.nationalIdRequired', fallback: 'National ID is required'},
+                message: { key: 'errors.nationalIdRequired', fallback: 'National ID is required' },
               },
             ],
           },

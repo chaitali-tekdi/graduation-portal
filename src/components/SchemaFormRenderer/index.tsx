@@ -126,28 +126,35 @@ export interface SchemaFormRendererProps {
  * Helper to check visibility of a field or row based on schema rules.
  */
 function isVisible(
-  visibleWhen: { flag: string } | undefined,
+  visibleWhen: { flag?: string; field?: string; value?: string; not?: boolean } | undefined,
   values: Record<string, string>,
   optionsMap: OptionsMap
 ): boolean {
-  if (!visibleWhen?.flag) return true;
-  if (visibleWhen.flag === 'isSupervisorOrLC') {
-    const roleId = values.roleId || '';
-    const selectedRole = optionsMap.roles?.find((r: any) => r.value === roleId);
-    const roleLabel = (selectedRole?.label || '').toLowerCase();
-    return ['supervisor', 'org_admin', 'lc', 'linkage champion', 'tenant_admin'].some(
-      (k: string) => roleLabel.includes(k)
-    );
+  if (!visibleWhen) return true;
+
+  // Named flag — for complex logic that can't be expressed as a simple comparison
+  if (visibleWhen.flag) {
+    if (visibleWhen.flag === 'isSupervisorOrLC') {
+      const roleId = values.roleId || '';
+      const selectedRole = optionsMap.roles?.find((r: any) => r.value === roleId);
+      const roleLabel = (selectedRole?.label || '').toLowerCase();
+      return ['supervisor', 'org_admin', 'lc', 'linkage champion', 'tenant_admin'].some(
+        (k: string) => roleLabel.includes(k)
+      );
+    }
+    return true;
   }
-  // Training session: show sessionType when pillar is set and NOT 'Others'
-  if (visibleWhen.flag === 'pillarIsNotOthers') {
-    const p = (values.pillar || '').trim();
-    return p !== '' && p !== 'Others';
+
+  // Direct field/value comparison (mirrors the existing disabledWhen pattern)
+  if (visibleWhen.field) {
+    const fieldVal = (values[visibleWhen.field] ?? '').trim();
+    const match = fieldVal === (visibleWhen.value ?? '');
+    // `not: true` also requires the field to be non-empty — an unset field
+    // trivially "does not equal X" and should not trigger visibility.
+    if (visibleWhen.not) return fieldVal !== '' && !match;
+    return match;
   }
-  // Training session: show sessionTitle text-input when pillar IS 'Others'
-  if (visibleWhen.flag === 'pillarIsOthers') {
-    return (values.pillar || '').trim() === 'Others';
-  }
+
   return true;
 }
 

@@ -83,8 +83,8 @@ export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
         ],
       },
       {
-        // shown when pillar is NOT 'Others'
-        visibleWhen: { flag: 'pillarIsNotOthers' },
+        // shown when pillar is set and NOT 'Others'
+        visibleWhen: { field: 'pillar', value: 'Others', not: true },
         fields: [
           {
             name: 'sessionType',
@@ -106,7 +106,7 @@ export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
       },
       {
         // shown when pillar IS 'Others'
-        visibleWhen: { flag: 'pillarIsOthers' },
+        visibleWhen: { field: 'pillar', value: 'Others' },
         fields: [
           {
             name: 'sessionTitle',
