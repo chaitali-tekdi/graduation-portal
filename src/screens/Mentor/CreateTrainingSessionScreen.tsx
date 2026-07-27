@@ -16,6 +16,8 @@ import {
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import FormStepperHeader from './components/FormStepperHeader';
 
 interface CreateTrainingSessionScreenProps {
@@ -27,7 +29,7 @@ export const CreateTrainingSessionScreen: React.FC<
 > = ({ onNavigate }) => {
   const { t } = useLanguage();
   const { branding } = SUPPORT_PROVIDER_CONFIG;
-  const primaryColor = branding.themePrimaryColor || '#8B2842';
+  const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
 
   // Active step tab (1: Details, 2: Schedule & Format, 3: Review & Publish)
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -147,7 +149,7 @@ export const CreateTrainingSessionScreen: React.FC<
         {/* Multi-Step Card Content */}
         <Box
           width="100%"
-          bg="#ffffff"
+          bg={theme.tokens.colors.backgroundPrimary.light}
           borderRadius="$xl"
           borderWidth={1}
           borderColor="$borderLight200"
@@ -164,20 +166,20 @@ export const CreateTrainingSessionScreen: React.FC<
           {activeStep === 1 && (
             <VStack space="lg">
               <VStack space="xs" mb="$2">
-                <Text color="$textDark900" fontWeight="$bold" fontSize="$xl">
+                <Text color="$textDark900" {...TYPOGRAPHY.h2}>
                   {t('supportProvider.trainingSession.step1.heading') || 'Training Session Details'}
                 </Text>
-                <Text color="$textDark500" fontSize="$xs">
-                  Fields marked <Text color="#DC2626" fontWeight="$bold">*</Text> are required
+                <Text color="$textDark500" {...TYPOGRAPHY.caption}>
+                  Fields marked <Text color={theme.tokens.colors.error600} fontWeight="$bold">*</Text> are required
                 </Text>
               </VStack>
 
               {/* Province & Site Row */}
               <HStack space="md" flexDirection="column" $md-flexDirection="row">
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step1.province') || 'Province'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input
                     borderRadius="$md"
@@ -190,15 +192,15 @@ export const CreateTrainingSessionScreen: React.FC<
                       onChangeText={setProvince}
                     />
                     <Box pr="$3" justifyContent="center">
-                      <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                      <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
                     </Box>
                   </Input>
                 </VStack>
 
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step1.site') || 'Site'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input
                     borderRadius="$md"
@@ -211,7 +213,7 @@ export const CreateTrainingSessionScreen: React.FC<
                       onChangeText={setSite}
                     />
                     <Box pr="$3" justifyContent="center">
-                      <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                      <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
                     </Box>
                   </Input>
                 </VStack>
@@ -219,9 +221,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Pillar Selector Pills */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.pillar') || 'Pillar'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <HStack space="xs" flexWrap="wrap" gap="$2">
                   {[
@@ -244,7 +246,7 @@ export const CreateTrainingSessionScreen: React.FC<
                         borderRadius="$md"
                         borderWidth={1.5}
                         borderColor={isSelected ? primaryColor : '$borderLight300'}
-                        bg={isSelected ? '#ffffff' : '#ffffff'}
+                        bg={theme.tokens.colors.backgroundPrimary.light}
                         $hover={{ borderColor: primaryColor }}
                         $web-style={{
                           cursor: 'pointer',
@@ -253,8 +255,8 @@ export const CreateTrainingSessionScreen: React.FC<
                       >
                         <Text
                           color={isSelected ? primaryColor : '$textDark700'}
+                          {...TYPOGRAPHY.caption}
                           fontWeight={isSelected ? '$bold' : '$medium'}
-                          fontSize="$xs"
                         >
                           {option}
                         </Text>
@@ -268,9 +270,9 @@ export const CreateTrainingSessionScreen: React.FC<
               {pillar !== '' && (
                 pillar === 'Others' || pillar === (t('supportProvider.trainingSession.step1.pillars.others') || 'Others') ? (
                   <VStack space="xs">
-                    <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                    <Text color="$textDark800" {...TYPOGRAPHY.label}>
                       {t('supportProvider.trainingSession.step1.sessionTitle') || 'Training / Session Title'}{' '}
-                      <Text color="#DC2626">*</Text>
+                      <Text color={theme.tokens.colors.error600}>*</Text>
                     </Text>
                     <Input
                       borderRadius="$md"
@@ -286,9 +288,9 @@ export const CreateTrainingSessionScreen: React.FC<
                   </VStack>
                 ) : (
                   <VStack space="xs" position="relative" zIndex={10}>
-                    <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                    <Text color="$textDark800" {...TYPOGRAPHY.label}>
                       {t('supportProvider.trainingSession.step1.sessionType') || 'Training / Session Type'}{' '}
-                      <Text color="#DC2626">*</Text>
+                      <Text color={theme.tokens.colors.error600}>*</Text>
                     </Text>
                     <Pressable
                       onPress={() => setIsSessionTypeOpen(prev => !prev)}
@@ -307,7 +309,7 @@ export const CreateTrainingSessionScreen: React.FC<
                           editable={false}
                         />
                         <Box pr="$3" justifyContent="center">
-                          <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                          <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
                         </Box>
                       </Input>
                     </Pressable>
@@ -320,7 +322,7 @@ export const CreateTrainingSessionScreen: React.FC<
                         left={0}
                         right={0}
                         mt="$1"
-                        bg="#ffffff"
+                        bg={theme.tokens.colors.backgroundPrimary.light}
                         borderRadius="$lg"
                         borderWidth={1}
                         borderColor="$borderLight200"
@@ -348,14 +350,14 @@ export const CreateTrainingSessionScreen: React.FC<
                                 }}
                                 px="$4"
                                 py="$3"
-                                bg={isSelected ? '#FEF2F2' : '#ffffff'}
-                                $hover={{ bg: isSelected ? '#FEF2F2' : '#F9FAFB' }}
+                                bg={isSelected ? theme.tokens.colors.primary100 : theme.tokens.colors.backgroundPrimary.light}
+                                $hover={{ bg: isSelected ? theme.tokens.colors.primary100 : theme.tokens.colors.hoverBackground }}
                                 $web-style={{ cursor: 'pointer' }}
                               >
                                 <Text
                                   color={isSelected ? primaryColor : '$textDark800'}
+                                  {...TYPOGRAPHY.bodySmall}
                                   fontWeight={isSelected ? '$bold' : '$medium'}
-                                  fontSize="$sm"
                                 >
                                   {option}
                                 </Text>
@@ -371,9 +373,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Training / Session Description */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.description') || 'Training / Session Description'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <Textarea
                   borderRadius="$md"
@@ -394,9 +396,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Learning Objectives */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.learningObjectives') || 'Learning Objectives'}{' '}
-                  <Text color="#9CA3AF" fontWeight="$normal" fontSize="$xs">
+                  <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
                     {t('supportProvider.trainingSession.step1.optionalTag') || '(optional)'}
                   </Text>
                 </Text>
@@ -419,9 +421,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Target Audience Pills (Participant selected by default) */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.targetAudience') || 'Target Audience'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <HStack space="xs" gap="$2">
                   {[
@@ -439,14 +441,14 @@ export const CreateTrainingSessionScreen: React.FC<
                         borderRadius="$md"
                         borderWidth={1}
                         borderColor={isSelected ? primaryColor : '$borderLight300'}
-                        bg="#ffffff"
+                        bg={theme.tokens.colors.backgroundPrimary.light}
                         alignItems="center"
                         $web-style={{ cursor: 'pointer' }}
                       >
                         <Text
                           color={isSelected ? primaryColor : '$textDark700'}
+                          {...TYPOGRAPHY.caption}
                           fontWeight={isSelected ? '$bold' : '$medium'}
-                          fontSize="$xs"
                         >
                           {option}
                         </Text>
@@ -458,9 +460,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Certificate Provided Pills (Yes selected by default) */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.certificate') || 'Certificate Provided'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <HStack space="xs" gap="$2">
                   {[
@@ -477,14 +479,14 @@ export const CreateTrainingSessionScreen: React.FC<
                         borderRadius="$md"
                         borderWidth={1}
                         borderColor={isSelected ? primaryColor : '$borderLight300'}
-                        bg="#ffffff"
+                        bg={theme.tokens.colors.backgroundPrimary.light}
                         alignItems="center"
                         $web-style={{ cursor: 'pointer' }}
                       >
                         <Text
                           color={isSelected ? primaryColor : '$textDark700'}
+                          {...TYPOGRAPHY.caption}
                           fontWeight={isSelected ? '$bold' : '$medium'}
-                          fontSize="$xs"
                         >
                           {option}
                         </Text>
@@ -497,9 +499,9 @@ export const CreateTrainingSessionScreen: React.FC<
               {/* Capacity & Recurring Session Row matching Image 7 & Image 9 */}
               <HStack space="md" flexDirection="column" $md-flexDirection="row" alignItems="flex-end">
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step1.maxCapacity') || 'Maximum Capacity'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input
                     borderRadius="$md"
@@ -516,7 +518,7 @@ export const CreateTrainingSessionScreen: React.FC<
                 </VStack>
 
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step1.recurringSession') || 'Recurring Session'}
                   </Text>
                   <Pressable
@@ -526,7 +528,7 @@ export const CreateTrainingSessionScreen: React.FC<
                     borderRadius="$md"
                     borderWidth={1.5}
                     borderColor={isRecurring ? primaryColor : '$borderLight300'}
-                    bg="#ffffff"
+                    bg={theme.tokens.colors.backgroundPrimary.light}
                     $web-style={{ cursor: 'pointer' }}
                   >
                     <HStack alignItems="center" space="xs">
@@ -536,13 +538,13 @@ export const CreateTrainingSessionScreen: React.FC<
                         height={16}
                         borderRadius={8}
                         borderWidth={isRecurring ? 5 : 1.5}
-                        borderColor={isRecurring ? primaryColor : '#9CA3AF'}
-                        bg="#ffffff"
+                        borderColor={isRecurring ? primaryColor : theme.tokens.colors.textMuted}
+                        bg={theme.tokens.colors.backgroundPrimary.light}
                       />
                       <Text
                         color={isRecurring ? primaryColor : '$textDark700'}
+                        {...TYPOGRAPHY.caption}
                         fontWeight="$medium"
-                        fontSize="$xs"
                       >
                         {isRecurring
                           ? t('supportProvider.trainingSession.step1.recurringToggle') || 'Yes — recurring session'
@@ -555,13 +557,13 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Resource Content Upload Box matching Reference Images */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step1.resourceContent') || 'Resource Content'}{' '}
-                  <Text color="#9CA3AF" fontWeight="$normal" fontSize="$xs">
+                  <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
                     {t('supportProvider.trainingSession.step1.optionalTag') || '(optional)'}
                   </Text>
                 </Text>
-                <Text color="#9CA3AF" fontSize="$xs">
+                <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
                   {t('supportProvider.trainingSession.step1.resourceUploadSub') || 'Upload PDF or DOC training materials'}
                 </Text>
 
@@ -579,11 +581,11 @@ export const CreateTrainingSessionScreen: React.FC<
                   $web-style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
                 >
                   <VStack alignItems="center" space="xs">
-                    <LucideIcon name="UploadCloud" size={28} color="#9CA3AF" />
-                    <Text color="$textDark700" fontWeight="$medium" fontSize="$xs" mt="$1">
+                    <LucideIcon name="UploadCloud" size={28} color={theme.tokens.colors.textMuted} />
+                    <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium" mt="$1">
                       {selectedFileName || (t('supportProvider.trainingSession.step1.uploadPrompt') || 'Click to upload PDF / DOC')}
                     </Text>
-                    <Text color="#9CA3AF" fontSize={11}>
+                    <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
                       {t('supportProvider.trainingSession.step1.maxSize') || 'Max 10 MB'}
                     </Text>
                   </VStack>
@@ -596,10 +598,10 @@ export const CreateTrainingSessionScreen: React.FC<
           {activeStep === 2 && (
             <VStack space="lg">
               <VStack space="xs" mb="$2">
-                <Text color="$textDark900" fontWeight="$bold" fontSize="$xl">
+                <Text color="$textDark900" {...TYPOGRAPHY.h2}>
                   {t('supportProvider.trainingSession.step2.heading') || 'Schedule & Format'}
                 </Text>
-                <Text color="$textDark500" fontSize="$xs">
+                <Text color="$textDark500" {...TYPOGRAPHY.caption}>
                   {t('supportProvider.trainingSession.step2.subheading') || 'Set when and how the session will be delivered'}
                 </Text>
               </VStack>
@@ -607,9 +609,9 @@ export const CreateTrainingSessionScreen: React.FC<
               {/* Start Date & Time */}
               <HStack space="md" flexDirection="column" $md-flexDirection="row">
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step2.startDate') || 'Start Date'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input borderRadius="$md" borderColor="$borderLight100">
                     <InputField
@@ -621,9 +623,9 @@ export const CreateTrainingSessionScreen: React.FC<
                 </VStack>
 
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step2.startTime') || 'Start Time'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input borderRadius="$md" borderColor="$borderLight100">
                     <InputField
@@ -638,9 +640,9 @@ export const CreateTrainingSessionScreen: React.FC<
               {/* End Date & Time */}
               <HStack space="md" flexDirection="column" $md-flexDirection="row">
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step2.endDate') || 'End Date'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input borderRadius="$md" borderColor="$borderLight300">
                     <InputField
@@ -652,9 +654,9 @@ export const CreateTrainingSessionScreen: React.FC<
                 </VStack>
 
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                  <Text color="$textDark800" {...TYPOGRAPHY.label}>
                     {t('supportProvider.trainingSession.step2.endTime') || 'End Time'}{' '}
-                    <Text color="#DC2626">*</Text>
+                    <Text color={theme.tokens.colors.error600}>*</Text>
                   </Text>
                   <Input borderRadius="$md" borderColor="$borderLight300">
                     <InputField
@@ -668,9 +670,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Type (Offline, Online, Hybrid) */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step2.type') || 'Type'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <HStack space="xs" gap="$2">
                   {[
@@ -695,7 +697,7 @@ export const CreateTrainingSessionScreen: React.FC<
                       borderRadius="$md"
                       borderWidth={1}
                       borderColor={formatType === option.label ? primaryColor : '$borderLight300'}
-                      bg={formatType === option.label ? '#ffffff' : '#ffffff'}
+                      bg={theme.tokens.colors.backgroundPrimary.light}
                       alignItems="center"
                       $web-style={{ cursor: 'pointer' }}
                     >
@@ -703,12 +705,12 @@ export const CreateTrainingSessionScreen: React.FC<
                         <LucideIcon
                           name={option.icon}
                           size={14}
-                          color={formatType === option.label ? primaryColor : '#6B7280'}
+                          color={formatType === option.label ? primaryColor : theme.tokens.colors.textMuted}
                         />
                         <Text
                           color={formatType === option.label ? primaryColor : '$textDark700'}
+                          {...TYPOGRAPHY.caption}
                           fontWeight={formatType === option.label ? '$bold' : '$medium'}
-                          fontSize="$xs"
                         >
                           {option.label}
                         </Text>
@@ -720,9 +722,9 @@ export const CreateTrainingSessionScreen: React.FC<
 
               {/* Venue Location */}
               <VStack space="xs">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.trainingSession.step2.venueLocation') || 'Venue Location'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <Input borderRadius="$md" borderColor="$borderLight300">
                   <InputField
@@ -742,25 +744,25 @@ export const CreateTrainingSessionScreen: React.FC<
           {activeStep === 3 && (
             <VStack space="lg">
               <VStack space="xs" mb="$2">
-                <Text color="$textDark900" fontWeight="$bold" fontSize="$xl">
+                <Text color="$textDark900" {...TYPOGRAPHY.h2}>
                   {t('supportProvider.trainingSession.step3.heading') || 'Review & Publish'}
                 </Text>
               </VStack>
 
               {isPublished ? (
                 <Box
-                  bg="#F0FDF4"
-                  borderColor="#22C55E"
+                  bg={theme.tokens.colors.success50}
+                  borderColor={theme.tokens.colors.accent300}
                   borderWidth={1}
                   borderRadius="$lg"
                   p="$6"
                   alignItems="center"
                 >
-                  <LucideIcon name="CheckCircle" size={44} color="#16A34A" />
-                  <Text color="#16A34A" fontWeight="$bold" fontSize="$lg" mt="$2">
+                  <LucideIcon name="CheckCircle" size={44} color={theme.tokens.colors.tickButtonActiveBg} />
+                  <Text color={theme.tokens.colors.tickButtonActiveBg} {...TYPOGRAPHY.h3} mt="$2">
                     {t('supportProvider.forms.successTitle') || 'Training Session Created Successfully!'}
                   </Text>
-                  <Text color="$textDark600" fontSize="$xs" mt="$1">
+                  <Text color="$textDark600" {...TYPOGRAPHY.caption} mt="$1">
                     {t('supportProvider.forms.successSub') || 'Redirecting back to dashboard...'}
                   </Text>
                 </Box>
@@ -772,26 +774,26 @@ export const CreateTrainingSessionScreen: React.FC<
                     borderColor="$borderLight200"
                     borderRadius="$lg"
                     p="$4"
-                    bg="#ffffff"
+                    bg={theme.tokens.colors.backgroundPrimary.light}
                   >
-                    <Text color="$textDark900" fontWeight="$bold" fontSize="$sm" mb="$3">
+                    <Text color="$textDark900" {...TYPOGRAPHY.label} fontWeight="$bold" mb="$3">
                       {t('supportProvider.trainingSession.step3.sessionDetailsTitle') || 'Session Details'}
                     </Text>
                     <VStack space="xs">
                       <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" fontSize="$xs">
+                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
                           {t('supportProvider.trainingSession.step3.pillarLabel') || 'Pillar:'}
                         </Text>
-                        <Text color="$textDark900" fontSize="$xs" fontWeight="$medium">
+                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
                           {pillar}
                         </Text>
                       </HStack>
 
                       <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" fontSize="$xs">
+                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
                           {t('supportProvider.trainingSession.step3.recurringLabel') || 'Recurring:'}
                         </Text>
-                        <Text color="$textDark900" fontSize="$xs" fontWeight="$medium">
+                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
                           {isRecurring ? 'Yes' : 'No'}
                         </Text>
                       </HStack>
@@ -804,35 +806,35 @@ export const CreateTrainingSessionScreen: React.FC<
                     borderColor="$borderLight200"
                     borderRadius="$lg"
                     p="$4"
-                    bg="#ffffff"
+                    bg={theme.tokens.colors.backgroundPrimary.light}
                   >
-                    <Text color="$textDark900" fontWeight="$bold" fontSize="$sm" mb="$3">
+                    <Text color="$textDark900" {...TYPOGRAPHY.label} fontWeight="$bold" mb="$3">
                       {t('supportProvider.trainingSession.step3.scheduleTitle') || 'Schedule'}
                     </Text>
                     <VStack space="xs">
                       <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" fontSize="$xs">
+                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
                           {t('supportProvider.trainingSession.step3.startLabel') || 'Start:'}
                         </Text>
-                        <Text color="$textDark900" fontSize="$xs" fontWeight="$medium">
+                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
                           {startDate} {startDate && startTime ? t('supportProvider.trainingSession.step3.atText') || 'at' : ''} {startTime}
                         </Text>
                       </HStack>
 
                       <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" fontSize="$xs">
+                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
                           {t('supportProvider.trainingSession.step3.endLabel') || 'End:'}
                         </Text>
-                        <Text color="$textDark900" fontSize="$xs" fontWeight="$medium">
+                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
                           {endDate} {endDate && endTime ? t('supportProvider.trainingSession.step3.atText') || 'at' : ''} {endTime}
                         </Text>
                       </HStack>
 
                       <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" fontSize="$xs">
+                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
                           {t('supportProvider.trainingSession.step3.formatLabel') || 'Format:'}
                         </Text>
-                        <Text color="$textDark900" fontSize="$xs" fontWeight="$medium">
+                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
                           {formatType}
                         </Text>
                       </HStack>
@@ -841,27 +843,27 @@ export const CreateTrainingSessionScreen: React.FC<
 
                   {/* Info Warning Banner matching Image 8 */}
                   <Box
-                    bg="#EFF6FF"
+                    bg={theme.tokens.colors.blue50}
                     borderWidth={1}
-                    borderColor="#BFDBFE"
+                    borderColor={theme.tokens.colors.blue200}
                     borderRadius="$lg"
                     p="$4"
                   >
                     <HStack space="xs" alignItems="center" mb="$2">
-                      <LucideIcon name="Info" size={16} color="#2563EB" />
-                      <Text color="#1E40AF" fontWeight="$bold" fontSize="$xs">
+                      <LucideIcon name="Info" size={16} color={theme.tokens.colors.blue600} />
+                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption} fontWeight="$bold">
                         {t('supportProvider.trainingSession.step3.infoTitle') || 'Before you publish:'}
                       </Text>
                     </HStack>
 
                     <VStack space="xs" pl="$5">
-                      <Text color="#1E40AF" fontSize={11}>
+                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
                         • {t('supportProvider.trainingSession.step3.infoBullet1') || 'This support will be visible to all Coaches in the GBL network'}
                       </Text>
-                      <Text color="#1E40AF" fontSize={11}>
+                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
                         • {t('supportProvider.trainingSession.step3.infoBullet2') || 'Coaches can submit requests on behalf of participants'}
                       </Text>
-                      <Text color="#1E40AF" fontSize={11}>
+                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
                         • {t('supportProvider.trainingSession.step3.infoBullet3') || "You'll receive notifications when requests are submitted"}
                       </Text>
                     </VStack>
@@ -881,8 +883,8 @@ export const CreateTrainingSessionScreen: React.FC<
             $web-style={{ cursor: 'pointer' }}
           >
             <HStack alignItems="center" space="xs">
-              <LucideIcon name="ArrowLeft" size={14} color="#374151" />
-              <ButtonText color="$textDark800" fontSize="$xs" fontWeight="$medium">
+              <LucideIcon name="ArrowLeft" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
+              <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>
                 {previousText}
               </ButtonText>
             </HStack>
@@ -891,29 +893,29 @@ export const CreateTrainingSessionScreen: React.FC<
           {activeStep < 3 ? (
             <Button
               bg={primaryColor}
-              $hover={{ bg: '#7A2038' }}
-              $active={{ bg: '#691A2F' }}
+              $hover={{ bg: theme.tokens.colors.primary600 }}
+              $active={{ bg: theme.tokens.colors.primary700 }}
               onPress={handleNext}
               $web-style={{ cursor: 'pointer' }}
             >
               <HStack alignItems="center" space="xs">
-                <ButtonText color="#ffffff" fontWeight="$bold" fontSize="$xs">
+                <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {continueText}
                 </ButtonText>
-                <LucideIcon name="ArrowRight" size={14} color="#ffffff" />
+                <LucideIcon name="ArrowRight" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
               </HStack>
             </Button>
           ) : (
             <Button
-              bg="#16A34A"
-              $hover={{ bg: '#15803D' }}
-              $active={{ bg: '#166534' }}
+              bg={theme.tokens.colors.tickButtonActiveBg}
+              $hover={{ bg: theme.tokens.colors.pillarLivelihoods }}
+              $active={{ bg: theme.tokens.colors.success700 }}
               onPress={handleNext}
               $web-style={{ cursor: 'pointer' }}
             >
               <HStack alignItems="center" space="xs">
-                <LucideIcon name="Check" size={14} color="#ffffff" />
-                <ButtonText color="#ffffff" fontWeight="$bold" fontSize="$xs">
+                <LucideIcon name="Check" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
+                <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {t('supportProvider.trainingSession.step3.publishButton') || 'Publish Support'}
                 </ButtonText>
               </HStack>

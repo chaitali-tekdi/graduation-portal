@@ -3,6 +3,8 @@ import { Box, HStack, Text, VStack, Pressable } from '@gluestack-ui/themed';
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
 export interface StepperTabItem {
   key: number;
@@ -29,7 +31,7 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
 }) => {
   const { t } = useLanguage();
   const { branding } = SUPPORT_PROVIDER_CONFIG;
-  const primaryColor = branding.themePrimaryColor || '#8B2842';
+  const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
 
   const changeTypeText = t('supportProvider.trainingSession.changeType') || 'Change Type';
   const pageTitleText = title || t('supportProvider.trainingSession.pageTitle') || 'Create Training Session';
@@ -57,7 +59,7 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
   const activeTabs = customTabs && customTabs.length > 0 ? customTabs : defaultTabs;
 
   return (
-    <Box width="100%" bg="$white">
+    <Box width="100%" bg={theme.tokens.colors.backgroundPrimary.light}>
       {/* Aligned Header Section */}
       <Box
         width="100%"
@@ -86,7 +88,7 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
           >
             <HStack alignItems="center" space="xs">
               <LucideIcon name="ArrowLeft" size={16} color="$textDark700" />
-              <Text color="$textDark700" fontSize="$sm" fontWeight="$medium">
+              <Text color="$textDark700" {...TYPOGRAPHY.label}>
                 {changeTypeText}
               </Text>
             </HStack>
@@ -102,20 +104,20 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
           $md-px="$8"
         >
           <HStack alignItems="center" space="md" mb="$4" flexWrap="wrap">
-            <Text color="$textDark900" fontWeight="$bold" fontSize="$2xl">
+            <Text color="$textDark900" {...TYPOGRAPHY.h1}>
               {pageTitleText}
             </Text>
 
             <Box
-              bg={badgeText === 'Asset' || badgeText === 'Assets' ? '#DCFCE7' : '#E0F2FE'}
+              bg={badgeText === 'Asset' || badgeText === 'Assets' ? theme.tokens.colors.success100 : theme.tokens.colors.optionalBadgeBg}
               px="$2.5"
               py="$1"
               borderRadius="$full"
             >
               <Text
-                color={badgeText === 'Asset' || badgeText === 'Assets' ? '#15803D' : '#0284C7'}
+                color={badgeText === 'Asset' || badgeText === 'Assets' ? theme.tokens.colors.pillarLivelihoods : theme.tokens.colors.infoIconColor}
+                {...TYPOGRAPHY.caption}
                 fontWeight="$bold"
-                fontSize="$xs"
               >
                 {badgeText}
               </Text>
@@ -135,11 +137,11 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
         >
           <VStack space="xs" mb="$3">
             <HStack justifyContent="space-between" alignItems="center">
-              <Text color="$textDark600" fontSize="$xs" fontWeight="$medium">
+              <Text color="$textDark600" {...TYPOGRAPHY.caption} fontWeight="$medium">
                 {progressLabelText}
               </Text>
 
-              <Text color="$textDark600" fontSize="$xs" fontWeight="$medium">
+              <Text color="$textDark600" {...TYPOGRAPHY.caption} fontWeight="$medium">
                 0%
               </Text>
             </HStack>
@@ -194,12 +196,12 @@ export const FormStepperHeader: React.FC<FormStepperHeaderProps> = ({
                     <LucideIcon
                       name={tab.iconName}
                       size={16}
-                      color={isActive ? primaryColor : '#9CA3AF'}
+                      color={isActive ? primaryColor : theme.tokens.colors.textMuted}
                     />
                     <Text
                       color={isActive ? primaryColor : '$textDark500'}
+                      {...TYPOGRAPHY.bodySmall}
                       fontWeight={isActive ? '$bold' : '$normal'}
-                      fontSize="$sm"
                     >
                       {tab.label}
                     </Text>

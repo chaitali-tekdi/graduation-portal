@@ -15,6 +15,8 @@ import {
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
 interface AssetsFormProps {
   activeStep: number;
@@ -29,7 +31,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 }) => {
   const { t } = useLanguage();
   const { branding } = SUPPORT_PROVIDER_CONFIG;
-  const primaryColor = branding.themePrimaryColor || '#8B2842';
+  const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
 
   // Form State
   const [province, setProvince] = useState('');
@@ -79,7 +81,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
       {/* Multi-Step Card Content Container */}
       <Box
         width="100%"
-        bg="#ffffff"
+        bg={theme.tokens.colors.backgroundPrimary.light}
         borderRadius="$xl"
         borderWidth={1}
         borderColor="$borderLight200"
@@ -96,20 +98,20 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
         {activeStep === 1 && (
           <VStack space="lg">
             <VStack space="xs" mb="$2">
-              <Text color="$textDark900" fontWeight="$bold" fontSize="$xl">
+              <Text color="$textDark900" {...TYPOGRAPHY.h2}>
                 {t('supportProvider.assetSupport.step1.heading') || 'Asset Details'}
               </Text>
-              <Text color="$textDark500" fontSize="$xs">
-                Fields marked <Text color="#DC2626" fontWeight="$bold">*</Text> are required
+              <Text color="$textDark500" {...TYPOGRAPHY.caption}>
+                Fields marked <Text color={theme.tokens.colors.error600} fontWeight="$bold">*</Text> are required
               </Text>
             </VStack>
 
             {/* Province & Site Row */}
             <HStack space="md" flexDirection="column" $md-flexDirection="row">
               <VStack space="xs" flex={1}>
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.assetSupport.step1.province') || 'Province'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <Input
                   borderRadius="$md"
@@ -122,15 +124,15 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                     onChangeText={setProvince}
                   />
                   <Box pr="$3" justifyContent="center">
-                    <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                    <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
                   </Box>
                 </Input>
               </VStack>
 
               <VStack space="xs" flex={1}>
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.assetSupport.step1.site') || 'Site'}{' '}
-                  <Text color="#DC2626">*</Text>
+                  <Text color={theme.tokens.colors.error600}>*</Text>
                 </Text>
                 <Input
                   borderRadius="$md"
@@ -143,7 +145,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                     onChangeText={setSite}
                   />
                   <Box pr="$3" justifyContent="center">
-                    <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                    <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
                   </Box>
                 </Input>
               </VStack>
@@ -151,9 +153,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 
             {/* Asset Type 3-button Selector */}
             <VStack space="xs">
-              <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+              <Text color="$textDark800" {...TYPOGRAPHY.label}>
                 {t('supportProvider.assetSupport.step1.assetType') || 'Asset Type'}{' '}
-                <Text color="#DC2626">*</Text>
+                <Text color={theme.tokens.colors.error600}>*</Text>
               </Text>
               <HStack space="xs" gap="$2">
                 {[
@@ -171,7 +173,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                       borderRadius="$md"
                       borderWidth={1}
                       borderColor={isSelected ? primaryColor : '$borderLight300'}
-                      bg="#ffffff"
+                      bg={theme.tokens.colors.backgroundPrimary.light}
                       alignItems="center"
                       justifyContent="center"
                       $hover={{ borderColor: primaryColor }}
@@ -182,8 +184,8 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                     >
                       <Text
                         color={isSelected ? primaryColor : '$textDark700'}
+                        {...TYPOGRAPHY.caption}
                         fontWeight={isSelected ? '$bold' : '$medium'}
-                        fontSize="$xs"
                       >
                         {item.label}
                       </Text>
@@ -195,9 +197,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 
             {/* Category of Livelihoods */}
             <VStack space="xs">
-              <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+              <Text color="$textDark800" {...TYPOGRAPHY.label}>
                 {t('supportProvider.assetSupport.step1.categoryLivelihoods') || 'Category of Livelihoods'}{' '}
-                <Text color="#DC2626">*</Text>
+                <Text color={theme.tokens.colors.error600}>*</Text>
               </Text>
               <Input
                 borderRadius="$md"
@@ -213,16 +215,16 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                   onChangeText={setLivelihoodCategory}
                 />
                 <Box pr="$3" justifyContent="center">
-                  <LucideIcon name="ChevronDown" size={16} color="#9CA3AF" />
+                  <LucideIcon name="ChevronDown" size={16} color={theme.tokens.colors.textMuted} />
                 </Box>
               </Input>
             </VStack>
 
             {/* Asset Title */}
             <VStack space="xs">
-              <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+              <Text color="$textDark800" {...TYPOGRAPHY.label}>
                 {t('supportProvider.assetSupport.step1.assetTitle') || 'Asset Title'}{' '}
-                <Text color="#DC2626">*</Text>
+                <Text color={theme.tokens.colors.error600}>*</Text>
               </Text>
               <Input
                 borderRadius="$md"
@@ -242,9 +244,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 
             {/* Asset Description */}
             <VStack space="xs">
-              <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+              <Text color="$textDark800" {...TYPOGRAPHY.label}>
                 {t('supportProvider.assetSupport.step1.assetDescription') || 'Asset Description'}{' '}
-                <Text color="#DC2626">*</Text>
+                <Text color={theme.tokens.colors.error600}>*</Text>
               </Text>
               <Textarea
                 borderRadius="$md"
@@ -265,9 +267,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 
             {/* Estimated Asset Value (Rands) */}
             <VStack space="xs">
-              <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+              <Text color="$textDark800" {...TYPOGRAPHY.label}>
                 {t('supportProvider.assetSupport.step1.estimatedValue') || 'Estimated Asset Value (Rands)'}{' '}
-                <Text color="#DC2626">*</Text>
+                <Text color={theme.tokens.colors.error600}>*</Text>
               </Text>
               <Input
                 borderRadius="$md"
@@ -288,10 +290,10 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
             {/* Availability (optional) */}
             <VStack space="md" mt="$1">
               <HStack space="xs" alignItems="center">
-                <Text color="$textDark800" fontWeight="$medium" fontSize="$sm">
+                <Text color="$textDark800" {...TYPOGRAPHY.label}>
                   {t('supportProvider.assetSupport.step1.availability') || 'Availability'}
                 </Text>
-                <Text color="$textDark400" fontSize="$xs" fontWeight="$normal">
+                <Text color="$textDark400" {...TYPOGRAPHY.caption}>
                   {t('supportProvider.assetSupport.step1.optionalTag') || '(optional)'}
                 </Text>
               </HStack>
@@ -299,7 +301,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
               {/* Start Date & Start Time */}
               <HStack space="md" flexDirection="column" $md-flexDirection="row">
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark700" fontSize="$xs" fontWeight="$medium">
+                  <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium">
                     {t('supportProvider.assetSupport.step1.startDate') || 'Start Date'}
                   </Text>
                   <Input
@@ -316,7 +318,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                 </VStack>
 
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark700" fontSize="$xs" fontWeight="$medium">
+                  <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium">
                     {t('supportProvider.assetSupport.step1.startTime') || 'Start Time'}
                   </Text>
                   <Input
@@ -336,7 +338,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
               {/* End Date & End Time */}
               <HStack space="md" flexDirection="column" $md-flexDirection="row">
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark700" fontSize="$xs" fontWeight="$medium">
+                  <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium">
                     {t('supportProvider.assetSupport.step1.endDate') || 'End Date'}
                   </Text>
                   <Input
@@ -353,7 +355,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                 </VStack>
 
                 <VStack space="xs" flex={1}>
-                  <Text color="$textDark700" fontSize="$xs" fontWeight="$medium">
+                  <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium">
                     {t('supportProvider.assetSupport.step1.endTime') || 'End Time'}
                   </Text>
                   <Input
@@ -377,25 +379,25 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
         {activeStep === 2 && (
           <VStack space="lg">
             <VStack space="xs" mb="$2">
-              <Text color="$textDark900" fontWeight="$bold" fontSize="$xl">
+              <Text color="$textDark900" {...TYPOGRAPHY.h2}>
                 {t('supportProvider.assetSupport.step2.heading') || 'Review & Publish'}
               </Text>
             </VStack>
 
             {isPublished ? (
               <Box
-                bg="#F0FDF4"
-                borderColor="#22C55E"
+                bg={theme.tokens.colors.success50}
+                borderColor={theme.tokens.colors.accent300}
                 borderWidth={1}
                 borderRadius="$lg"
                 p="$6"
                 alignItems="center"
               >
-                <LucideIcon name="CheckCircle" size={44} color="#16A34A" />
-                <Text color="#16A34A" fontWeight="$bold" fontSize="$lg" mt="$2">
+                <LucideIcon name="CheckCircle" size={44} color={theme.tokens.colors.tickButtonActiveBg} />
+                <Text color={theme.tokens.colors.tickButtonActiveBg} {...TYPOGRAPHY.h3} mt="$2">
                   Asset Support Created Successfully!
                 </Text>
-                <Text color="$textDark600" fontSize="$xs" mt="$1">
+                <Text color="$textDark600" {...TYPOGRAPHY.caption} mt="$1">
                   Redirecting back to dashboard...
                 </Text>
               </Box>
@@ -407,37 +409,37 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
                   borderColor="$borderLight200"
                   borderRadius="$lg"
                   p="$4"
-                  bg="#ffffff"
+                  bg={theme.tokens.colors.backgroundPrimary.light}
                   minHeight={60}
                 >
-                  <Text color="$textDark900" fontWeight="$bold" fontSize="$sm">
+                  <Text color="$textDark900" {...TYPOGRAPHY.label} fontWeight="$bold">
                     {t('supportProvider.assetSupport.step2.assetDetailsCardTitle') || 'Asset Details'}
                   </Text>
                 </Box>
 
                 {/* Info Box matching Reference Image 3 */}
                 <Box
-                  bg="#EFF6FF"
+                  bg={theme.tokens.colors.blue50}
                   borderWidth={1}
-                  borderColor="#BFDBFE"
+                  borderColor={theme.tokens.colors.blue200}
                   borderRadius="$lg"
                   p="$4"
                 >
                   <HStack space="xs" alignItems="center" mb="$2">
-                    <LucideIcon name="Info" size={16} color="#2563EB" />
-                    <Text color="#1E40AF" fontWeight="$bold" fontSize="$xs">
+                    <LucideIcon name="Info" size={16} color={theme.tokens.colors.blue600} />
+                    <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption} fontWeight="$bold">
                       {t('supportProvider.assetSupport.step2.infoTitle') || 'Before you publish:'}
                     </Text>
                   </HStack>
                   <VStack space="xs" pl="$5">
-                    <Text color="#1E40AF" fontSize={11}>
-                      • {t('supportProvider.assetSupport.step2.infoBullet1') || 'This support will be visible to all Coaches in the GBL network'}
+                    <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
+                      • {t('supportProvider.assetsForm.step3.infoBullet1') || 'This support will be visible to all Coaches in the GBL network'}
                     </Text>
-                    <Text color="#1E40AF" fontSize={11}>
-                      • {t('supportProvider.assetSupport.step2.infoBullet2') || 'Coaches can submit requests on behalf of participants'}
+                    <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
+                      • {t('supportProvider.assetsForm.step3.infoBullet2') || 'Coaches can submit requests on behalf of participants'}
                     </Text>
-                    <Text color="#1E40AF" fontSize={11}>
-                      • {t('supportProvider.assetSupport.step2.infoBullet3') || "You'll receive notifications when requests are submitted"}
+                    <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
+                      • {t('supportProvider.assetsForm.step3.infoBullet3') || "You'll receive notifications when requests are submitted"}
                     </Text>
                   </VStack>
                 </Box>
@@ -454,15 +456,15 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
           <Button
             variant="outline"
             borderColor="$borderLight300"
-            bg="#ffffff"
+            bg={theme.tokens.colors.backgroundPrimary.light}
             onPress={handlePrev}
             px="$5"
-            $hover={{ bg: '#F9FAFB' }}
+            $hover={{ bg: theme.tokens.colors.hoverBackground }}
             $web-style={{ cursor: 'pointer' }}
           >
             <HStack alignItems="center" space="xs">
               <LucideIcon name="ArrowLeft" size={16} color="$textDark700" />
-              <ButtonText color="$textDark700" fontWeight="$medium" fontSize="$sm">
+              <ButtonText color="$textDark700" {...TYPOGRAPHY.button}>
                 {t('supportProvider.assetSupport.buttons.previous') || 'Previous'}
               </ButtonText>
             </HStack>
@@ -474,27 +476,27 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
               bg={primaryColor}
               onPress={handleNext}
               px="$6"
-              $hover={{ bg: '#7A2038' }}
+              $hover={{ bg: theme.tokens.colors.primary600 }}
               $web-style={{ cursor: 'pointer' }}
             >
               <HStack alignItems="center" space="xs">
-                <ButtonText color="#ffffff" fontWeight="$bold" fontSize="$sm">
+                <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {t('supportProvider.assetSupport.buttons.continue') || 'Continue'}
                 </ButtonText>
-                <LucideIcon name="ArrowRight" size={16} color="#ffffff" />
+                <LucideIcon name="ArrowRight" size={16} color={theme.tokens.colors.backgroundPrimary.light} />
               </HStack>
             </Button>
           ) : (
             <Button
-              bg="#16A34A"
+              bg={theme.tokens.colors.tickButtonActiveBg}
               onPress={handleNext}
               px="$6"
-              $hover={{ bg: '#15803D' }}
+              $hover={{ bg: theme.tokens.colors.pillarLivelihoods }}
               $web-style={{ cursor: 'pointer' }}
             >
               <HStack alignItems="center" space="xs">
-                <LucideIcon name="Check" size={16} color="#ffffff" />
-                <ButtonText color="#ffffff" fontWeight="$bold" fontSize="$sm">
+                <LucideIcon name="Check" size={16} color={theme.tokens.colors.backgroundPrimary.light} />
+                <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {t('supportProvider.assetSupport.step2.publishButton') || 'Publish Support'}
                 </ButtonText>
               </HStack>

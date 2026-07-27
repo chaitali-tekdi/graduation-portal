@@ -3,6 +3,8 @@ import { Box, HStack, Text, Pressable, ScrollView } from '@gluestack-ui/themed';
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
 interface MentorGenericScreenProps {
   route: string;
@@ -15,7 +17,7 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
 }) => {
   const { t } = useLanguage();
   const { generic, branding } = SUPPORT_PROVIDER_CONFIG;
-  const primaryColor = branding.themePrimaryColor || '#8B2842';
+  const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
 
   const menuItem = SUPPORT_PROVIDER_CONFIG.menuItems.find(
     item => item.route === route,
@@ -55,7 +57,7 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
         >
           <HStack alignItems="center" space="xs">
             <LucideIcon name="ArrowLeft" size={16} color="$textDark800" />
-            <Text color="$textDark800" fontSize="$sm" fontWeight="$medium">
+            <Text color="$textDark800" {...TYPOGRAPHY.label}>
               {backText}
             </Text>
           </HStack>
@@ -66,7 +68,7 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
           maxWidth={800}
           width="100%"
           alignSelf="center"
-          bg="#ffffff"
+          bg={theme.tokens.colors.backgroundPrimary.light}
           borderRadius="$xl"
           borderWidth={1}
           borderColor="$borderLight200"
@@ -80,17 +82,17 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
           shadowRadius={8}
           elevation={2}
         >
-          <Box bg="#FDF2F5" p="$4" borderRadius="$full" mb="$4">
+          <Box bg={theme.tokens.colors.primary50} p="$4" borderRadius="$full" mb="$4">
             <LucideIcon name={iconName} size={40} color={primaryColor} />
           </Box>
 
-          <Text color="$textDark900" fontWeight="$bold" fontSize="$2xl" mb="$2">
+          <Text color="$textDark900" {...TYPOGRAPHY.h1} mb="$2">
             {title}
           </Text>
 
           <Text
             color="$textDark500"
-            fontSize="$sm"
+            {...TYPOGRAPHY.bodySmall}
             textAlign="center"
             maxWidth={480}
             mb="$6"
@@ -104,10 +106,10 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
             py="$2.5"
             borderRadius="$lg"
             onPress={() => onNavigate('dashboard')}
-            $hover={{ bg: '#7A2038' }}
+            $hover={{ bg: theme.tokens.colors.primary600 }}
             $web-style={{ cursor: 'pointer' }}
           >
-            <Text color="#ffffff" fontWeight="$bold" fontSize="$sm">
+            <Text color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
               {returnToDashboardText}
             </Text>
           </Pressable>

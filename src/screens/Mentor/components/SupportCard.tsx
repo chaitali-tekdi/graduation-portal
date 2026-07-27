@@ -3,6 +3,8 @@ import { Box, Text, VStack, Pressable } from '@gluestack-ui/themed';
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import { SupportCardConfig } from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
 interface SupportCardProps {
   card: SupportCardConfig;
@@ -17,7 +19,7 @@ export const SupportCard: React.FC<SupportCardProps> = ({ card, onPress }) => {
   const description = t(card.descKey) || card.defaultDesc;
 
   const borderColor = isHovered
-    ? card.hoverBorderHex || '#8B2842'
+    ? card.hoverBorderHex || theme.tokens.colors.primary500
     : '$borderLight200';
 
   return (
@@ -28,7 +30,7 @@ export const SupportCard: React.FC<SupportCardProps> = ({ card, onPress }) => {
       flex={1}
       minWidth={260}
       maxWidth={340}
-      bg="#ffffff"
+      bg={theme.tokens.colors.backgroundPrimary.light}
       borderRadius={16}
       borderWidth={isHovered ? 2.5 : 1}
       borderColor={borderColor}
@@ -63,8 +65,8 @@ export const SupportCard: React.FC<SupportCardProps> = ({ card, onPress }) => {
         {/* Card Title */}
         <Text
           color="$textDark900"
+          {...TYPOGRAPHY.h3}
           fontWeight="$bold"
-          fontSize="$lg"
           textAlign="center"
         >
           {title}
@@ -73,9 +75,9 @@ export const SupportCard: React.FC<SupportCardProps> = ({ card, onPress }) => {
         {/* Card Description */}
         <Text
           color="$textDark600"
-          fontSize="$xs"
+          {...TYPOGRAPHY.bodySmall}
           textAlign="center"
-          lineHeight={18}
+          lineHeight={20}
         >
           {description}
         </Text>

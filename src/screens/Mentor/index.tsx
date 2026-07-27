@@ -23,8 +23,6 @@ const MentorScreen: React.FC = () => {
         return <CreateSupportScreen onNavigate={setCurrentRoute} />;
       case 'create_training_session':
         return <CreateTrainingSessionScreen onNavigate={setCurrentRoute} />;
-      case 'additional_services':
-        return <CreateAdditionalServiceScreen onNavigate={setCurrentRoute} />;
       case 'assets':
         return <CreateAssetSupportScreen onNavigate={setCurrentRoute} />;
       default:

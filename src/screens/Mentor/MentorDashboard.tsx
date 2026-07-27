@@ -10,6 +10,8 @@ import {
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 // import ImpactOverviewCard from './components/ImpactOverviewCard';
 
 interface MentorDashboardProps {
@@ -21,7 +23,7 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
 }) => {
   const { t } = useLanguage();
   const { dashboard, branding } = SUPPORT_PROVIDER_CONFIG;
-  const primaryColor = branding.themePrimaryColor || '#8B2842';
+  const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
 
   const pageTitle = t(dashboard.titleKey) || dashboard.defaultTitle;
   const pageSubtitle = t(dashboard.subtitleKey) || dashboard.defaultSubtitle;
@@ -33,7 +35,7 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
       {/* Top Header Container with Background Color and Bottom Border */}
       <Box
         width="100%"
-        bg="#ffffff"
+        bg={theme.tokens.colors.backgroundPrimary.light}
         borderBottomWidth={1}
         borderColor="$borderLight200"
         py="$6"
@@ -57,10 +59,10 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
           >
             {/* Left Heading */}
             <VStack space="xs">
-              <Text color="$textDark900" fontWeight="$bold" fontSize="$2xl">
+              <Text color="$textDark900" {...TYPOGRAPHY.h1} fontWeight="$bold">
                 {pageTitle}
               </Text>
-              <Text color="$textDark600" fontSize="$sm">
+              <Text color="$textDark600" {...TYPOGRAPHY.bodySmall}>
                 {pageSubtitle}
               </Text>
             </VStack>
@@ -72,8 +74,8 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
               px="$4"
               py="$2.5"
               borderRadius="$lg"
-              $hover={{ bg: '#7A2038' }}
-              $active={{ bg: '#691A2F' }}
+              $hover={{ bg: theme.tokens.colors.primary600 }}
+              $active={{ bg: theme.tokens.colors.primary700 }}
               $web-style={{
                 cursor: 'pointer',
                 transition: 'background-color 0.15s ease',
@@ -85,9 +87,9 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
                 <LucideIcon
                   name={dashboard.createSupportIcon}
                   size={18}
-                  color="#ffffff"
+                  color={theme.tokens.colors.backgroundPrimary.light}
                 />
-                <Text color="#ffffff" fontWeight="$bold" fontSize="$sm">
+                <Text color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.bodySmall} fontWeight="$medium">
                   {createSupportText}
                 </Text>
               </HStack>

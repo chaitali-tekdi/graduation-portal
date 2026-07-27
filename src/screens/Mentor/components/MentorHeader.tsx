@@ -13,6 +13,8 @@ import { useAuth } from '@contexts/AuthContext';
 import SUPPORT_PROVIDER_CONFIG, {
   MenuItemConfig,
 } from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
 interface MentorHeaderProps {
   currentRoute: string;
@@ -28,10 +30,21 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { branding, menuItems } = SUPPORT_PROVIDER_CONFIG;
-  const primaryColor = branding.headerBgColor || '#8B2842';
+  const primaryColor = branding.headerBgColor || theme.tokens.colors.primary500;
 
   const brandTitleText = t('supportProvider.branding.brandTitle') || branding.brandTitle;
-  const orgNameText = user?.orgName || t('supportProvider.branding.orgName') || branding.orgName;
+  const userOrgName =
+    user?.organizations?.[0]?.name ||
+    user?.organizations?.[0]?.label ||
+    user?.organizations?.[0]?.code ||
+    user?.user_organizations?.[0]?.organization?.name ||
+    user?.user_organizations?.[0]?.organization?.label ||
+    user?.orgName ||
+    user?.organizationName ||
+    user?.org_name ||
+    user?.organization;
+
+  const orgNameText = userOrgName || t('supportProvider.branding.orgName') || branding.orgName;
   const roleBadgeText = user?.role || t('supportProvider.branding.roleBadge') || branding.roleBadge;
 
   const toggleMenu = () => {
@@ -73,17 +86,17 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Open Menu"
             >
-              <LucideIcon name="Menu" size={22} color="#ffffff" />
+              <LucideIcon name="Menu" size={22} color={theme.tokens.colors.backgroundPrimary.light} />
             </Pressable>
 
-            <Text color="#ffffff" fontWeight="$bold" fontSize="$lg">
+            <Text color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.h3}>
               {brandTitleText}
             </Text>
           </HStack>
 
           {/* Right: User Org & Notification Bell */}
           <HStack alignItems="center" space="lg">
-            <Text color="#ffffff" fontSize="$sm" fontWeight="$medium">
+            <Text color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.bodySmall} fontWeight="$medium">
               {orgNameText}
             </Text>
 
@@ -94,14 +107,14 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
                 borderRadius="$full"
                 $hover={{ bg: 'rgba(255, 255, 255, 0.1)' }}
               >
-                <LucideIcon name="Bell" size={20} color="#ffffff" />
+                <LucideIcon name="Bell" size={20} color={theme.tokens.colors.backgroundPrimary.light} />
               </Pressable>
               {branding.notificationCount > 0 && (
                 <Box
                   position="absolute"
                   top={-2}
                   right={-4}
-                  bg="#EA580C"
+                  bg={theme.tokens.colors.pillarSocialProtection}
                   borderRadius="$full"
                   px="$1.5"
                   py={1}
@@ -109,7 +122,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <Text color="#ffffff" fontSize={10} fontWeight="$bold" lineHeight={10}>
+                  <Text color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.caption} fontWeight="$bold" lineHeight={10}>
                     {branding.notificationCount}
                   </Text>
                 </Box>
@@ -139,7 +152,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
               top={52}
               left={16}
               width={260}
-              bg="#ffffff"
+              bg={theme.tokens.colors.backgroundPrimary.light}
               borderRadius="$lg"
               borderWidth={1}
               borderColor="$borderLight200"
@@ -152,11 +165,11 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
               overflow="hidden"
             >
               {/* Header User Profile Info in Menu */}
-              <VStack p="$4" pb="$3" bg="#ffffff">
-                <Text color="$textDark900" fontWeight="$bold" fontSize="$md">
+              <VStack p="$4" pb="$3" bg={theme.tokens.colors.backgroundPrimary.light}>
+                <Text color="$textDark900" {...TYPOGRAPHY.label} fontWeight="$bold">
                   {orgNameText}
                 </Text>
-                <Text color="$textDark500" fontSize="$xs">
+                <Text color="$textDark500" {...TYPOGRAPHY.caption}>
                   {roleBadgeText}
                 </Text>
               </VStack>
@@ -177,20 +190,20 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
                       onPress={() => handleMenuSelect(item.route)}
                       px="$4"
                       py="$2.5"
-                      bg={isActive ? '#FDF2F5' : 'transparent'}
-                      $hover={{ bg: isActive ? '#FDF2F5' : '$backgroundLight100' }}
+                      bg={isActive ? theme.tokens.colors.primary50 : 'transparent'}
+                      $hover={{ bg: isActive ? theme.tokens.colors.primary50 : '$backgroundLight100' }}
                       $web-style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
                     >
                       <HStack alignItems="center" space="md">
                         <LucideIcon
                           name={item.iconName}
                           size={18}
-                          color={isActive ? primaryColor : '#4B5563'}
+                          color={isActive ? primaryColor : theme.tokens.colors.gray600}
                         />
                         <Text
                           color={isActive ? primaryColor : '$textDark800'}
+                          {...TYPOGRAPHY.bodySmall}
                           fontWeight={isActive ? '$bold' : '$normal'}
-                          fontSize="$sm"
                         >
                           {labelText}
                         </Text>
@@ -210,8 +223,8 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
                   $web-style={{ cursor: 'pointer' }}
                 >
                   <HStack alignItems="center" space="md">
-                    <LucideIcon name="LogOut" size={18} color="#DC2626" />
-                    <Text color="#DC2626" fontWeight="$medium" fontSize="$sm">
+                    <LucideIcon name="LogOut" size={18} color={theme.tokens.colors.error600} />
+                    <Text color={theme.tokens.colors.error600} {...TYPOGRAPHY.bodySmall} fontWeight="$medium">
                       {t('common.logout') || 'Logout'}
                     </Text>
                   </HStack>

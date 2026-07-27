@@ -118,7 +118,7 @@ export interface SupportProviderConfig {
 export const SUPPORT_PROVIDER_CONFIG: SupportProviderConfig = {
   branding: {
     brandTitle: 'GBL Partner Platform',
-    orgName: 'NYDA',
+    orgName: '',
     roleBadge: 'GBL Partner',
     notificationCount: 3,
     headerBgColor: '#8B2842',

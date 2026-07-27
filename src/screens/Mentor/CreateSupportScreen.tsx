@@ -12,6 +12,8 @@ import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG, {
   SupportCardConfig,
 } from '@constants/SUPPORT_PROVIDER_CONFIG';
+import { theme } from '@config/theme';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import SupportCard from './components/SupportCard';
 
 interface CreateSupportScreenProps {
@@ -34,7 +36,7 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
       {/* Styled Top Header Container with Background Color and Bottom Border */}
       <Box
         width="100%"
-        bg="#ffffff"
+        bg={theme.tokens.colors.backgroundPrimary.light}
         borderBottomWidth={1}
         borderColor="$borderLight200"
         py="$6"
@@ -58,7 +60,7 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
           >
             <HStack alignItems="center" space="xs">
               <LucideIcon name="ArrowLeft" size={16} color="$textDark800" />
-              <Text color="$textDark800" fontSize="$sm" fontWeight="$medium">
+              <Text color="$textDark800" {...TYPOGRAPHY.label}>
                 {backText}
               </Text>
             </HStack>
@@ -66,10 +68,10 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
 
           {/* Center-aligned Title and Subtitle Section */}
           <VStack space="xs" alignItems="flex-start">
-            <Text color="$textDark900" fontWeight="$bold" fontSize="$2xl" alignItems="flex-start">
+            <Text color="$textDark900" {...TYPOGRAPHY.h1} fontWeight="$bold" alignItems="flex-start">
               {pageTitle}
             </Text>
-            <Text color="$textDark600" fontSize="$sm" alignItems="flex-start">
+            <Text color="$textDark600" {...TYPOGRAPHY.bodySmall} alignItems="flex-start">
               {pageSubtitle}
             </Text>
           </VStack>
