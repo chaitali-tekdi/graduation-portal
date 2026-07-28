@@ -136,18 +136,11 @@ export const SUPPORT_PROVIDER_CONFIG: SupportProviderConfig = {
       active: true,
     },
     {
-      key: 'training_sessions',
-      labelKey: 'supportProvider.menu.trainingSessions',
-      label: 'Training Sessions',
-      iconName: 'GraduationCap',
-      route: 'create_training_session',
-    },
-    {
-      key: 'support_offerings',
-      labelKey: 'supportProvider.menu.supportOfferings',
-      label: 'Support Offerings',
+      key: 'my_support_offerings',
+      labelKey: 'supportProvider.menu.mySupportOfferings',
+      label: 'My Support Offerings',
       iconName: 'Package',
-      route: 'create_support',
+      route: 'my_support_offerings',
     },
     {
       key: 'requests',

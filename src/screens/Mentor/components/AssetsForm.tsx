@@ -16,7 +16,7 @@ import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince } from '../../../services/usersService';
 import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
-import { ASSETS_STEP1_SCHEMA } from '@constants/ASSETS_FORM_SCHEMA';
+import { ASSETS_FORM_SCHEMA } from '@constants/ASSETS_FORM_SCHEMA';
 
 
 const MENTOR_INPUT_STYLE = {
@@ -126,7 +126,8 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 
   const handleNext = () => {
     if (activeStep === 1) {
-      const isValid = validateStep(ASSETS_STEP1_SCHEMA);
+      const assetDetailsSchema = ASSETS_FORM_SCHEMA.filter(s => s.tab === 'assetDetails');
+      const isValid = validateStep(assetDetailsSchema);
       if (!isValid) return;
       setActiveStep(2);
     } else {
@@ -183,9 +184,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
               </Text>
             </VStack>
 
-            {/* All Step 1 fields — schema-driven */}
+            {/* All Asset Details fields — filtered from unified schema */}
             <SchemaFormRenderer
-              schema={ASSETS_STEP1_SCHEMA}
+              schema={ASSETS_FORM_SCHEMA.filter(s => s.tab === 'assetDetails')}
               values={values}
               errors={errors}
               onFieldChange={handleFieldChange}

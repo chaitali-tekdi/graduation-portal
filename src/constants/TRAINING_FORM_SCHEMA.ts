@@ -1,24 +1,24 @@
 /**
- * TRAINING_SESSION_DETAILS_SCHEMA
+ * TRAINING_FORM_SCHEMA
  *
- * Complete schema-driven definition for the Create Training Session form.
- * Every field across all steps is declared here and rendered by SchemaFormRenderer.
+ * Single schema for the Create Training Session form.
+ * Every field is declared here; each section carries a `tab` property
+ * that maps it to the currently active tab:
  *
- * Step 1 — Session Details:
- *   province, site, pillar, sessionType / sessionTitle,
- *   description, learningObjectives, targetAudience, certificateProvided,
- *   maxCapacity, recurringSession
+ *   'sessionDetails'   → Session Details tab (step 1)
+ *   'scheduleFormat'   → Schedule & Format tab (step 2)
  *
- * Step 2 — Schedule & Format:
- *   startDate, startTime, endDate, endTime, formatType, venueLocation
+ * The consumer filters sections by `tab === activeTab` before passing
+ * them to SchemaFormRenderer or validateSchema.
  */
 
 import type { FormSection } from '@constants/CREATE_USER_FORM_SCHEMA';
 
-// ─── Step 1: Session Details ──────────────────────────────────────────────────
+export const TRAINING_FORM_SCHEMA: (FormSection & { tab: string })[] = [
+  // ─── Tab: Session Details ─────────────────────────────────────────────────
 
-export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
   {
+    tab: 'sessionDetails',
     id: 'locationDetails',
     icon: 'MapPin',
     title: { key: 'locationDetails', fallback: 'Location' },
@@ -60,7 +60,9 @@ export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'sessionDetails',
     id: 'pillarDetails',
     icon: 'Layers',
     title: { key: 'pillarDetails', fallback: 'Pillar' },
@@ -125,7 +127,9 @@ export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'sessionDetails',
     id: 'sessionContent',
     icon: 'FileText',
     title: { key: 'sessionContent', fallback: 'Session Content' },
@@ -162,7 +166,9 @@ export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'sessionDetails',
     id: 'audienceAndCapacity',
     icon: 'Users',
     title: { key: 'audienceAndCapacity', fallback: 'Audience & Capacity' },
@@ -231,12 +237,11 @@ export const TRAINING_SESSION_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
-];
 
-// ─── Step 2: Schedule & Format ────────────────────────────────────────────────
+  // ─── Tab: Schedule & Format ───────────────────────────────────────────────
 
-export const TRAINING_SESSION_STEP2_SCHEMA: FormSection[] = [
   {
+    tab: 'scheduleFormat',
     id: 'scheduleDetails',
     icon: 'Calendar',
     title: { key: 'scheduleDetails', fallback: 'Date & Time' },
@@ -303,7 +308,9 @@ export const TRAINING_SESSION_STEP2_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'scheduleFormat',
     id: 'formatDetails',
     icon: 'Presentation',
     title: { key: 'formatDetails', fallback: 'Format & Location' },

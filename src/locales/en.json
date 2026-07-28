@@ -2265,8 +2265,7 @@
     },
     "menu": {
       "dashboard": "Dashboard",
-      "trainingSessions": "Training Sessions",
-      "supportOfferings": "Support Offerings",
+      "mySupportOfferings": "My Support Offerings",
       "requests": "Requests",
       "materialsLibrary": "Materials Library",
       "profile": "Profile"
@@ -2406,7 +2405,8 @@
       },
       "buttons": {
         "previous": "Previous",
-        "continue": "Continue"
+        "continue": "Continue",
+        "saveDraft": "Save as Draft"
       }
     },
     "assetSupport": {

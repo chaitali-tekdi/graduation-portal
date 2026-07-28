@@ -18,10 +18,7 @@ import FormStepperHeader from './components/FormStepperHeader';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince } from '../../services/usersService';
 import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
-import {
-  TRAINING_SESSION_STEP1_SCHEMA,
-  TRAINING_SESSION_STEP2_SCHEMA,
-} from '@constants/TRAINING_FORM_SCHEMA';
+import { TRAINING_FORM_SCHEMA } from '@constants/TRAINING_FORM_SCHEMA';
 
 
 const MENTOR_INPUT_STYLE = {
@@ -193,15 +190,19 @@ export const CreateTrainingSessionScreen: React.FC<
   const previousText = t('supportProvider.trainingSession.buttons.previous') || 'Previous';
   const continueText = t('supportProvider.trainingSession.buttons.continue') || 'Continue';
 
+  // Map step number → tab key (used to filter TRAINING_FORM_SCHEMA)
+  const STEP_TAB: Record<number, string> = {
+    1: 'sessionDetails',
+    2: 'scheduleFormat',
+  };
+
   const handleNext = () => {
-    if (activeStep === 1) {
-      const isValid = validateStep(TRAINING_SESSION_STEP1_SCHEMA);
+    if (activeStep === 1 || activeStep === 2) {
+      const tabKey = STEP_TAB[activeStep];
+      const tabSchema = TRAINING_FORM_SCHEMA.filter(s => s.tab === tabKey);
+      const isValid = validateStep(tabSchema);
       if (!isValid) return;
-      setActiveStep(2);
-    } else if (activeStep === 2) {
-      const isValid = validateStep(TRAINING_SESSION_STEP2_SCHEMA);
-      if (!isValid) return;
-      setActiveStep(3);
+      setActiveStep(activeStep + 1);
     } else {
       setErrors({});
       setIsPublished(true);
@@ -285,9 +286,9 @@ export const CreateTrainingSessionScreen: React.FC<
                 </Text>
               </VStack>
 
-              {/* All Step 1 fields — schema-driven */}
+              {/* All Session Details fields — filtered from unified schema */}
               <SchemaFormRenderer
-                schema={TRAINING_SESSION_STEP1_SCHEMA}
+                schema={TRAINING_FORM_SCHEMA.filter(s => s.tab === 'sessionDetails')}
                 values={values}
                 errors={errors}
                 onFieldChange={handleFieldChange}
@@ -350,9 +351,9 @@ export const CreateTrainingSessionScreen: React.FC<
                 </Text>
               </VStack>
 
-              {/* All Step 2 fields — schema-driven */}
+              {/* All Schedule & Format fields — filtered from unified schema */}
               <SchemaFormRenderer
-                schema={TRAINING_SESSION_STEP2_SCHEMA}
+                schema={TRAINING_FORM_SCHEMA.filter(s => s.tab === 'scheduleFormat')}
                 values={values}
                 errors={errors}
                 onFieldChange={handleFieldChange}
@@ -517,20 +518,38 @@ export const CreateTrainingSessionScreen: React.FC<
           </Button>
 
           {activeStep < 3 ? (
-            <Button
-              bg={primaryColor}
-              $hover={{ bg: theme.tokens.colors.primary600 }}
-              $active={{ bg: theme.tokens.colors.primary700 }}
-              onPress={handleNext}
-              $web-style={{ cursor: 'pointer' }}
-            >
-              <HStack alignItems="center" space="xs">
-                <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
-                  {continueText}
-                </ButtonText>
-                <LucideIcon name="ArrowRight" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
-              </HStack>
-            </Button>
+            <HStack space="sm" alignItems="center">
+              {/* Save as Draft */}
+              <Button
+                variant="outline"
+                borderColor="$borderLight300"
+                onPress={() => {}}
+                $web-style={{ cursor: 'pointer' }}
+              >
+                <HStack alignItems="center" space="xs">
+                  <LucideIcon name="FileText" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
+                  <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>
+                    {t('supportProvider.trainingSession.buttons.saveDraft') || 'Save as Draft'}
+                  </ButtonText>
+                </HStack>
+              </Button>
+
+              {/* Continue */}
+              <Button
+                bg={primaryColor}
+                $hover={{ bg: theme.tokens.colors.primary600 }}
+                $active={{ bg: theme.tokens.colors.primary700 }}
+                onPress={handleNext}
+                $web-style={{ cursor: 'pointer' }}
+              >
+                <HStack alignItems="center" space="xs">
+                  <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
+                    {continueText}
+                  </ButtonText>
+                  <LucideIcon name="ArrowRight" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
+                </HStack>
+              </Button>
+            </HStack>
           ) : (
             <Button
               bg={theme.tokens.colors.tickButtonActiveBg}

@@ -64,7 +64,6 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
     <Box zIndex={1000} bg={primaryColor} width="100%">
       {/* Top Header Inner Centered Container */}
       <Box
-        maxWidth={1200}
         width="100%"
         alignSelf="center"
         px="$4"

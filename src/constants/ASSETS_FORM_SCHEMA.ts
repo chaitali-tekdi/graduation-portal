@@ -1,21 +1,23 @@
 /**
  * ASSETS_FORM_SCHEMA
  *
- * Complete schema-driven definition for the Assets (Asset Support) form.
- * Every field in Step 1 is declared here and rendered by SchemaFormRenderer.
+ * Single schema for the Assets (Asset Support) form.
+ * Every field is declared here; each section carries a `tab` property
+ * that maps it to the currently active tab:
  *
- * Step 1 — Asset Details:
- *   province, site, assetType, livelihoodCategory,
- *   assetTitle, assetDescription, estimatedValue,
- *   startDate, startTime, endDate, endTime (availability)
+ *   'assetDetails'   → Asset Details tab (step 1)
+ *
+ * The consumer filters sections by `tab === activeTab` before passing
+ * them to SchemaFormRenderer or validateSchema.
  */
 
 import type { FormSection } from '@constants/CREATE_USER_FORM_SCHEMA';
 
-// ─── Step 1: Asset Details ────────────────────────────────────────────────────
+export const ASSETS_FORM_SCHEMA: (FormSection & { tab: string })[] = [
+  // ─── Tab: Asset Details ───────────────────────────────────────────────────
 
-export const ASSETS_STEP1_SCHEMA: FormSection[] = [
   {
+    tab: 'assetDetails',
     id: 'assetLocation',
     icon: 'MapPin',
     title: { key: 'assetLocation', fallback: 'Location' },
@@ -57,7 +59,9 @@ export const ASSETS_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'assetDetails',
     id: 'assetTypeDetails',
     icon: 'Package',
     title: { key: 'assetTypeDetails', fallback: 'Asset Type' },
@@ -102,7 +106,9 @@ export const ASSETS_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'assetDetails',
     id: 'assetContent',
     icon: 'FileText',
     title: { key: 'assetContent', fallback: 'Asset Details' },
@@ -170,7 +176,9 @@ export const ASSETS_STEP1_SCHEMA: FormSection[] = [
       },
     ],
   },
+
   {
+    tab: 'assetDetails',
     id: 'assetAvailability',
     icon: 'Calendar',
     title: { key: 'assetAvailability', fallback: 'Availability (optional)' },
