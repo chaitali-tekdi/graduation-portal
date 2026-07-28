@@ -19,6 +19,7 @@ import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince } from '../../services/usersService';
 import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
 import { TRAINING_FORM_SCHEMA } from '@constants/TRAINING_FORM_SCHEMA';
+import { usePlatform } from '@utils/platform';
 
 
 const MENTOR_INPUT_STYLE = {
@@ -30,8 +31,10 @@ const MENTOR_INPUT_STYLE = {
   borderColor: '$borderLight300' as const,
 };
 
+import { useNavigation } from '@react-navigation/native';
+
 interface CreateTrainingSessionScreenProps {
-  onNavigate: (route: string) => void;
+  onNavigate?: (route: string) => void;
 }
 
 // ─── Pillar → Session Type mapping ───────────────────────────────────────────
@@ -60,6 +63,16 @@ export const CreateTrainingSessionScreen: React.FC<
   const { t } = useLanguage();
   const { branding } = SUPPORT_PROVIDER_CONFIG;
   const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
+  const navigation = useNavigation();
+  const { isMobile } = usePlatform();
+
+  const handleNavigate = (route: string) => {
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      navigation.navigate(route as never);
+    }
+  };
 
   // Active step tab (1: Details, 2: Schedule & Format, 3: Review & Publish)
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -207,7 +220,7 @@ export const CreateTrainingSessionScreen: React.FC<
       setErrors({});
       setIsPublished(true);
       setTimeout(() => {
-        onNavigate('dashboard');
+        handleNavigate('support-provider-dashboard');
       }, 1800);
     }
   };
@@ -216,7 +229,7 @@ export const CreateTrainingSessionScreen: React.FC<
     if (activeStep > 1) {
       setActiveStep(prev => prev - 1);
     } else {
-      onNavigate('create_support');
+      handleNavigate('support-provider-create-opportunities');
     }
   };
 
@@ -502,14 +515,21 @@ export const CreateTrainingSessionScreen: React.FC<
         </Box>
 
         {/* Bottom Action Navigation Buttons */}
-        <HStack justifyContent="space-between" alignItems="center" width="100%">
+        <HStack
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+          flexDirection={isMobile ? 'column-reverse' : 'row'}
+          gap={isMobile ? '$3' : '$0'}
+        >
           <Button
             variant="outline"
             borderColor="$borderLight300"
             onPress={handlePrev}
             $web-style={{ cursor: 'pointer' }}
+            width={isMobile ? '100%' : 'auto'}
           >
-            <HStack alignItems="center" space="xs">
+            <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
               <LucideIcon name="ArrowLeft" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
               <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>
                 {previousText}
@@ -518,15 +538,22 @@ export const CreateTrainingSessionScreen: React.FC<
           </Button>
 
           {activeStep < 3 ? (
-            <HStack space="sm" alignItems="center">
+            <HStack
+              space="sm"
+              alignItems="center"
+              flexDirection={isMobile ? 'column-reverse' : 'row'}
+              width={isMobile ? '100%' : 'auto'}
+              gap={isMobile ? '$3' : '$0'}
+            >
               {/* Save as Draft */}
               <Button
                 variant="outline"
                 borderColor="$borderLight300"
                 onPress={() => {}}
                 $web-style={{ cursor: 'pointer' }}
+                width={isMobile ? '100%' : 'auto'}
               >
-                <HStack alignItems="center" space="xs">
+                <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
                   <LucideIcon name="FileText" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
                   <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>
                     {t('supportProvider.trainingSession.buttons.saveDraft') || 'Save as Draft'}
@@ -541,8 +568,9 @@ export const CreateTrainingSessionScreen: React.FC<
                 $active={{ bg: theme.tokens.colors.primary700 }}
                 onPress={handleNext}
                 $web-style={{ cursor: 'pointer' }}
+                width={isMobile ? '100%' : 'auto'}
               >
-                <HStack alignItems="center" space="xs">
+                <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
                   <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                     {continueText}
                   </ButtonText>
@@ -557,8 +585,9 @@ export const CreateTrainingSessionScreen: React.FC<
               $active={{ bg: theme.tokens.colors.success700 }}
               onPress={handleNext}
               $web-style={{ cursor: 'pointer' }}
+              width={isMobile ? '100%' : 'auto'}
             >
-              <HStack alignItems="center" space="xs">
+              <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
                 <LucideIcon name="Check" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
                 <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {t('supportProvider.trainingSession.step3.publishButton') || 'Publish Support'}

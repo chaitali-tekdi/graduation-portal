@@ -15,9 +15,10 @@ import SUPPORT_PROVIDER_CONFIG, {
 import { theme } from '@config/theme';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import SupportCard from './components/SupportCard';
+import { useNavigation } from '@react-navigation/native';
 
 interface CreateSupportScreenProps {
-  onNavigate: (route: string) => void;
+  onNavigate?: (route: string) => void;
 }
 
 export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
@@ -25,6 +26,15 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
 }) => {
   const { t } = useLanguage();
   const { createSupport } = SUPPORT_PROVIDER_CONFIG;
+  const navigation = useNavigation();
+
+  const handleNavigate = (route: string) => {
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      navigation.navigate(route as never);
+    }
+  };
 
   const backText = t(createSupport.backKey) || createSupport.defaultBack;
   const pageTitle = t(createSupport.titleKey) || createSupport.defaultTitle;
@@ -52,7 +62,7 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
         >
           {/* Back Button */}
           <Pressable
-            onPress={() => onNavigate('dashboard')}
+            onPress={() => handleNavigate('support-provider-dashboard')}
             mb="$4"
             alignSelf="flex-start"
             $hover={{ opacity: 0.8 }}
@@ -101,7 +111,7 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
             <SupportCard
               key={card.key}
               card={card}
-              onPress={onNavigate}
+              onPress={handleNavigate}
             />
           ))}
         </Box>

@@ -12,6 +12,7 @@ import {
 } from '@gluestack-ui/themed';
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
+import { theme } from '@config/theme';
 
 /**
  * Menu Component - Enhanced with Icon and Divider Support
@@ -23,8 +24,9 @@ import { useLanguage } from '@contexts/LanguageContext';
  */
 export interface MenuItemData {
   key: string;
-  label: string;
+  label?: string;
   textValue: string;
+  customElement?: React.ReactNode;
   icon?: any;
   iconSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   iconElement?: React.ReactNode; // Custom ReactNode for icon (e.g., React.createElement pattern)
@@ -41,18 +43,18 @@ export interface MenuItemData {
 export interface CustomMenuProps {
   items: MenuItemData[];
   placement?:
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'top left'
-    | 'top right'
-    | 'bottom left'
-    | 'bottom right'
-    | 'left top'
-    | 'left bottom'
-    | 'right top'
-    | 'right bottom';
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top left'
+  | 'top right'
+  | 'bottom left'
+  | 'bottom right'
+  | 'left top'
+  | 'left bottom'
+  | 'right top'
+  | 'right bottom';
   offset?: number;
   disabledKeys?: string[];
   triggerLabel?: string;
@@ -130,8 +132,33 @@ export const CustomMenu: React.FC<CustomMenuProps> = ({
       {...menuProps}
     >
       {items?.map((item: MenuItemData, index: number) => {
+        if (item.customElement) {
+          return (
+            <React.Fragment key={item.key || index.toString()}>
+              <MenuItem
+                key={item.key || index.toString()}
+                textValue={item.textValue}
+                disabled={true}
+                padding="$0"
+              >
+                {item.customElement}
+              </MenuItem>
+              {item.showDividerAfter && (
+                <MenuItem
+                  key={`${item.key}-separator`}
+                  textValue="separator"
+                  disabled={true}
+                  onPress={() => { }} padding="$0"
+                >
+                  <Box height={1} width="100%" bg="$borderLight200" my="$1" />
+                </MenuItem>
+              )}
+            </React.Fragment>
+          );
+        }
+
         const isDisabled = item.isComingSoon || disabledKeys.includes(item.key);
-        
+
         // Render menu item with icon support (priority: iconElement > iconName > icon)
         const menuItem = (
           <MenuItem
@@ -144,6 +171,8 @@ export const CustomMenu: React.FC<CustomMenuProps> = ({
             }}
             disabled={isDisabled}
             opacity={item.isComingSoon ? 0.6 : 1}
+            bg={item.active ? '$primary300' : 'transparent'}
+            $hover={{ bg: item.active ? '$primary300' : '$accent200' }}
           >
             <Box flexDirection="row" alignItems="center" justifyContent="space-between" flex={1}>
               <Box flexDirection="row" alignItems="center" flex={1}>
@@ -155,17 +184,21 @@ export const CustomMenu: React.FC<CustomMenuProps> = ({
                 ) : item.iconName ? (
                   // LucideIcon by name (flexible icon rendering)
                   <Box mr="$2">
-                    <LucideIcon 
-                      name={item.iconName} 
-                      size={item.iconSizeValue || 16} 
-                      color={item.iconColor} 
+                    <LucideIcon
+                      name={item.iconName}
+                      size={item.iconSizeValue || 16}
+                      color={item.active ? theme.tokens.colors.primary500 : item.iconColor}
                     />
                   </Box>
                 ) : item.icon ? (
                   // Gluestack Icon component
                   <Icon as={item.icon} size={item.iconSize || 'sm'} me="$2" />
                 ) : null}
-                <MenuItemLabel size="sm" color={item.color}>
+                <MenuItemLabel
+                  size="sm"
+                  color={item.active ? '$primary500' : (item.color || '$textForegroundColor')}
+                  fontWeight={item.active ? '$semibold' : '$medium'}
+                >
                   {t(item.label)}
                 </MenuItemLabel>
               </Box>
@@ -197,7 +230,7 @@ export const CustomMenu: React.FC<CustomMenuProps> = ({
                 key={item.key ? `${item.key}-separator` : `separator-${index}`}
                 textValue="separator"
                 disabled={true}
-                onPress={() => {}} padding="$0"
+                onPress={() => { }} padding="$0"
               >
                 <Box height={1} width="100%" bg="$borderLight200" my="$1" />
               </MenuItem>

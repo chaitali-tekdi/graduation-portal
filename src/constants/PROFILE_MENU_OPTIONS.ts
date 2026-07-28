@@ -111,6 +111,63 @@ export const LC_MENU_OPTIONS: MenuItemData[] = [
   },
 ];
 
+export const SUPPORT_PROVIDER_MENU_OPTIONS: MenuItemData[] = [
+  {
+    key: 'dashboard',
+    label: 'supportProvider.menu.dashboard',
+    textValue: 'dashboard',
+    iconName: 'LayoutDashboard',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    route: 'support-provider-dashboard',
+  },
+  {
+    key: 'my_support_offerings',
+    label: 'supportProvider.menu.mySupportOfferings',
+    textValue: 'my_support_offerings',
+    iconName: 'Package',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    route: 'support-provider-my-support-offerings',
+  },
+  {
+    key: 'requests',
+    label: 'supportProvider.menu.requests',
+    textValue: 'requests',
+    iconName: 'Bell',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    route: 'support-provider-requests',
+  },
+  {
+    key: 'materials_library',
+    label: 'supportProvider.menu.materialsLibrary',
+    textValue: 'materials_library',
+    iconName: 'BookOpen',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    route: 'support-provider-materials-library',
+  },
+  {
+    key: 'profile',
+    label: 'supportProvider.menu.profile',
+    textValue: 'profile',
+    iconName: 'User',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    route: 'support-provider-profile',
+  },
+  {
+    key: 'logout',
+    label: 'common.logout',
+    textValue: 'logout',
+    iconName: 'LogOut',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.error600,
+    showDividerAfter: false,
+  },
+];
+
 // Default export for Admin (backward compatibility)
 export default ADMIN_MENU_OPTIONS;
 

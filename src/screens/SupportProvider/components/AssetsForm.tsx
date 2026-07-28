@@ -17,6 +17,7 @@ import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince } from '../../../services/usersService';
 import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
 import { ASSETS_FORM_SCHEMA } from '@constants/ASSETS_FORM_SCHEMA';
+import { usePlatform } from '@utils/platform';
 
 
 const MENTOR_INPUT_STYLE = {
@@ -28,10 +29,12 @@ const MENTOR_INPUT_STYLE = {
   borderColor: '$borderLight300' as const,
 };
 
+import { useNavigation } from '@react-navigation/native';
+
 interface AssetsFormProps {
   activeStep: number;
   setActiveStep: (step: number) => void;
-  onNavigate: (route: string) => void;
+  onNavigate?: (route: string) => void;
 }
 
 export const AssetsForm: React.FC<AssetsFormProps> = ({
@@ -42,6 +45,16 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
   const { t } = useLanguage();
   const { branding } = SUPPORT_PROVIDER_CONFIG;
   const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
+  const navigation = useNavigation();
+  const { isMobile } = usePlatform();
+
+  const handleNavigate = (route: string) => {
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      navigation.navigate(route as never);
+    }
+  };
 
   // Dynamic Province & Site
   const { provinces: dynamicProvinces } = useUserManagementFilters({});
@@ -133,7 +146,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
     } else {
       setIsPublished(true);
       setTimeout(() => {
-        onNavigate('dashboard');
+        handleNavigate('support-provider-dashboard');
       }, 1800);
     }
   };
@@ -142,7 +155,7 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
     if (activeStep > 1) {
       setActiveStep(1);
     } else {
-      onNavigate('create_support');
+      handleNavigate('support-provider-create-opportunities');
     }
   };
 
@@ -276,7 +289,13 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
 
       {/* Bottom Action Bar */}
       {!isPublished && (
-        <HStack justifyContent="space-between" alignItems="center" width="100%">
+        <HStack
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+          flexDirection={isMobile ? 'column-reverse' : 'row'}
+          gap={isMobile ? '$3' : '$0'}
+        >
           {/* Previous Button */}
           <Button
             variant="outline"
@@ -286,8 +305,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
             px="$5"
             $hover={{ bg: theme.tokens.colors.hoverBackground }}
             $web-style={{ cursor: 'pointer' }}
+            width={isMobile ? '100%' : 'auto'}
           >
-            <HStack alignItems="center" space="xs">
+            <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
               <LucideIcon name="ArrowLeft" size={16} color="$textDark700" />
               <ButtonText color="$textDark700" {...TYPOGRAPHY.button}>
                 {t('supportProvider.assetSupport.buttons.previous') || 'Previous'}
@@ -303,8 +323,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
               px="$6"
               $hover={{ bg: theme.tokens.colors.primary600 }}
               $web-style={{ cursor: 'pointer' }}
+              width={isMobile ? '100%' : 'auto'}
             >
-              <HStack alignItems="center" space="xs">
+              <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
                 <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {t('supportProvider.assetSupport.buttons.continue') || 'Continue'}
                 </ButtonText>
@@ -318,8 +339,9 @@ export const AssetsForm: React.FC<AssetsFormProps> = ({
               px="$6"
               $hover={{ bg: theme.tokens.colors.pillarLivelihoods }}
               $web-style={{ cursor: 'pointer' }}
+              width={isMobile ? '100%' : 'auto'}
             >
-              <HStack alignItems="center" space="xs">
+              <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
                 <LucideIcon name="Check" size={16} color={theme.tokens.colors.backgroundPrimary.light} />
                 <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
                   {t('supportProvider.assetSupport.step2.publishButton') || 'Publish Support'}

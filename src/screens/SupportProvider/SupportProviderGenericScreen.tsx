@@ -6,26 +6,40 @@ import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
 import { theme } from '@config/theme';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 
-interface MentorGenericScreenProps {
-  route: string;
-  onNavigate: (route: string) => void;
+import { useRoute, useNavigation } from '@react-navigation/native';
+
+interface SupportProviderGenericScreenProps {
+  route?: string;
+  onNavigate?: (route: string) => void;
 }
 
-export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
+export const SupportProviderGenericScreen: React.FC<SupportProviderGenericScreenProps> = ({
   route,
   onNavigate,
 }) => {
   const { t } = useLanguage();
   const { generic, branding } = SUPPORT_PROVIDER_CONFIG;
   const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
+  const routeObj = useRoute();
+  const navigation = useNavigation();
+
+  const currentRoute = route || routeObj.name;
+
+  const handleNavigate = (targetRoute: string) => {
+    if (onNavigate) {
+      onNavigate(targetRoute);
+    } else {
+      navigation.navigate(targetRoute as never);
+    }
+  };
 
   const menuItem = SUPPORT_PROVIDER_CONFIG.menuItems.find(
-    item => item.route === route,
+    item => item.route === currentRoute,
   );
 
   const title = menuItem
     ? t(menuItem.labelKey) || menuItem.label
-    : route.replace('_', ' ').toUpperCase();
+    : currentRoute.replace('support-provider-', '').replace('_', ' ').toUpperCase();
   const iconName = menuItem?.iconName || 'Package';
 
   const backText =
@@ -49,7 +63,7 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
       >
         {/* Back Link */}
         <Pressable
-          onPress={() => onNavigate('dashboard')}
+          onPress={() => handleNavigate('support-provider-dashboard')}
           mb="$4"
           alignSelf="flex-start"
           $hover={{ opacity: 0.8 }}
@@ -105,7 +119,7 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
             px="$6"
             py="$2.5"
             borderRadius="$lg"
-            onPress={() => onNavigate('dashboard')}
+            onPress={() => handleNavigate('support-provider-dashboard')}
             $hover={{ bg: theme.tokens.colors.primary600 }}
             $web-style={{ cursor: 'pointer' }}
           >
@@ -119,4 +133,4 @@ export const MentorGenericScreen: React.FC<MentorGenericScreenProps> = ({
   );
 };
 
-export default MentorGenericScreen;
+export default SupportProviderGenericScreen;

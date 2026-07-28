@@ -12,18 +12,28 @@ import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
 import { theme } from '@config/theme';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
-// import ImpactOverviewCard from './components/ImpactOverviewCard';
 
-interface MentorDashboardProps {
-  onNavigate: (route: string) => void;
+import { useNavigation } from '@react-navigation/native';
+
+interface SupportProviderDashboardProps {
+  onNavigate?: (route: string) => void;
 }
 
-export const MentorDashboard: React.FC<MentorDashboardProps> = ({
+export const SupportProviderDashboard: React.FC<SupportProviderDashboardProps> = ({
   onNavigate,
 }) => {
   const { t } = useLanguage();
   const { dashboard, branding } = SUPPORT_PROVIDER_CONFIG;
   const primaryColor = branding.themePrimaryColor || theme.tokens.colors.primary500;
+  const navigation = useNavigation();
+
+  const handleNavigate = (route: string) => {
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      navigation.navigate(route as never);
+    }
+  };
 
   const pageTitle = t(dashboard.titleKey) || dashboard.defaultTitle;
   const pageSubtitle = t(dashboard.subtitleKey) || dashboard.defaultSubtitle;
@@ -66,10 +76,10 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
                 {pageSubtitle}
               </Text>
             </VStack>
-
+ 
             {/* Right Header Action Button */}
             <Pressable
-              onPress={() => onNavigate('create_support')}
+              onPress={() => handleNavigate('support-provider-create-opportunities')}
               bg={primaryColor}
               px="$4"
               py="$2.5"
@@ -97,7 +107,7 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
           </HStack>
         </Box>
       </Box>
-
+ 
       {/* Main Page Content Container */}
       <Box
         width="100%"
@@ -116,4 +126,4 @@ export const MentorDashboard: React.FC<MentorDashboardProps> = ({
   );
 };
 
-export default MentorDashboard;
+export default SupportProviderDashboard;

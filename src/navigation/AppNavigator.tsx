@@ -46,7 +46,11 @@ const AssignUsersScreen = lazyScreen(() => import('../screens/AssignUsers'));
 const AdminDashboard = lazyScreen(() => import('../screens/AdminDashboard'));
 const ProfilePermissions = lazyScreen(() => import('../screens/ProfilePermissions'));
 const ForgotPasswordScreen = lazyScreen(() => import('../screens/Auth/ForgotPasswordScreen'));
-const MentorScreen = lazyScreen(() => import('../screens/Mentor'));
+const CreateSupportScreen = lazyScreen(() => import('../screens/SupportProvider/CreateSupportScreen'));
+const CreateTrainingSessionScreen = lazyScreen(() => import('../screens/SupportProvider/CreateTrainingSessionScreen'));
+const CreateAssetSupportScreen = lazyScreen(() => import('../screens/SupportProvider/CreateAssetSupportScreen'));
+const SupportProviderGenericScreen = lazyScreen(() => import('../screens/SupportProvider/SupportProviderGenericScreen'));
+const SupportProviderDashboard = lazyScreen(() => import('../screens/SupportProvider/SupportProviderDashboard'));
 const spinnerHeight = (isWebPlatform ? '$100vh' : '$full') as any;
 
 // Error Boundary for Navigation
@@ -109,7 +113,7 @@ const getAccessPages = (
           path: '/csv-templates',
           component: CsvImportTemplates,
         },
-       {
+        {
           name: 'ProfilePermissions',
           path: '/profile-permissions',
           component: ProfilePermissions,
@@ -167,7 +171,14 @@ const getAccessPages = (
       ];
     case 'mentor':
       return [
-        { name: 'mentor', component: MentorScreen },
+        { name: 'support-provider-dashboard', path: '/dashboard', component: SupportProviderDashboard },
+        { name: 'support-provider-create-opportunities', path: '/create-opportunities', component: CreateSupportScreen },
+        { name: 'support-provider-training-sessions', path: '/create-opportunities/training-sessions', component: CreateTrainingSessionScreen },
+        { name: 'support-provider-assets', path: '/create-opportunities/create/assets', component: CreateAssetSupportScreen },
+        { name: 'support-provider-my-support-offerings', path: '/my-support-offerings', component: SupportProviderGenericScreen },
+        { name: 'support-provider-requests', path: '/requests', component: SupportProviderGenericScreen },
+        { name: 'support-provider-materials-library', path: '/materials-library', component: SupportProviderGenericScreen },
+        { name: 'support-provider-profile', path: '/profile', component: SupportProviderGenericScreen },
       ];
     case 'lc':
       return [

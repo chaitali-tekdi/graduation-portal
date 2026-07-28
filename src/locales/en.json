@@ -2259,6 +2259,17 @@
     "goBack": "Go Back"
   },
   "supportProvider": {
+    "pageTitle": {
+      "support-provider-dashboard": "Dashboard",
+      "support-provider-create-opportunities": "Create New Support",
+      "support-provider-training-sessions": "Create Training Session",
+      "support-provider-assets": "Create Asset",
+      "support-provider-additional-services": "Create Additional Service",
+      "support-provider-my-support-offerings": "My Support Offerings",
+      "support-provider-requests": "Requests",
+      "support-provider-materials-library": "Materials Library",
+      "support-provider-profile": "Profile"
+    },
     "branding": {
       "brandTitle": "GBL Partner Platform",
       "roleBadge": "GBL Partner"

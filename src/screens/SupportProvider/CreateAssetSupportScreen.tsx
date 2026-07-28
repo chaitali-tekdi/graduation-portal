@@ -3,9 +3,10 @@ import { ScrollView } from '@gluestack-ui/themed';
 import { useLanguage } from '@contexts/LanguageContext';
 import FormStepperHeader, { StepperTabItem } from './components/FormStepperHeader';
 import AssetsForm from './components/AssetsForm';
+import { useNavigation } from '@react-navigation/native';
 
 interface CreateAssetSupportScreenProps {
-  onNavigate: (route: string) => void;
+  onNavigate?: (route: string) => void;
 }
 
 export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> = ({
@@ -13,6 +14,15 @@ export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> =
 }) => {
   const { t } = useLanguage();
   const [activeStep, setActiveStep] = useState(1);
+  const navigation = useNavigation();
+
+  const handleNavigate = (route: string) => {
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      navigation.navigate(route as never);
+    }
+  };
 
   const assetStepperTabs: StepperTabItem[] = [
     {
@@ -31,7 +41,7 @@ export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> =
     if (activeStep > 1) {
       setActiveStep(prev => prev - 1);
     } else {
-      onNavigate('create_support');
+      handleNavigate('support-provider-create-opportunities');
     }
   };
 
@@ -51,7 +61,7 @@ export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> =
       <AssetsForm
         activeStep={activeStep}
         setActiveStep={setActiveStep}
-        onNavigate={onNavigate}
+        onNavigate={handleNavigate}
       />
     </ScrollView>
   );

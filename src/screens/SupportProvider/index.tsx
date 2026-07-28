@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import { Box, VStack } from '@gluestack-ui/themed';
-import MentorHeader from './components/MentorHeader';
-import MentorDashboard from './MentorDashboard';
+import SupportProviderHeader from './components/SupportProviderHeader';
+import SupportProviderDashboard from './SupportProviderDashboard';
 import CreateSupportScreen from './CreateSupportScreen';
 import CreateTrainingSessionScreen from './CreateTrainingSessionScreen';
-import CreateAdditionalServiceScreen from './CreateAdditionalServiceScreen';
 import CreateAssetSupportScreen from './CreateAssetSupportScreen';
-import MentorGenericScreen from './MentorGenericScreen';
+import SupportProviderGenericScreen from './SupportProviderGenericScreen';
 
 /**
- * Mentor & Support Provider Screen Controller
- * Handles Mentor/Support Provider role navigation and views dynamically driven by configuration.
+ * Support Provider Screen Controller
+ * Handles Support Provider role navigation and views dynamically driven by configuration.
  */
-const MentorScreen: React.FC = () => {
+const SupportProviderScreen: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<string>('dashboard');
 
   const renderActiveScreen = () => {
     switch (currentRoute) {
       case 'dashboard':
-        return <MentorDashboard onNavigate={setCurrentRoute} />;
+        return <SupportProviderDashboard onNavigate={setCurrentRoute} />;
       case 'create_support':
         return <CreateSupportScreen onNavigate={setCurrentRoute} />;
       case 'create_training_session':
@@ -27,7 +26,7 @@ const MentorScreen: React.FC = () => {
         return <CreateAssetSupportScreen onNavigate={setCurrentRoute} />;
       default:
         return (
-          <MentorGenericScreen
+          <SupportProviderGenericScreen
             route={currentRoute}
             onNavigate={setCurrentRoute}
           />
@@ -38,9 +37,10 @@ const MentorScreen: React.FC = () => {
   return (
     <VStack flex={1} bg="$white" minHeight="$full">
       {/* Top Banner Header with Popover Navigation Menu */}
-      <MentorHeader
-        currentRoute={currentRoute}
-        onNavigate={setCurrentRoute}
+      <SupportProviderHeader
+        title="Dashboard"
+        hamburgerMenuItems={[]}
+        onHamburgerMenuSelect={(key) => setCurrentRoute(key || 'dashboard')}
       />
 
       {/* Dynamic Screen View */}
@@ -51,4 +51,4 @@ const MentorScreen: React.FC = () => {
   );
 };
 
-export default MentorScreen;
+export default SupportProviderScreen;
