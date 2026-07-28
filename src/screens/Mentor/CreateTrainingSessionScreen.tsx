@@ -21,7 +21,7 @@ import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRender
 import {
   TRAINING_SESSION_STEP1_SCHEMA,
   TRAINING_SESSION_STEP2_SCHEMA,
-} from '@constants/TRAINING_SESSION_DETAILS_SCHEMA';
+} from '@constants/TRAINING_FORM_SCHEMA';
 
 
 const MENTOR_INPUT_STYLE = {
