@@ -2313,15 +2313,18 @@
     "cards": {
       "trainingsSessions": {
         "title": "Trainings & Sessions",
-        "description": "Structured learning sessions with a schedule, objectives, and participant capacity."
+        "description": "Structured learning sessions with a schedule, objectives, and participant capacity.",
+        "icon": "GraduationCap"
       },
       "additionalServices": {
         "title": "Additional Services",
-        "description": "Advisory, legal, healthcare, or specialist services for participants."
+        "description": "Advisory, legal, healthcare, or specialist services for participants.",
+        "icon": "Briefcase"
       },
       "assets": {
         "title": "Assets",
-        "description": "Cash, in-kind, or voucher support for livelihood activities."
+        "description": "Cash, in-kind, or voucher support for livelihood activities.",
+        "icon": "Package"
       }
     },
     "trainingSession": {

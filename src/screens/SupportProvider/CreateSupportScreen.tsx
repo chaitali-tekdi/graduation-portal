@@ -4,10 +4,10 @@ import {
   HStack,
   Text,
   VStack,
-  Pressable,
   ScrollView,
 } from '@gluestack-ui/themed';
-import LucideIcon from '@components/ui/LucideIcon';
+import { PageHeader } from '@components/PageHeader';
+import Container from '@components/ui/Container';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG, {
   SupportCardConfig,
@@ -42,81 +42,49 @@ export const CreateSupportScreen: React.FC<CreateSupportScreenProps> = ({
     t(createSupport.subtitleKey) || createSupport.defaultSubtitle;
 
   return (
-    <ScrollView flex={1} bg="$backgroundLight50">
-      {/* Styled Top Header Container with Background Color and Bottom Border */}
-      <Box
-        width="100%"
-        bg={theme.tokens.colors.backgroundPrimary.light}
-        borderBottomWidth={1}
-        borderColor="$borderLight200"
-        py="$6"
-        $md-py="$8"
-        mb="$8"
-      >
-        <Box
-          width="100%"
-          maxWidth={860}
-          alignSelf="center"
-          px="$4"
-          $md-px="$8"
-        >
-          {/* Back Button */}
-          <Pressable
-            onPress={() => handleNavigate('support-provider-dashboard')}
-            mb="$4"
-            alignSelf="flex-start"
-            $hover={{ opacity: 0.8 }}
-            $web-style={{ cursor: 'pointer' }}
-          >
-            <HStack alignItems="center" space="xs">
-              <LucideIcon name="ArrowLeft" size={16} color="$textDark800" />
-              <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                {backText}
-              </Text>
-            </HStack>
-          </Pressable>
+    <VStack flex={1} bg="$backgroundLight50">
+      {/* PageHeader at the top with back button */}
+      <PageHeader
+        backButtonText={backText}
+        onBackPress={() => handleNavigate('support-provider-dashboard')}
+      />
 
-          {/* Center-aligned Title and Subtitle Section */}
-          <VStack space="xs" alignItems="flex-start">
-            <Text color="$textDark900" {...TYPOGRAPHY.h1} fontWeight="$bold" alignItems="flex-start">
+      {/* Main content ScrollView */}
+      <ScrollView flex={1}>
+        <Container py="$8" px="$4" $md-px="$8">
+          {/* Center-aligned Title and Subtitle Section inside the Container */}
+          <VStack space="xs" mb="$6">
+            <Text color="$textDark900" {...TYPOGRAPHY.h2} fontWeight="$bold">
               {pageTitle}
             </Text>
-            <Text color="$textDark600" {...TYPOGRAPHY.bodySmall} alignItems="flex-start">
+            <Text color="$textDark600" {...TYPOGRAPHY.bodySmall}>
               {pageSubtitle}
             </Text>
           </VStack>
-        </Box>
-      </Box>
 
-      {/* Cards Container Section */}
-      <Box
-        width="100%"
-        maxWidth={860}
-        alignSelf="center"
-        px="$4"
-        $md-px="$8"
-        pb="$12"
-      >
-        <Box
-          flexDirection="column"
-          $md-flexDirection="row"
-          justifyContent="center"
-          alignItems="stretch"
-          gap="$6"
-          maxWidth={1080}
-          alignSelf="center"
-          width="100%"
-        >
-          {createSupport.supportCards.map((card: SupportCardConfig) => (
-            <SupportCard
-              key={card.key}
-              card={card}
-              onPress={handleNavigate}
-            />
-          ))}
-        </Box>
-      </Box>
-    </ScrollView>
+          {/* Full-width Divider */}
+          <Box height={1} bg="$borderLight200" width="100%" mb="$8" />
+
+          {/* Three cards in a responsive grid */}
+          <HStack
+            flexDirection="column"
+            $md-flexDirection="row"
+            justifyContent="center"
+            alignItems="stretch"
+            gap="$6"
+            width="100%"
+          >
+            {createSupport.supportCards.map((card: SupportCardConfig) => (
+              <SupportCard
+                key={card.key}
+                card={card}
+                onPress={handleNavigate}
+              />
+            ))}
+          </HStack>
+        </Container>
+      </ScrollView>
+    </VStack>
   );
 };
 

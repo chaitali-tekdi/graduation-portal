@@ -158,6 +158,13 @@ function isVisible(
   return true;
 }
 
+const resolveKey = (key: string): string => {
+  if (key.includes('.')) {
+    return key;
+  }
+  return `admin.users.createUser.${key}`;
+};
+
 /**
  * Runs all validation rules for a single field recursively (supporting group fields).
  * Populates errors object.
@@ -166,11 +173,12 @@ function validateField(
   field: FormField,
   values: Record<string, string>,
   optionsMap: OptionsMap,
-  errors: Record<string, string>
+  errors: Record<string, string>,
+  t?: (key: string, fallback?: string) => string
 ): void {
   if (field.type === FORM_FIELD_TYPES.GROUP && Array.isArray(field.fields)) {
     for (const subField of field.fields) {
-      validateField(subField, values, optionsMap, errors);
+      validateField(subField, values, optionsMap, errors, t);
     }
     return;
   }
@@ -193,7 +201,7 @@ function validateField(
   if (!field.validation?.length) return;
 
   for (const rule of field.validation) {
-    const err = applyRule(rule, val, values);
+    const err = applyRule(rule, val, values, t);
     if (err) {
       errors[field.name] = err;
       return; // Return on first rule error for this field
@@ -204,9 +212,12 @@ function validateField(
 function applyRule(
   rule: ValidationRule,
   val: string,
-  allValues: Record<string, string>
+  allValues: Record<string, string>,
+  t?: (key: string, fallback?: string) => string
 ): string | undefined {
-  const msg = rule.message.fallback;
+  const msg = t && rule.message.key
+    ? t(resolveKey(rule.message.key), rule.message.fallback)
+    : rule.message.fallback;
 
   switch (rule.rule) {
     case 'required':
@@ -267,7 +278,8 @@ function applyRule(
 export function validateSchema(
   schema: FormSection[],
   values: Record<string, string>,
-  optionsMap: OptionsMap
+  optionsMap: OptionsMap,
+  t?: (key: string, fallback?: string) => string
 ): Record<string, string> {
   const errors: Record<string, string> = {};
 
@@ -277,7 +289,7 @@ export function validateSchema(
       if (!isVisible(row.visibleWhen, values, optionsMap)) continue;
 
       for (const field of row.fields) {
-        validateField(field, values, optionsMap, errors);
+        validateField(field, values, optionsMap, errors, t);
       }
     }
   }
@@ -417,7 +429,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
           <LucideIcon name="Info" size={16} color="$primary500" />
         </Box>
         <Text size="sm" color="$textMutedForeground" flex={1}>
-          {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+          {t(resolveKey(field.label.key), field.label.fallback)}
         </Text>
       </HStack>
     );
@@ -426,7 +438,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   const primaryColor = SUPPORT_PROVIDER_CONFIG.branding.themePrimaryColor || theme.tokens.colors.primary500;
 
   // ── Pills Selector ──────────────────────────────────────────────────────────
-  if (field.type === ('pills' as any)) {
+  if (field.type === ('pills' as any) || field.type === ('pillselect' as any)) {
     const rawOptions = field.optionsSource ? (optionsMap[field.optionsSource] ?? []) : [];
     const isPillar = field.name === 'pillar';
 
@@ -638,6 +650,69 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     );
   }
 
+  // ── File Upload ─────────────────────────────────────────────────────────────
+  if (field.type === ('file' as any)) {
+    const fileInputRefLocal = React.useRef<HTMLInputElement | null>(null);
+    const handleFileChangeLocal = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = event.target.files?.[0];
+      if (selectedFile) {
+        onChange(field.name || '', selectedFile.name);
+      }
+    };
+    const handleUploadClickLocal = () => {
+      fileInputRefLocal.current?.click();
+    };
+
+    const subLabelText = field.subLabel
+      ? (t ? t(resolveKey(field.subLabel.key), field.subLabel.fallback) : field.subLabel.fallback)
+      : '';
+    const placeholderText = field.placeholder
+      ? (t ? t(resolveKey(field.placeholder.key || ''), field.placeholder.fallback) : field.placeholder.fallback)
+      : 'Click to upload';
+
+    return (
+      <VStack space="xs" width="100%">
+        <input
+          type="file"
+          ref={fileInputRefLocal}
+          style={{ display: 'none' }}
+          accept=".pdf,.doc,.docx"
+          onChange={handleFileChangeLocal}
+        />
+        {subLabelText ? (
+          <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
+            {subLabelText}
+          </Text>
+        ) : null}
+
+        <Pressable
+          borderWidth={1}
+          borderStyle="dashed"
+          borderColor="$borderLight300"
+          borderRadius="$lg"
+          p="$6"
+          alignItems="center"
+          justifyContent="center"
+          bg="$backgroundLight50"
+          $hover={{ bg: '$backgroundLight100', borderColor: primaryColor }}
+          $web-style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
+          onPress={handleUploadClickLocal}
+          disabled={disabled || field.disabled}
+        >
+          <VStack alignItems="center" space="xs">
+            <LucideIcon name="Upload" size={28} color={theme.tokens.colors.textMuted} />
+            <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium" mt="$1">
+              {value || placeholderText}
+            </Text>
+            <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
+              {t ? t('supportProvider.trainingSession.step1.maxSize', 'Max 10 MB') : 'Max 10 MB'}
+            </Text>
+          </VStack>
+        </Pressable>
+      </VStack>
+    );
+  }
+
   // ── Text / Email / Tel ───────────────────────────────────────────────────────
   const keyboardType = (field.inputProps?.keyboardType as any) ?? 'default';
   const autoCapitalize = (field.inputProps?.autoCapitalize as any) ?? 'sentences';
@@ -702,14 +777,46 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
 
   return (
     <VStack space="md" width="100%">
-      {schema.map(section => (
+      {schema.map(section => {
+        // ── Info Banner section type ─────────────────────────────────────────
+        if (section.type === 'infobanner') {
+          return (
+            <Box
+              key={section.id}
+              bg={theme.tokens.colors.blue50}
+              borderWidth={1}
+              borderColor={theme.tokens.colors.blue200}
+              borderRadius="$lg"
+              p="$4"
+            >
+              <HStack space="xs" alignItems="center" mb="$2">
+                <LucideIcon name={section.icon as any} size={16} color={theme.tokens.colors.blue600} />
+                <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption} fontWeight="$bold">
+                  {t(section.title.key, section.title.fallback)}
+                </Text>
+              </HStack>
+              {section.bullets && section.bullets.length > 0 && (
+                <VStack space="xs" pl="$5">
+                  {section.bullets.map((bullet, i) => (
+                    <Text key={i} color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
+                      • {t(bullet.key, bullet.fallback)}
+                    </Text>
+                  ))}
+                </VStack>
+              )}
+            </Box>
+          );
+        }
+
+        // ── Normal section ───────────────────────────────────────────────────
+        return (
         <VStack key={section.id} space="sm">
           {/* Section header — hidden if hideSectionHeaders is true */}
           {!hideSectionHeaders && (
             <HStack space="xs" alignItems="center">
               <LucideIcon name={section.icon as any} size={16} color="$textMutedForeground" />
               <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontWeight="$normal">
-                {t(`admin.users.createUser.${section.title.key}`, section.title.fallback)}
+                {t(resolveKey(section.title.key), section.title.fallback)}
               </Text>
             </HStack>
           )}
@@ -759,9 +866,15 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
 
                     return (
                       <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
-                        <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
-                          {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
-                        </Text>
+                        {labelStyle ? (
+                          <Text {...labelStyle}>
+                            {t(resolveKey(field.label.key), field.label.fallback)}
+                          </Text>
+                        ) : (
+                          <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+                            {t(resolveKey(field.label.key), field.label.fallback)}
+                          </Text>
+                        )}
                         <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
                           {displayValue}
                         </Text>
@@ -784,13 +897,15 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
                         labelStyle ? (
                           // Custom label style
                           <Text {...labelStyle}>
-                            {field.label.fallback}
+                            {t(resolveKey(field.label.key), field.label.fallback)}
                             {field.required ? <Text color="$error600"> *</Text> : ''}
+                            {field.showOptionalTag ? <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}> (optional)</Text> : ''}
                           </Text>
                         ) : (
                           <Text {...TYPOGRAPHY.caption} color="$textForeground" fontWeight="$bold">
-                            {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                            {t(resolveKey(field.label.key), field.label.fallback)}
                             {field.required ? ' *' : ''}
+                            {field.showOptionalTag ? <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}> (optional)</Text> : ''}
                           </Text>
                         )
                       )}
@@ -826,7 +941,8 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
             );
           })}
         </VStack>
-      ))}
+        );
+      })}
     </VStack>
   );
 };

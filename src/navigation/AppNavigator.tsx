@@ -172,9 +172,9 @@ const getAccessPages = (
     case 'mentor':
       return [
         { name: 'support-provider-dashboard', path: '/dashboard', component: SupportProviderDashboard },
-        { name: 'support-provider-create-opportunities', path: '/create-opportunities', component: CreateSupportScreen },
-        { name: 'support-provider-training-sessions', path: '/create-opportunities/training-sessions', component: CreateTrainingSessionScreen },
-        { name: 'support-provider-assets', path: '/create-opportunities/create/assets', component: CreateAssetSupportScreen },
+        { name: 'support-provider-create-opportunities', path: '/create', component: CreateSupportScreen },
+        { name: 'support-provider-training-sessions', path: '/create/training-sessions', component: CreateTrainingSessionScreen },
+        { name: 'support-provider-assets', path: '/create/assets', component: CreateAssetSupportScreen },
         { name: 'support-provider-my-support-offerings', path: '/my-support-offerings', component: SupportProviderGenericScreen },
         { name: 'support-provider-requests', path: '/requests', component: SupportProviderGenericScreen },
         { name: 'support-provider-materials-library', path: '/materials-library', component: SupportProviderGenericScreen },

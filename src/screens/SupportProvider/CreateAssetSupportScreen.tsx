@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { ScrollView } from '@gluestack-ui/themed';
+import React, { useState, useRef, useCallback } from 'react';
+import { ScrollView, VStack } from '@gluestack-ui/themed';
 import { useLanguage } from '@contexts/LanguageContext';
 import FormStepperHeader, { StepperTabItem } from './components/FormStepperHeader';
 import AssetsForm from './components/AssetsForm';
 import { useNavigation } from '@react-navigation/native';
+import Container from '@components/ui/Container';
 
 interface CreateAssetSupportScreenProps {
   onNavigate?: (route: string) => void;
@@ -14,7 +15,12 @@ export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> =
 }) => {
   const { t } = useLanguage();
   const [activeStep, setActiveStep] = useState(1);
+  const [isFinalStep, setIsFinalStep] = useState(false);
   const navigation = useNavigation();
+
+  // Refs that AssetsForm wires its nav handlers into
+  const nextHandlerRef = useRef<(() => void) | null>(null);
+  const prevHandlerRef = useRef<(() => void) | null>(null);
 
   const handleNavigate = (route: string) => {
     if (onNavigate) {
@@ -37,33 +43,60 @@ export const CreateAssetSupportScreen: React.FC<CreateAssetSupportScreenProps> =
     },
   ];
 
-  const handlePrev = () => {
+  const handleStepChange = useCallback((step: number) => {
+    setActiveStep(step);
+    setIsFinalStep(step >= assetStepperTabs.length);
+  }, [assetStepperTabs.length]);
+
+  const handleFormStepChange = useCallback((step: number, isFinal: boolean) => {
+    setActiveStep(step);
+    setIsFinalStep(isFinal);
+  }, []);
+
+  const handlePrev = useCallback(() => {
     if (activeStep > 1) {
-      setActiveStep(prev => prev - 1);
+      handleStepChange(activeStep - 1);
     } else {
       handleNavigate('support-provider-create-opportunities');
     }
-  };
+  }, [activeStep]);
 
   return (
-    <ScrollView flex={1} bg="$backgroundLight50">
-      {/* Top Stepper Header with Assets Tabs */}
+    <VStack flex={1} bg="$backgroundLight50">
+      {/* Top Stepper Header — uses PageHeader internally, buttons configured here */}
       <FormStepperHeader
         activeStep={activeStep}
-        setActiveStep={setActiveStep}
+        totalSteps={assetStepperTabs.length}
+        setActiveStep={handleStepChange}
         onNavigateBack={handlePrev}
         title={t('supportProvider.assetSupport.pageTitle') || 'Create Asset'}
+        backButtonText={t('supportProvider.trainingSession.changeType') || 'Change Type'}
         badgeText={t('supportProvider.assetSupport.badgeText') || 'Asset'}
         tabs={assetStepperTabs}
+        isFinalStep={isFinalStep}
+        buttons={{
+          onPrev: handlePrev,
+          onContinue: () => nextHandlerRef.current?.(),
+          onSaveDraft: () => {},
+          hideSaveDraft: true,
+          publishText: t('supportProvider.assetSupport.step2.publishButton') || 'Publish Support',
+        }}
       />
 
-      {/* Separate AssetsForm Component */}
-      <AssetsForm
-        activeStep={activeStep}
-        setActiveStep={setActiveStep}
-        onNavigate={handleNavigate}
-      />
-    </ScrollView>
+      {/* Main content ScrollView */}
+      <ScrollView flex={1}>
+        <Container px="$4" $md-px="$6">
+          <AssetsForm
+            activeStep={activeStep}
+            setActiveStep={setActiveStep}
+            onNavigate={handleNavigate}
+            onStepChange={handleFormStepChange}
+            onNextRef={nextHandlerRef}
+            onPrevRef={prevHandlerRef}
+          />
+        </Container>
+      </ScrollView>
+    </VStack>
   );
 };
 

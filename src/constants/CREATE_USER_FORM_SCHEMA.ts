@@ -87,6 +87,8 @@ export interface FormField {
   placeholderWhenReady?: { key: string; fallback: string };
   fields?: FormField[];
   isReadOnly?: boolean;
+  subLabel?: { key: string; fallback: string };
+  showOptionalTag?: boolean;
 }
 
 export interface FormRow {
@@ -101,6 +103,14 @@ export interface FormSection {
   icon: string;
   title: { key: string; fallback: string };
   rows: FormRow[];
+  tab?: string;
+  type?: string;
+  heading?: { key: string; fallback: string };
+  subheading?: { key: string; fallback: string };
+  children?: FormSection[];
+  label?: { key: string; fallback: string };
+  /** For type: 'infobanner' sections — list of bullet text items */
+  bullets?: Array<{ key: string; fallback: string }>;
 }
 
 // ─── Schema ───────────────────────────────────────────────────────────────────

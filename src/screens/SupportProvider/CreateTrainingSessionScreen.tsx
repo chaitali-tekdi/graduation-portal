@@ -7,20 +7,21 @@ import {
   ScrollView,
   Button,
   ButtonText,
-  Pressable,
 } from '@gluestack-ui/themed';
 import LucideIcon from '@components/ui/LucideIcon';
 import { useLanguage } from '@contexts/LanguageContext';
 import SUPPORT_PROVIDER_CONFIG from '@constants/SUPPORT_PROVIDER_CONFIG';
 import { theme } from '@config/theme';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
-import FormStepperHeader from './components/FormStepperHeader';
+import FormStepperHeader, { StepperTabItem } from './components/FormStepperHeader';
+import IncompleteFormModal, { MissingField } from './components/IncompleteFormModal';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince } from '../../services/usersService';
 import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
 import { TRAINING_FORM_SCHEMA } from '@constants/TRAINING_FORM_SCHEMA';
+import { useNavigation } from '@react-navigation/native';
+import Container from '@components/ui/Container';
 import { usePlatform } from '@utils/platform';
-
 
 const MENTOR_INPUT_STYLE = {
   variant: 'outline' as const,
@@ -30,8 +31,6 @@ const MENTOR_INPUT_STYLE = {
   borderWidth: 1,
   borderColor: '$borderLight300' as const,
 };
-
-import { useNavigation } from '@react-navigation/native';
 
 interface CreateTrainingSessionScreenProps {
   onNavigate?: (route: string) => void;
@@ -57,6 +56,12 @@ const PILLAR_SESSION_TYPES: Record<string, string[]> = {
   ],
 };
 
+const resolveKey = (key: string): string => {
+  if (!key) return '';
+  if (key.includes('.')) return key;
+  return `admin.users.createUser.${key}`;
+};
+
 export const CreateTrainingSessionScreen: React.FC<
   CreateTrainingSessionScreenProps
 > = ({ onNavigate }) => {
@@ -74,16 +79,33 @@ export const CreateTrainingSessionScreen: React.FC<
     }
   };
 
+  const stepperTabs: StepperTabItem[] = [
+    {
+      key: 1,
+      label: t('supportProvider.trainingSession.tabs.sessionDetails') || 'Session Details',
+      iconName: 'FileText',
+    },
+    {
+      key: 2,
+      label: t('supportProvider.trainingSession.tabs.scheduleFormat') || 'Schedule & Format',
+      iconName: 'Calendar',
+    },
+    {
+      key: 3,
+      label: t('supportProvider.trainingSession.tabs.reviewPublish') || 'Review & Publish',
+      iconName: 'Check',
+    },
+  ];
+
   // Active step tab (1: Details, 2: Schedule & Format, 3: Review & Publish)
   const [activeStep, setActiveStep] = useState<number>(1);
+  const [showIncompleteModal, setShowIncompleteModal] = useState<boolean>(false);
+  const [missingFields, setMissingFields] = useState<MissingField[]>([]);
+  const [isPublished, setIsPublished] = useState(false);
 
   // Dynamic Province & Site
   const { provinces: dynamicProvinces } = useUserManagementFilters({});
   const [dynamicSites, setDynamicSites] = useState<any[]>([]);
-
-  // File Upload State
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   // ─── Unified form state ───────────────────────────────────────────────────
   const [values, setValues] = useState<Record<string, string>>({
@@ -104,15 +126,14 @@ export const CreateTrainingSessionScreen: React.FC<
     endTime: '',
     formatType: 'Offline',
     venueLocation: '',
+    resourceContent: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFieldChange = useCallback((name: string, value: string) => {
     setValues(prev => {
       const next = { ...prev, [name]: value };
-      // When province changes, reset site
       if (name === 'province') next.site = '';
-      // When pillar changes, reset session type/title
       if (name === 'pillar') {
         next.sessionType = '';
         next.sessionTitle = '';
@@ -150,7 +171,6 @@ export const CreateTrainingSessionScreen: React.FC<
       }))
       : [];
 
-    // Session types filtered by selected pillar
     const selectedPillar = values.pillar;
     const sessionTypeOpts = selectedPillar && selectedPillar !== 'Others'
       ? (PILLAR_SESSION_TYPES[selectedPillar] || []).map(v => ({ value: v, label: v }))
@@ -187,417 +207,335 @@ export const CreateTrainingSessionScreen: React.FC<
     };
   }, [dynamicProvinces, dynamicSites, values.pillar, t]);
 
-
-  const validateStep = useCallback((schemaToValidate: any[]) => {
-    const validationErrs = validateSchema(schemaToValidate, values, optionsMap);
-    if (Object.keys(validationErrs).length > 0) {
-      setErrors(validationErrs);
-      return false;
+  const getTabLabel = useCallback((tabKey: string): string => {
+    const tabObj = TRAINING_FORM_SCHEMA.find(s => s.id === tabKey);
+    if (tabObj) {
+      return t(resolveKey(tabObj.title?.key || tabObj.label?.key || ''), tabObj.title?.fallback || tabObj.label?.fallback || '');
     }
-    setErrors({});
-    return true;
-  }, [values, optionsMap]);
+    return '';
+  }, [t]);
 
-  // ─── Step navigation ──────────────────────────────────────────────────────
-  const [isPublished, setIsPublished] = useState(false);
-  const previousText = t('supportProvider.trainingSession.buttons.previous') || 'Previous';
-  const continueText = t('supportProvider.trainingSession.buttons.continue') || 'Continue';
+  const getMissingFieldsForTabs = useCallback((tabKeys: string[]): MissingField[] => {
+    const missing: MissingField[] = [];
+    tabKeys.forEach(tabKey => {
+      const tabObj = TRAINING_FORM_SCHEMA.find(s => s.id === tabKey);
+      if (!tabObj) return;
+      const tabSchema = tabObj.children || [];
+      const validationErrs = validateSchema(tabSchema, values, optionsMap, t);
+      tabSchema.forEach(section => {
+        section.rows.forEach(row => {
+          row.fields.forEach(field => {
+            if (field.name && validationErrs[field.name]) {
+              const labelStr = t(`supportProvider.trainingSession.step1.${field.label.key}`, '') ||
+                               t(`supportProvider.trainingSession.step2.${field.label.key}`, '') ||
+                               field.label.fallback;
+              missing.push({
+                name: field.name,
+                label: labelStr,
+                tabKey,
+                tabLabel: getTabLabel(tabKey),
+              });
+            }
+          });
+        });
+      });
+    });
+    return missing;
+  }, [values, optionsMap, t, getTabLabel]);
 
-  // Map step number → tab key (used to filter TRAINING_FORM_SCHEMA)
-  const STEP_TAB: Record<number, string> = {
-    1: 'sessionDetails',
-    2: 'scheduleFormat',
-  };
+  const handleFieldClick = useCallback((field: MissingField) => {
+    setShowIncompleteModal(false);
+    const stepNum = field.tabKey === 'sessionDetails' ? 1 : 2;
+    setActiveStep(stepNum);
 
-  const handleNext = () => {
-    if (activeStep === 1 || activeStep === 2) {
-      const tabKey = STEP_TAB[activeStep];
-      const tabSchema = TRAINING_FORM_SCHEMA.filter(s => s.tab === tabKey);
-      const isValid = validateStep(tabSchema);
-      if (!isValid) return;
-      setActiveStep(activeStep + 1);
+    setTimeout(() => {
+      const element = document.getElementById(field.name);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const input = element.querySelector('input, select, textarea, button[role="combobox"]');
+        if (input) (input as HTMLElement).focus();
+
+        element.style.outline = 'none';
+        element.style.border = '2px solid #8b5cf6';
+        element.style.borderRadius = '8px';
+        element.style.boxShadow = '0 0 0 4px rgba(139, 92, 246, 0.4)';
+        element.style.transition = 'all 0.2s ease';
+
+        setTimeout(() => {
+          element.style.border = '';
+          element.style.boxShadow = '';
+          element.style.borderRadius = '';
+          element.style.outline = '';
+          element.style.transition = '';
+        }, 2000);
+      }
+
+      let fieldObj: any = null;
+      TRAINING_FORM_SCHEMA.forEach(tab => {
+        (tab.children || []).forEach(section => {
+          section.rows.forEach(row => {
+            row.fields.forEach(f => {
+              if (f.name === field.name) fieldObj = f;
+            });
+          });
+        });
+      });
+      if (fieldObj) {
+        const requiredRule = fieldObj.validation?.find((r: any) => r.rule === 'required');
+        const msgKey = requiredRule?.message?.key;
+        const msgFallback = requiredRule?.message?.fallback || 'This field is required';
+        setErrors({ [field.name]: msgKey ? t(msgKey, msgFallback) : msgFallback });
+      }
+    }, 100);
+  }, [t]);
+
+
+  // ─── Continue / Publish action ────────────────────────────────────────────
+  const handleNext = useCallback(() => {
+    if (activeStep === 1) {
+      const errs = validateSchema(TRAINING_FORM_SCHEMA.find(s => s.id === 'sessionDetails')?.children || [], values, optionsMap, t);
+      if (Object.keys(errs).length > 0) {
+        setMissingFields(getMissingFieldsForTabs(['sessionDetails']));
+        setShowIncompleteModal(true);
+        return;
+      }
+      setActiveStep(2);
+    } else if (activeStep === 2) {
+      const step1Errs = validateSchema(TRAINING_FORM_SCHEMA.find(s => s.id === 'sessionDetails')?.children || [], values, optionsMap, t);
+      const step2Errs = validateSchema(TRAINING_FORM_SCHEMA.find(s => s.id === 'scheduleFormat')?.children || [], values, optionsMap, t);
+      if (Object.keys(step1Errs).length > 0 || Object.keys(step2Errs).length > 0) {
+        setMissingFields(getMissingFieldsForTabs(['sessionDetails', 'scheduleFormat']));
+        setShowIncompleteModal(true);
+        return;
+      }
+      setActiveStep(3);
     } else {
+      const step1Errs = validateSchema(TRAINING_FORM_SCHEMA.find(s => s.id === 'sessionDetails')?.children || [], values, optionsMap, t);
+      const step2Errs = validateSchema(TRAINING_FORM_SCHEMA.find(s => s.id === 'scheduleFormat')?.children || [], values, optionsMap, t);
+      if (Object.keys(step1Errs).length > 0 || Object.keys(step2Errs).length > 0) {
+        setMissingFields(getMissingFieldsForTabs(['sessionDetails', 'scheduleFormat']));
+        setShowIncompleteModal(true);
+        return;
+      }
       setErrors({});
       setIsPublished(true);
-      setTimeout(() => {
-        handleNavigate('support-provider-dashboard');
-      }, 1800);
+      setTimeout(() => handleNavigate('support-provider-dashboard'), 1800);
     }
-  };
+  }, [activeStep, values, optionsMap, t, getMissingFieldsForTabs]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (activeStep > 1) {
       setActiveStep(prev => prev - 1);
     } else {
       handleNavigate('support-provider-create-opportunities');
     }
-  };
+  }, [activeStep]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) setSelectedFileName(file.name);
-  };
+  // ─── Active tab schema ────────────────────────────────────────────────────
+  const activeTabSchema = useMemo(() => {
+    if (activeStep === 1) return TRAINING_FORM_SCHEMA.find(s => s.id === 'sessionDetails');
+    if (activeStep === 2) return TRAINING_FORM_SCHEMA.find(s => s.id === 'scheduleFormat');
+    if (activeStep === 3) return TRAINING_FORM_SCHEMA.find(s => s.id === 'review');
+    return undefined;
+  }, [activeStep]);
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
+  const activeSchema = useMemo(() => activeTabSchema?.children || [], [activeTabSchema]);
+
+  const reviewValues = useMemo(() => ({
+    ...values,
+    start: values.startDate
+      ? `${values.startDate}${values.startTime ? ` ${t('supportProvider.trainingSession.step3.atText', 'at')} ${values.startTime}` : ''}`
+      : '-',
+    end: values.endDate
+      ? `${values.endDate}${values.endTime ? ` ${t('supportProvider.trainingSession.step3.atText', 'at')} ${values.endTime}` : ''}`
+      : '-',
+  }), [values, t]);
+
+  const isFinalStep = activeStep === stepperTabs.length;
+
+  const prevLabel = t('supportProvider.trainingSession.buttons.previous') || 'Previous';
+  const continueLabel = t('supportProvider.trainingSession.buttons.continue') || 'Continue';
+  const saveDraftLabel = t('supportProvider.trainingSession.buttons.saveDraft') || 'Save as Draft';
+  const publishLabel = t('supportProvider.trainingSession.step3.publishButton') || 'Publish Support';
 
   return (
-    <ScrollView flex={1} bg="$backgroundLight50">
-      {/* Hidden Native File Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: 'none' }}
-        accept=".pdf,.doc,.docx"
-        onChange={handleFileChange}
-      />
-
-      {/* Form Header & Stepper */}
+    <VStack flex={1} bg="$backgroundLight50">
+      {/* Form Header & Stepper — sticky at top, uses PageHeader internally */}
       <FormStepperHeader
         activeStep={activeStep}
+        totalSteps={stepperTabs.length}
         setActiveStep={setActiveStep}
         onNavigateBack={handlePrev}
+        title={t('supportProvider.trainingSession.pageTitle') || 'Create Training Session'}
+        backButtonText={t('supportProvider.trainingSession.changeType') || 'Change Type'}
+        badgeText={t('supportProvider.trainingSession.badgeText') || 'Training Session'}
+        tabs={stepperTabs}
       />
 
-      {/* Main Container - Aligned to Form Width (760px) */}
-      <Box
-        width="100%"
-        maxWidth={790}
-        alignSelf="center"
-        px="$4"
-        $md-px="$0"
-        pb="$8"
-        pt="$8"
-      >
+      {/* Main content ScrollView */}
+      <ScrollView flex={1}>
+        <Container px="$4" $md-px="$6" py="$8">
 
-        {/* Multi-Step Card Content */}
-        <Box
-          width="100%"
-          bg={theme.tokens.colors.backgroundPrimary.light}
-          borderRadius="$xl"
-          borderWidth={1}
-          borderColor="$borderLight200"
-          p="$5"
-          $md-p="$8"
-          shadowColor="$shadowColor"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.05}
-          shadowRadius={8}
-          elevation={2}
-          mb="$6"
-        >
-          {/* ── STEP 1: Session Details ─────────────────────────────────── */}
-          {activeStep === 1 && (
-            <VStack space="lg">
-              <VStack space="xs" mb="$2">
-                <Text color="$textDark900" {...TYPOGRAPHY.h2}>
-                  {t('supportProvider.trainingSession.step1.heading') || 'Training Session Details'}
-                </Text>
-                <Text color="$textDark500" {...TYPOGRAPHY.caption}>
-                  Fields marked <Text color={theme.tokens.colors.error600} fontWeight="$bold">*</Text> are required
-                </Text>
-              </VStack>
 
-              {/* All Session Details fields — filtered from unified schema */}
-              <SchemaFormRenderer
-                schema={TRAINING_FORM_SCHEMA.filter(s => s.tab === 'sessionDetails')}
-                values={values}
-                errors={errors}
-                onFieldChange={handleFieldChange}
-                optionsMap={optionsMap}
-                t={t}
-                inputStyle={MENTOR_INPUT_STYLE}
-                selectStyle={MENTOR_INPUT_STYLE}
-                labelStyle={{ fontSize: '$sm', fontWeight: '$medium', color: '$textDark800' }}
-                hideSectionHeaders={true}
-              />
-
-              {/* Resource Content Upload (no schema equivalent — file input) */}
-              <VStack space="xs">
-                <Text color="$textDark800" {...TYPOGRAPHY.label}>
-                  {t('supportProvider.trainingSession.step1.resourceContent') || 'Resource Content'}{' '}
-                  <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
-                    {t('supportProvider.trainingSession.step1.optionalTag') || '(optional)'}
-                  </Text>
-                </Text>
-                <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
-                  {t('supportProvider.trainingSession.step1.resourceUploadSub') || 'Upload PDF or DOC training materials'}
-                </Text>
-
-                <Pressable
-                  borderWidth={1}
-                  borderStyle="dashed"
-                  borderColor="$borderLight300"
-                  borderRadius="$lg"
-                  p="$6"
-                  alignItems="center"
-                  justifyContent="center"
-                  bg="$backgroundLight50"
-                  $hover={{ bg: '$backgroundLight100', borderColor: primaryColor }}
-                  $web-style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
-                  onPress={handleUploadClick}
-                >
-                  <VStack alignItems="center" space="xs">
-                    <LucideIcon name="Upload" size={28} color={theme.tokens.colors.textMuted} />
-                    <Text color="$textDark700" {...TYPOGRAPHY.caption} fontWeight="$medium" mt="$1">
-                      {selectedFileName || (t('supportProvider.trainingSession.step1.uploadPrompt') || 'Click to upload PDF / DOC')}
-                    </Text>
-                    <Text color={theme.tokens.colors.textMuted} {...TYPOGRAPHY.caption}>
-                      {t('supportProvider.trainingSession.step1.maxSize') || 'Max 10 MB'}
-                    </Text>
-                  </VStack>
-                </Pressable>
-              </VStack>
-            </VStack>
-          )}
-
-          {/* ── STEP 2: Schedule & Format ───────────────────────────────── */}
-          {activeStep === 2 && (
-            <VStack space="lg">
-              <VStack space="xs" mb="$2">
-                <Text color="$textDark900" {...TYPOGRAPHY.h2}>
-                  {t('supportProvider.trainingSession.step2.heading') || 'Schedule & Format'}
-                </Text>
-                <Text color="$textDark500" {...TYPOGRAPHY.caption}>
-                  {t('supportProvider.trainingSession.step2.subheading') || 'Set when and how the session will be delivered'}
-                </Text>
-              </VStack>
-
-              {/* All Schedule & Format fields — filtered from unified schema */}
-              <SchemaFormRenderer
-                schema={TRAINING_FORM_SCHEMA.filter(s => s.tab === 'scheduleFormat')}
-                values={values}
-                errors={errors}
-                onFieldChange={handleFieldChange}
-                optionsMap={optionsMap}
-                t={t}
-                inputStyle={MENTOR_INPUT_STYLE}
-                selectStyle={MENTOR_INPUT_STYLE}
-                labelStyle={{ fontSize: '$sm', fontWeight: '$medium', color: '$textDark800' }}
-                hideSectionHeaders={true}
-              />
-            </VStack>
-          )}
-
-          {/* ── STEP 3: Review & Publish ────────────────────────────────── */}
-          {activeStep === 3 && (
-            <VStack space="lg">
-              <VStack space="xs" mb="$2">
-                <Text color="$textDark900" {...TYPOGRAPHY.h2}>
-                  {t('supportProvider.trainingSession.step3.heading') || 'Review & Publish'}
-                </Text>
-              </VStack>
-
-              {isPublished ? (
-                <Box
-                  bg={theme.tokens.colors.success50}
-                  borderColor={theme.tokens.colors.accent300}
-                  borderWidth={1}
-                  borderRadius="$lg"
-                  p="$6"
-                  alignItems="center"
-                >
-                  <LucideIcon name="CheckCircle" size={44} color={theme.tokens.colors.tickButtonActiveBg} />
-                  <Text color={theme.tokens.colors.tickButtonActiveBg} {...TYPOGRAPHY.h3} mt="$2">
-                    {t('supportProvider.forms.successTitle') || 'Training Session Created Successfully!'}
-                  </Text>
-                  <Text color="$textDark600" {...TYPOGRAPHY.caption} mt="$1">
-                    {t('supportProvider.forms.successSub') || 'Redirecting back to dashboard...'}
-                  </Text>
-                </Box>
-              ) : (
-                <VStack space="md">
-                  {/* Session Details Summary */}
-                  <Box
-                    borderWidth={1}
-                    borderColor="$borderLight200"
-                    borderRadius="$lg"
-                    p="$4"
-                    bg={theme.tokens.colors.backgroundPrimary.light}
-                  >
-                    <Text color="$textDark900" {...TYPOGRAPHY.label} fontWeight="$bold" mb="$3">
-                      {t('supportProvider.trainingSession.step3.sessionDetailsTitle') || 'Session Details'}
-                    </Text>
-                    <VStack space="xs">
-                      <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
-                          {t('supportProvider.trainingSession.step3.pillarLabel') || 'Pillar:'}
-                        </Text>
-                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {values.pillar || '-'}
-                        </Text>
-                      </HStack>
-
-                      <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
-                          {t('supportProvider.trainingSession.step3.recurringLabel') || 'Recurring:'}
-                        </Text>
-                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {values.recurringSession || 'No'}
-                        </Text>
-                      </HStack>
-                    </VStack>
-                  </Box>
-
-                  {/* Schedule Summary */}
-                  <Box
-                    borderWidth={1}
-                    borderColor="$borderLight200"
-                    borderRadius="$lg"
-                    p="$4"
-                    bg={theme.tokens.colors.backgroundPrimary.light}
-                  >
-                    <Text color="$textDark900" {...TYPOGRAPHY.label} fontWeight="$bold" mb="$3">
-                      {t('supportProvider.trainingSession.step3.scheduleTitle') || 'Schedule'}
-                    </Text>
-                    <VStack space="xs">
-                      <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
-                          {t('supportProvider.trainingSession.step3.startLabel') || 'Start:'}
-                        </Text>
-                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {values.startDate}{values.startDate && values.startTime ? ` ${t('supportProvider.trainingSession.step3.atText') || 'at'} ` : ''}{values.startTime}
-                        </Text>
-                      </HStack>
-
-                      <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
-                          {t('supportProvider.trainingSession.step3.endLabel') || 'End:'}
-                        </Text>
-                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {values.endDate}{values.endDate && values.endTime ? ` ${t('supportProvider.trainingSession.step3.atText') || 'at'} ` : ''}{values.endTime}
-                        </Text>
-                      </HStack>
-
-                      <HStack space="xs" flexWrap="wrap" alignItems="center" justifyContent="space-between">
-                        <Text color="$textDark600" {...TYPOGRAPHY.caption}>
-                          {t('supportProvider.trainingSession.step3.formatLabel') || 'Format:'}
-                        </Text>
-                        <Text color="$textDark900" {...TYPOGRAPHY.caption} fontWeight="$medium">
-                          {values.formatType}
-                        </Text>
-                      </HStack>
-                    </VStack>
-                  </Box>
-
-                  {/* Info Banner */}
-                  <Box
-                    bg={theme.tokens.colors.blue50}
-                    borderWidth={1}
-                    borderColor={theme.tokens.colors.blue200}
-                    borderRadius="$lg"
-                    p="$4"
-                  >
-                    <HStack space="xs" alignItems="center" mb="$2">
-                      <LucideIcon name="Info" size={16} color={theme.tokens.colors.blue600} />
-                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption} fontWeight="$bold">
-                        {t('supportProvider.trainingSession.step3.infoTitle') || 'Before you publish:'}
-                      </Text>
-                    </HStack>
-
-                    <VStack space="xs" pl="$5">
-                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
-                        • {t('supportProvider.trainingSession.step3.infoBullet1') || 'This support will be visible to all Coaches in the GBL network'}
-                      </Text>
-                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
-                        • {t('supportProvider.trainingSession.step3.infoBullet2') || 'Coaches can submit requests on behalf of participants'}
-                      </Text>
-                      <Text color={theme.tokens.colors.blue800} {...TYPOGRAPHY.caption}>
-                        • {t('supportProvider.trainingSession.step3.infoBullet3') || "You'll receive notifications when requests are submitted"}
-                      </Text>
-                    </VStack>
-                  </Box>
-                </VStack>
-              )}
-            </VStack>
-          )}
-        </Box>
-
-        {/* Bottom Action Navigation Buttons */}
-        <HStack
-          justifyContent="space-between"
-          alignItems="center"
-          width="100%"
-          flexDirection={isMobile ? 'column-reverse' : 'row'}
-          gap={isMobile ? '$3' : '$0'}
-        >
-          <Button
-            variant="outline"
-            borderColor="$borderLight300"
-            onPress={handlePrev}
-            $web-style={{ cursor: 'pointer' }}
-            width={isMobile ? '100%' : 'auto'}
+          {/* Multi-Step Card Content */}
+          <Box
+            width="100%"
+            bg={theme.tokens.colors.backgroundPrimary.light}
+            borderRadius="$xl"
+            borderWidth={1}
+            borderColor="$borderLight200"
+            p="$5"
+            $md-p="$8"
+            shadowColor="$shadowColor"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.05}
+            shadowRadius={8}
+            elevation={2}
+            mb="$6"
           >
-            <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
-              <LucideIcon name="ArrowLeft" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
-              <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>
-                {previousText}
-              </ButtonText>
-            </HStack>
-          </Button>
-
-          {activeStep < 3 ? (
-            <HStack
-              space="sm"
-              alignItems="center"
-              flexDirection={isMobile ? 'column-reverse' : 'row'}
-              width={isMobile ? '100%' : 'auto'}
-              gap={isMobile ? '$3' : '$0'}
-            >
-              {/* Save as Draft */}
-              <Button
-                variant="outline"
-                borderColor="$borderLight300"
-                onPress={() => {}}
-                $web-style={{ cursor: 'pointer' }}
-                width={isMobile ? '100%' : 'auto'}
+            {isPublished && activeStep === 3 ? (
+              <Box
+                bg={theme.tokens.colors.success50}
+                borderColor={theme.tokens.colors.accent300}
+                borderWidth={1}
+                borderRadius="$lg"
+                p="$6"
+                alignItems="center"
               >
-                <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
-                  <LucideIcon name="FileText" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
-                  <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>
-                    {t('supportProvider.trainingSession.buttons.saveDraft') || 'Save as Draft'}
-                  </ButtonText>
-                </HStack>
-              </Button>
+                <LucideIcon name="CheckCircle" size={44} color={theme.tokens.colors.tickButtonActiveBg} />
+                <Text color={theme.tokens.colors.tickButtonActiveBg} {...TYPOGRAPHY.h3} mt="$2">
+                  {t('supportProvider.forms.successTitle') || 'Training Session Created Successfully!'}
+                </Text>
+                <Text color="$textDark600" {...TYPOGRAPHY.caption} mt="$1">
+                  {t('supportProvider.forms.successSub') || 'Redirecting back to dashboard...'}
+                </Text>
+              </Box>
+            ) : (
+              <VStack space="lg">
+                {/* Step Heading & Subheading from active tab schema */}
+                {activeTabSchema && (
+                  <VStack space="xs" mb="$2">
+                    <Text color="$textDark900" {...TYPOGRAPHY.h2}>
+                      {t(resolveKey(activeTabSchema.heading?.key || ''), activeTabSchema.heading?.fallback || '')}
+                    </Text>
+                    {activeTabSchema.subheading && (
+                      <Text color="$textDark500" {...TYPOGRAPHY.caption}>
+                        {t(resolveKey(activeTabSchema.subheading.key), activeTabSchema.subheading.fallback)}
+                      </Text>
+                    )}
+                  </VStack>
+                )}
 
-              {/* Continue */}
+                {/* Unified SchemaFormRenderer */}
+                <SchemaFormRenderer
+                  schema={activeSchema}
+                  values={activeStep === 3 ? reviewValues : values}
+                  errors={errors}
+                  onFieldChange={handleFieldChange}
+                  optionsMap={optionsMap}
+                  t={t}
+                  mode={activeStep === 3 ? 'preview' : 'edit'}
+                  inputStyle={MENTOR_INPUT_STYLE}
+                  selectStyle={MENTOR_INPUT_STYLE}
+                  labelStyle={{ fontSize: '$sm', fontWeight: '$medium', color: '$textDark800' }}
+                  hideSectionHeaders={activeStep !== 3}
+                />
+              </VStack>
+            )}
+          </Box>
+
+          {/* ── Action Buttons — below the form card ── */}
+          <HStack
+            justifyContent="space-between"
+            alignItems="center"
+            width="100%"
+            flexDirection={isMobile ? 'column-reverse' : 'row'}
+            gap={isMobile ? '$3' : '$0'}
+            mb="$8"
+          >
+            {/* Previous */}
+            <Button
+              variant="outline"
+              borderColor="$borderLight300"
+              onPress={handlePrev}
+              $web-style={{ cursor: 'pointer' }}
+              width={isMobile ? '100%' : 'auto'}
+            >
+              <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
+                <LucideIcon name="ArrowLeft" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
+                <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>{prevLabel}</ButtonText>
+              </HStack>
+            </Button>
+
+            {/* Right-side: Publish (final step) or Save+Continue */}
+            {isFinalStep ? (
               <Button
-                bg={primaryColor}
-                $hover={{ bg: theme.tokens.colors.primary600 }}
-                $active={{ bg: theme.tokens.colors.primary700 }}
+                bg={theme.tokens.colors.tickButtonActiveBg}
+                $hover={{ bg: theme.tokens.colors.pillarLivelihoods }}
+                $active={{ bg: theme.tokens.colors.success700 }}
                 onPress={handleNext}
                 $web-style={{ cursor: 'pointer' }}
                 width={isMobile ? '100%' : 'auto'}
               >
                 <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
+                  <LucideIcon name="Check" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
                   <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
-                    {continueText}
+                    {publishLabel}
                   </ButtonText>
-                  <LucideIcon name="ArrowRight" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
                 </HStack>
               </Button>
-            </HStack>
-          ) : (
-            <Button
-              bg={theme.tokens.colors.tickButtonActiveBg}
-              $hover={{ bg: theme.tokens.colors.pillarLivelihoods }}
-              $active={{ bg: theme.tokens.colors.success700 }}
-              onPress={handleNext}
-              $web-style={{ cursor: 'pointer' }}
-              width={isMobile ? '100%' : 'auto'}
-            >
-              <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
-                <LucideIcon name="Check" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
-                <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
-                  {t('supportProvider.trainingSession.step3.publishButton') || 'Publish Support'}
-                </ButtonText>
+            ) : (
+              <HStack
+                alignItems="center"
+                flexDirection={isMobile ? 'column-reverse' : 'row'}
+                width={isMobile ? '100%' : 'auto'}
+                gap="$3"
+              >
+                {/* Save as Draft */}
+                <Button
+                  variant="outline"
+                  borderColor="$borderLight300"
+                  onPress={() => {}}
+                  $web-style={{ cursor: 'pointer' }}
+                  width={isMobile ? '100%' : 'auto'}
+                >
+                  <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
+                    <LucideIcon name="FileText" size={14} color={theme.tokens.colors.onboardingFormBtnText} />
+                    <ButtonText color="$textDark800" {...TYPOGRAPHY.button}>{saveDraftLabel}</ButtonText>
+                  </HStack>
+                </Button>
+
+                {/* Continue */}
+                <Button
+                  bg={primaryColor}
+                  $hover={{ bg: theme.tokens.colors.primary600 }}
+                  $active={{ bg: theme.tokens.colors.primary700 }}
+                  onPress={handleNext}
+                  $web-style={{ cursor: 'pointer' }}
+                  width={isMobile ? '100%' : 'auto'}
+                >
+                  <HStack alignItems="center" space="xs" justifyContent="center" width="100%">
+                    <ButtonText color={theme.tokens.colors.backgroundPrimary.light} {...TYPOGRAPHY.button} fontWeight="$bold">
+                      {continueLabel}
+                    </ButtonText>
+                    <LucideIcon name="ArrowRight" size={14} color={theme.tokens.colors.backgroundPrimary.light} />
+                  </HStack>
+                </Button>
               </HStack>
-            </Button>
-          )}
-        </HStack>
-      </Box>
-    </ScrollView>
+            )}
+          </HStack>
+
+        </Container>
+
+        {/* Incomplete Form Modal */}
+        <IncompleteFormModal
+          isOpen={showIncompleteModal}
+          onClose={() => setShowIncompleteModal(false)}
+          missingFields={missingFields}
+          onFieldClick={handleFieldClick}
+        />
+      </ScrollView>
+    </VStack>
   );
 };
 

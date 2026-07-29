@@ -18,6 +18,13 @@ export const SupportCard: React.FC<SupportCardProps> = ({ card, onPress }) => {
   const title = t(card.titleKey) || card.defaultTitle;
   const description = t(card.descKey) || card.defaultDesc;
 
+  const jsonKey = card.key === 'trainings_sessions'
+    ? 'trainingsSessions'
+    : card.key === 'additional_services'
+    ? 'additionalServices'
+    : 'assets';
+  const iconName = t(`supportProvider.cards.${jsonKey}.icon`) || card.iconName;
+
   const borderColor = isHovered
     ? card.hoverBorderHex || theme.tokens.colors.primary500
     : '$borderLight200';
@@ -59,7 +66,7 @@ export const SupportCard: React.FC<SupportCardProps> = ({ card, onPress }) => {
           justifyContent="center"
           mb="$2"
         >
-          <LucideIcon name={card.iconName} size={28} color={card.iconColor} />
+          <LucideIcon name={iconName} size={28} color={card.iconColor} />
         </Box>
 
         {/* Card Title */}
