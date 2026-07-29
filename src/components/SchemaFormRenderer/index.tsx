@@ -108,6 +108,8 @@ export interface SchemaFormRendererProps {
   t: (key: string, fallback?: string) => string;
   /** Optional ref forwarded to the first autoFocus field */
   firstNameRef?: React.RefObject<any>;
+  /** When true, suppresses section headers */
+  hideSectionHeaders?: boolean;
 }
 
 // ─── Validation Engine ────────────────────────────────────────────────────────
@@ -278,6 +280,7 @@ interface FieldRendererProps {
   autoFocusRef?: React.RefObject<any>;
   isNested?: boolean;
   isEditMode?: boolean;
+  useProfileStyle?: boolean;
 }
 
 const FieldRenderer: React.FC<FieldRendererProps> = ({
@@ -366,6 +369,94 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       </HStack>
     );
   }
+  // ── Checkbox Group ───────────────────────────────────────────────────────────
+  if (field.type === FORM_FIELD_TYPES.CHECKBOX_GROUP) {
+    // Resolve options: inline schema options OR from optionsMap via optionsSource
+    const opts =
+      (field.options && field.options.length > 0)
+        ? field.options
+        : (field.optionsSource ? (optionsMap[field.optionsSource] ?? []) : []);
+
+    // Value is a comma-separated string of selected values
+    const selectedSet = new Set(
+      (value || '').split(',').map(v => v.trim()).filter(Boolean)
+    );
+
+    const toggle = (optValue: string) => {
+      if (disabled || field.disabled) return;
+      const next = new Set(selectedSet);
+      if (next.has(optValue)) next.delete(optValue); else next.add(optValue);
+      onChange(field.name || '', Array.from(next).join(', '));
+    };
+
+    if (opts.length === 0) {
+      // No options available yet — render a plain text input as fallback
+      return (
+        <Input
+          {...(useProfileStyle ? profileInputStyle : (styles.createUserFormInput as any))}
+          isInvalid={!!error}
+          isDisabled={disabled || field.disabled}
+        >
+          <FastInputField
+            placeholder={field.placeholder?.fallback ?? ''}
+            value={value}
+            onChangeText={(text: string) => onChange(field.name || '', text)}
+          />
+        </Input>
+      );
+    }
+
+    return (
+      <Box width="100%" flexDirection="row" flexWrap="wrap" gap="$2">
+        {opts.map(opt => {
+          const isChecked = selectedSet.has(opt.value);
+          return (
+            <Pressable
+              key={opt.value}
+              onPress={() => toggle(opt.value)}
+              disabled={disabled || field.disabled}
+              style={{ minWidth: '45%', flexShrink: 1 }}
+            >
+              <HStack
+                space="xs"
+                alignItems="center"
+                borderWidth={1}
+                borderColor={isChecked ? '$primary700' : '$borderLight200'}
+                borderRadius="$md"
+                bg={isChecked ? '$primary50' : '$white'}
+                px="$3"
+                py="$2"
+              >
+                <Box
+                  width={16}
+                  height={16}
+                  borderRadius={3}
+                  borderWidth={isChecked ? 0 : 1}
+                  borderColor="$borderLight300"
+                  bg={isChecked ? '$primary700' : '$white'}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  {isChecked && (
+                    <LucideIcon name="Check" size={11} color="white" />
+                  )}
+                </Box>
+                <Text
+                  fontSize="$xs"
+                  color={isChecked ? '$primary700' : '$textForeground'}
+                  fontWeight={isChecked ? '$medium' : '$normal'}
+                  flex={1}
+                >
+                  {opt.label}
+                </Text>
+              </HStack>
+            </Pressable>
+          );
+        })}
+      </Box>
+    );
+  }
+
   // ── Note ────────────────────────────────────────────────────────────────────
   if (field.type === FORM_FIELD_TYPES.NOTE) {
     return (
@@ -518,6 +609,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   const autoCapitalize = (field.inputProps?.autoCapitalize as any) ?? 'sentences';
   const maxLength = field.inputProps?.maxLength;
 
+
   return (
     <Input
       {...(isNested ? {} : (styles.createUserFormInput as any))}
@@ -563,6 +655,7 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   t,
   mode = "edit",
   firstNameRef,
+  hideSectionHeaders = false,
 }) => {
   // Track password visibility per group
   const [visibilityGroups, setVisibilityGroups] = useState<Record<string, boolean>>({});
@@ -576,12 +669,14 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
       {schema.map(section => (
         <VStack key={section.id} space="sm">
           {/* Section header */}
-          <HStack space="xs" alignItems="center">
-            <LucideIcon name={section.icon as any} size={16} color="$textMutedForeground" />
-            <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontWeight="$normal">
-              {t(`admin.users.createUser.${section.title.key}`, section.title.fallback)}
-            </Text>
-          </HStack>
+          {!hideSectionHeaders && (
+            <HStack space="xs" alignItems="center">
+              <LucideIcon name={section.icon as any} size={16} color="$textMutedForeground" />
+              <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontWeight="$normal">
+                {t(`admin.users.createUser.${section.title.key}`, section.title.fallback)}
+              </Text>
+            </HStack>
+          )}
 
           {/* Section rows */}
           {section.rows.map((row, rowIdx) => {
@@ -615,22 +710,136 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
                   const fieldValue = field.name ? (values[field.name] ?? '') : '';
                   const fieldError = field.name ? errors[field.name] : undefined;
 
-                  // ── viewMode: render as plain text ──
+                  // ── viewMode: render as plain text / chips ──
                   if (mode === "preview") {
                     if (field.type === FORM_FIELD_TYPES.NOTE) return null;
+
+                    const isBadgeField = field.name === 'province' || field.name === 'siteCoverage';
+
+                    if (isBadgeField && fieldValue) {
+                      const valList = (fieldValue || '').split(',').map(v => v.trim()).filter(Boolean);
+                      const labels = valList.map(v => {
+                        const opts = optionsMap[field.optionsSource || ''] ?? [];
+                        const opt = opts.find(o => o.value === v);
+                        return opt ? opt.label : v;
+                      });
+
+                      const isProvince = field.name === 'province';
+                      const badgeBg = isProvince ? '$primary50' : '$backgroundLight100';
+                      const badgeTextColor = isProvince ? '$primary700' : '$textForeground';
+                      const badgeBorderColor = isProvince ? '$primary200' : '$borderLight200';
+
+                      return (
+                        <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
+                          <HStack space="xs" alignItems="center">
+                            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+                              {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                            </Text>
+                            {field.required && (
+                              <Text {...TYPOGRAPHY.caption} color="$error600" fontWeight="$bold">*</Text>
+                            )}
+                          </HStack>
+                          {field.subtitle && (
+                            <Text fontSize="$2xs" color="$textMutedForeground" fontStyle="italic" mt="$-1">
+                              {t(`admin.users.createUser.${field.subtitle.key}`, field.subtitle.fallback)}
+                            </Text>
+                          )}
+                          <HStack space="xs" flexWrap="wrap" gap="$2" mt="$1">
+                            {labels.map((lbl, idx) => (
+                              <Box
+                                key={idx}
+                                bg={badgeBg}
+                                px="$3"
+                                py="$1"
+                                borderRadius="$full"
+                                borderWidth={1}
+                                borderColor={badgeBorderColor}
+                              >
+                                <Text fontSize="$xs" color={badgeTextColor} fontWeight="$medium">
+                                  {lbl}
+                                </Text>
+                              </Box>
+                            ))}
+                          </HStack>
+                        </VStack>
+                      );
+                    }
+
+                    if (field.type === FORM_FIELD_TYPES.CHECKBOX_GROUP) {
+                      return (
+                        <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
+                          <HStack space="xs" alignItems="center">
+                            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+                              {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                            </Text>
+                            {field.required && (
+                              <Text {...TYPOGRAPHY.caption} color="$error600" fontWeight="$bold">*</Text>
+                            )}
+                          </HStack>
+                          {field.subtitle && (
+                            <Text fontSize="$2xs" color="$textMutedForeground" fontStyle="italic" mt="$-1">
+                              {t(`admin.users.createUser.${field.subtitle.key}`, field.subtitle.fallback)}
+                            </Text>
+                          )}
+                          <Box mt="$1">
+                            <FieldRenderer
+                              field={field}
+                              value={fieldValue}
+                              error={undefined}
+                              errors={{}}
+                              onChange={() => {}}
+                              disabled={true}
+                              optionsMap={optionsMap}
+                              values={values}
+                              t={t}
+                              visibilityGroups={{}}
+                              toggleVisibilityGroup={() => {}}
+                            />
+                          </Box>
+                        </VStack>
+                      );
+                    }
 
                     let displayValue = fieldValue || '-';
                     if (field.optionsSource) {
                       const opts = optionsMap[field.optionsSource] ?? [];
-                      displayValue = opts.find(o => o.value === fieldValue)?.label || fieldValue || '-';
+                      const valList = (fieldValue || '').split(',').map(v => v.trim()).filter(Boolean);
+                      if (valList.length > 0) {
+                        displayValue = valList.map(v => {
+                          const opt = opts.find(o => o.value === v);
+                          return opt ? opt.label : v;
+                        }).join(', ');
+                      } else {
+                        displayValue = '-';
+                      }
+                    } else if (field.options && field.options.length > 0) {
+                      const valList = (fieldValue || '').split(',').map(v => v.trim()).filter(Boolean);
+                      if (valList.length > 0) {
+                        displayValue = valList.map(v => {
+                          const opt = field.options?.find(o => o.value === v);
+                          return opt ? opt.label : v;
+                        }).join(', ');
+                      } else {
+                        displayValue = '-';
+                      }
                     }
                     displayValue = typeof displayValue === 'string' ? displayValue.replace(/_/g, '-') : String(displayValue ?? '-');
 
                     return (
                       <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
-                        <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
-                          {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
-                        </Text>
+                        <HStack space="xs" alignItems="center">
+                          <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+                            {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                          </Text>
+                          {field.required && (
+                            <Text {...TYPOGRAPHY.caption} color="$error600" fontWeight="$bold">*</Text>
+                          )}
+                        </HStack>
+                        {field.subtitle && (
+                          <Text fontSize="$2xs" color="$textMutedForeground" fontStyle="italic" mt="$-1">
+                            {t(`admin.users.createUser.${field.subtitle.key}`, field.subtitle.fallback)}
+                          </Text>
+                        )}
                         <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
                           {displayValue}
                         </Text>
@@ -638,14 +847,25 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
                     );
                   }
 
-                  // ── Normal form mode ──
+                  // ── Normal form (edit) mode ──
                   return (
                     <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
-                      {/* Field label */}
+                      {/* Field label with required indicator */}
                       {field.type !== FORM_FIELD_TYPES.NOTE && (
-                        <Text {...TYPOGRAPHY.caption} color="$textForeground" fontWeight="$bold">
-                          {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
-                          {field.required ? ' *' : ''}
+                        <HStack space="xs" alignItems="center">
+                          <Text {...TYPOGRAPHY.caption} color="$textForeground" fontWeight="$bold">
+                            {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                          </Text>
+                          {field.required && (
+                            <Text {...TYPOGRAPHY.caption} color="$error600" fontWeight="$bold">*</Text>
+                          )}
+                        </HStack>
+                      )}
+
+                      {/* Subtitle */}
+                      {field.subtitle && field.type !== FORM_FIELD_TYPES.NOTE && (
+                        <Text fontSize="$2xs" color="$textMutedForeground" fontStyle="italic" mt="$-1">
+                          {t(`admin.users.createUser.${field.subtitle.key}`, field.subtitle.fallback)}
                         </Text>
                       )}
 

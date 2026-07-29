@@ -2396,7 +2396,47 @@
       "mySupportOfferings": "My Support Offerings",
       "requests": "Requests",
       "materialsLibrary": "Materials Library",
-      "profile": "Profile"
+      "profile": "Organisation Profile"
+    },
+    "profile": {
+      "title": "Organisation Profile",
+      "subtitle": "Manage your organisation's information and support coverage",
+      "editProfile": "Edit Profile",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "fetchError": "Could not load profile. Please try again.",
+      "saveSuccess": "Profile updated successfully.",
+      "saveError": "Failed to update profile. Please try again.",
+      "basicInformation": "Basic Information",
+      "contactPerson": "Contact Person",
+      "coverage": "Coverage",
+      "supportCategoriesOffered": "Support Categories Offered",
+      "documents": "Documents",
+      "supportProviderName": "Support Provider Name",
+      "providerType": "Provider Type",
+      "contactPersonName": "Contact Person (Focal Person)",
+      "email": "Email",
+      "phone": "Phone",
+      "province": "Province",
+      "provinceSubtitle": "Provinces where they operate",
+      "siteCoverage": "Site Coverage",
+      "siteCoverageSubtitle": "Sites where they operate",
+      "supportCategories": "Support Categories",
+      "supportCategoriesSubtitle": "Select all that apply",
+      "specificTrainingAreas": "Specific Training Areas",
+      "assetTypes": "Asset Types",
+      "agreementMou": "Agreement / MoU",
+      "agreementMouSubtitle": "Upload if applicable",
+      "orgCredentials": "Organisation Credentials",
+      "orgCredentialsSubtitle": "Certificates, Portfolio, etc.",
+      "errors": {
+        "supportProviderNameRequired": "Support provider name is required.",
+        "providerTypeRequired": "Provider type is required.",
+        "contactPersonRequired": "Contact person name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address.",
+        "phoneRequired": "Phone number is required."
+      }
     }
   }
 }

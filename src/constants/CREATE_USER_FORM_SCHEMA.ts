@@ -42,6 +42,8 @@ export const FORM_FIELD_TYPES = {
   TEXTAREA: 'textarea',
   NOTE: 'note',
   GROUP: 'group',
+  /** Multi-select checkbox list — value stored as comma-separated string */
+  CHECKBOX_GROUP: 'checkbox-group',
 } as const;
 
 export type FormFieldType = typeof FORM_FIELD_TYPES[keyof typeof FORM_FIELD_TYPES];
@@ -82,6 +84,16 @@ export interface FormField {
   placeholderWhenReady?: { key: string; fallback: string };
   fields?: FormField[];
   isReadOnly?: boolean;
+  /**
+   * Short descriptive subtitle shown below the field label
+   * (e.g. "Provinces where they operate").
+   */
+  subtitle?: { key: string; fallback: string };
+  /**
+   * Static inline options for checkbox-group fields.
+   * Each item has a stable `value` key and a display `label`.
+   */
+  options?: { value: string; label: string }[];
 }
 
 export interface FormRow {
