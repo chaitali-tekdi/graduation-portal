@@ -28,6 +28,7 @@ import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { styles } from '../../screens/UserManagement/Styles';
 import { FORM_FIELD_TYPES } from '@constants/CREATE_USER_FORM_SCHEMA';
 import type { FormSection, FormField, ValidationRule } from '@constants/CREATE_USER_FORM_SCHEMA';
+import { getSignedUrl, uploadFileToSignedUrl } from '../../services/bulkUploadService';
 
 // ─── Local FastInputField ─────────────────────────────────────────────────────
 // Inlined here to avoid a circular import from the parent screen module.
@@ -604,6 +605,83 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     );
   }
 
+  // ── File Upload ─────────────────────────────────────────────────────────────
+  if (field.type === FORM_FIELD_TYPES.FILE_UPLOAD) {
+    const uploadText = field.placeholder?.fallback ?? 'Click to upload PDF / DOC / JPG';
+    const uploadedFileName = value ? (value.split('/').pop() || value) : '';
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleFilePick = () => {
+      if (disabled || field.disabled || isUploading) return;
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+      input.onchange = async (e: any) => {
+        const file: File | undefined = e.target?.files?.[0];
+        if (!file) return;
+        setIsUploading(true);
+        try {
+          const signedUrlResponse = await getSignedUrl(file.name);
+          if (!signedUrlResponse.result?.signedUrl) {
+            throw new Error('Could not get upload URL');
+          }
+          await uploadFileToSignedUrl(signedUrlResponse.result.signedUrl, file);
+          const filePath =
+            signedUrlResponse.result.filePath ||
+            signedUrlResponse.result.destFilePath ||
+            file.name;
+          onChange(field.name || '', filePath);
+        } catch (err) {
+          console.error('File upload error:', err);
+        } finally {
+          setIsUploading(false);
+        }
+      };
+      input.click();
+    };
+
+    return (
+      <Pressable
+        onPress={handleFilePick}
+        disabled={disabled || field.disabled || isUploading}
+        width="100%"
+      >
+        <Box
+          width="100%"
+          borderWidth={1}
+          borderStyle="dashed"
+          borderColor="$borderLight300"
+          borderRadius="$lg"
+          py="$8"
+          px="$4"
+          alignItems="center"
+          justifyContent="center"
+          bg="$white"
+        >
+          <Box mb="$2">
+            <LucideIcon
+              name={isUploading ? 'LoaderCircle' : 'Upload'}
+              size={24}
+              color="$textMutedForeground"
+            />
+          </Box>
+          {uploadedFileName ? (
+            <Text fontSize="$sm" color="$success600" fontWeight="$medium" textAlign="center">
+              {uploadedFileName}
+            </Text>
+          ) : (
+            <Text fontSize="$sm" color="$primary600" fontWeight="$medium" textAlign="center">
+              {isUploading ? 'Uploading...' : uploadText}
+            </Text>
+          )}
+          <Text fontSize="$xs" color="$textMutedForeground" mt="$1" textAlign="center">
+            Max 10 MB
+          </Text>
+        </Box>
+      </Pressable>
+    );
+  }
+
   // ── Text / Email / Tel ───────────────────────────────────────────────────────
   const keyboardType = (field.inputProps?.keyboardType as any) ?? 'default';
   const autoCapitalize = (field.inputProps?.autoCapitalize as any) ?? 'sentences';
@@ -796,6 +874,27 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
                               toggleVisibilityGroup={() => {}}
                             />
                           </Box>
+                        </VStack>
+                      );
+                    }
+
+                    // ── Preview: File Upload ──
+                    if (field.type === FORM_FIELD_TYPES.FILE_UPLOAD) {
+                      return (
+                        <VStack key={field.name || field.label.key} space="xs" flex={isMultiField ? 1 : undefined} width={!isMultiField ? '100%' : undefined}>
+                          <HStack space="xs" alignItems="center">
+                            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+                              {t(`admin.users.createUser.${field.label.key}`, field.label.fallback)}
+                            </Text>
+                          </HStack>
+                          {field.subtitle && (
+                            <Text fontSize="$2xs" color="$textMutedForeground" fontStyle="italic" mt="$-1">
+                              {t(`admin.users.createUser.${field.subtitle.key}`, field.subtitle.fallback)}
+                            </Text>
+                          )}
+                          <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
+                            {fieldValue || '-'}
+                          </Text>
                         </VStack>
                       );
                     }

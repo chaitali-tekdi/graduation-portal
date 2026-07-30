@@ -268,12 +268,11 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'agreementMou',
-            type: FORM_FIELD_TYPES.TEXT,
+            type: FORM_FIELD_TYPES.FILE_UPLOAD,
             required: false,
-            isReadOnly: true,
             label: { key: 'agreementMou', fallback: 'Agreement / MoU' },
             subtitle: { key: 'agreementMouSubtitle', fallback: 'Upload if applicable' },
-            placeholder: { fallback: 'No document uploaded' },
+            placeholder: { fallback: 'Click to upload PDF / DOC / JPG' },
           },
         ],
       },
@@ -281,17 +280,14 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'orgCredentials',
-            type: FORM_FIELD_TYPES.TEXT,
+            type: FORM_FIELD_TYPES.FILE_UPLOAD,
             required: false,
-            isReadOnly: true,
             label: { key: 'orgCredentials', fallback: 'Organisation Credentials' },
             subtitle: { key: 'orgCredentialsSubtitle', fallback: 'Certificates, Portfolio, etc.' },
-            placeholder: { fallback: 'No document uploaded' },
+            placeholder: { fallback: 'Click to upload PDF / DOC / JPG' },
           },
         ],
       },
     ],
   },
 ];
-
-

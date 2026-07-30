@@ -43,23 +43,8 @@ const SectionCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-// Helper: get static options for a field in the schema
-const getStaticOptions = (fieldName: string) => {
-  for (const section of ORG_PROFILE_SCHEMA) {
-    for (const row of section.rows) {
-      for (const field of row.fields) {
-        if (field.name === fieldName) {
-          return field.options;
-        }
-      }
-    }
-  }
-  return undefined;
-};
-
 // Helper: map individual checkbox group and other values from the API
-const mapFieldToFormValues = (fieldName: string, val: any): string => {
-  const staticOptions = getStaticOptions(fieldName);
+const mapFieldToFormValues = (val: any): string => {
   if (!val) return '';
   const rawList = Array.isArray(val)
     ? val
@@ -69,24 +54,10 @@ const mapFieldToFormValues = (fieldName: string, val: any): string => {
 
   const valuesList = rawList.map((item: any) => {
     if (!item) return '';
-    let itemVal = '';
     if (typeof item === 'object') {
-      itemVal = item.value || item._id || item.id || item.name || '';
-    } else {
-      itemVal = String(item);
+      return item.value || item._id || item.id || item.name || '';
     }
-
-    if (staticOptions && staticOptions.length > 0) {
-      const match = staticOptions.find(
-        (opt: any) =>
-          opt.value.toLowerCase() === itemVal.toLowerCase() ||
-          opt.label.toLowerCase() === itemVal.toLowerCase() ||
-          opt.value.replace(/_/g, ' ').toLowerCase() === itemVal.toLowerCase() ||
-          opt.value.toLowerCase() === itemVal.replace(/[\s\/]/g, '_').toLowerCase()
-      );
-      if (match) return match.value;
-    }
-    return itemVal;
+    return String(item);
   });
 
   return valuesList.filter(Boolean).join(', ');
@@ -99,17 +70,17 @@ const mapProfileToValues = (profile: any): Record<string, string> => {
 
   return {
     supportProviderName: org?.name || profile?.name || meta?.supportProviderName || '',
-    providerType: mapFieldToFormValues('providerType', meta?.providerType || org?.type),
+    providerType: mapFieldToFormValues(meta?.providerType || org?.type),
     contactPersonName: profile?.name || '',
     email: profile?.email || '',
     phone: profile?.phone
       ? `${profile.phone_code ? '+' + profile.phone_code + ' ' : ''}${profile.phone}`
       : '',
-    province: mapFieldToFormValues('province', meta?.province || meta?.provinces || profile?.provinces),
-    siteCoverage: mapFieldToFormValues('siteCoverage', meta?.siteCoverage || meta?.sites || profile?.sites),
-    supportCategories: mapFieldToFormValues('supportCategories', meta?.supportCategories),
-    specificTrainingAreas: mapFieldToFormValues('specificTrainingAreas', meta?.specificTrainingAreas),
-    assetTypes: mapFieldToFormValues('assetTypes', meta?.assetTypes),
+    province: mapFieldToFormValues(meta?.province || meta?.provinces || profile?.provinces),
+    siteCoverage: mapFieldToFormValues(meta?.siteCoverage || meta?.sites || profile?.sites),
+    supportCategories: mapFieldToFormValues(meta?.supportCategories),
+    specificTrainingAreas: mapFieldToFormValues(meta?.specificTrainingAreas),
+    assetTypes: mapFieldToFormValues(meta?.assetTypes),
     agreementMou: meta?.agreementMou || '',
     orgCredentials: meta?.orgCredentials || '',
   };
@@ -258,20 +229,37 @@ const OrgProfileView: React.FC = () => {
     if (mode === 'edit') {
       return (
         <HStack space="md" alignItems="center">
-          <Button variant={'outline' as any} onPress={handleCancel} isDisabled={isSaving}>
+          {/* Cancel button: grey text/icon, purple text on hover, no blue border */}
+          <Button
+            variant="outline"
+            onPress={handleCancel}
+            isDisabled={isSaving}
+            borderColor="$borderLight300"
+            sx={{
+              ':hover': {
+                bg: '$backgroundLight50',
+                borderColor: '$borderLight300',
+              },
+            }}
+          >
             <ButtonIcon as={LucideIcon} name="X" />
-            <ButtonText>{t('supportProvider.profile.cancel', 'Cancel')}</ButtonText>
+            <ButtonText
+              sx={{ ':hover': { color: '$primary600' } }}
+            >
+              {t('supportProvider.profile.cancel', 'Cancel')}
+            </ButtonText>
           </Button>
+
+          {/* Save Changes button: green solid with floppy-disk Save icon */}
           <Button
             variant="solid"
             bg="$success600"
-            $hover-bg="$success700"
-            $hover={{ bg: '$success700' }}
+            sx={{ ':hover': { bg: '$success700' } }}
             onPress={handleSave}
             isDisabled={isSaving}
           >
             <ButtonIcon as={LucideIcon} name="Save" />
-            <ButtonText color="$white">
+            <ButtonText>
               {isSaving
                 ? t('common.saving', 'Saving...')
                 : t('supportProvider.profile.saveChanges', 'Save Changes')}
