@@ -65,25 +65,25 @@ import type {
 export const FastInputField = React.forwardRef(
   ({ value, defaultValue, onChangeText, ...props }: any, ref: any) => {
     const initialValue = value !== undefined ? value : defaultValue || '';
-    const [localValue, setLocalValue] = useState(initialValue);
-    const isTyping = useRef(false);
-    const timeoutRef = useRef<any>(null);
+  const [localValue, setLocalValue] = useState(initialValue);
+  const isTyping = useRef(false);
+  const timeoutRef = useRef<any>(null);
 
-    useEffect(() => {
-      if (!isTyping.current && value !== undefined && localValue !== value) {
-        setLocalValue(value);
-      }
-    }, [value]);
+  useEffect(() => {
+    if (!isTyping.current && value !== undefined && localValue !== value) {
+      setLocalValue(value);
+    }
+  }, [value]);
 
-    const handleChange = (text: string) => {
-      setLocalValue(text);
-      isTyping.current = true;
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  const handleChange = (text: string) => {
+    setLocalValue(text);
+    isTyping.current = true;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         isTyping.current = false;
       }, 500);
-      if (onChangeText) onChangeText(text);
-    };
+    if (onChangeText) onChangeText(text);
+  };
 
     return (
       <InputField
@@ -101,25 +101,25 @@ FastInputField.displayName = 'SFR_FastInputField';
 const FastTextareaInput = React.forwardRef(
   ({ value, defaultValue, onChangeText, ...props }: any, ref: any) => {
     const initialValue = value !== undefined ? value : defaultValue || '';
-    const [localValue, setLocalValue] = useState(initialValue);
-    const isTyping = useRef(false);
-    const timeoutRef = useRef<any>(null);
+  const [localValue, setLocalValue] = useState(initialValue);
+  const isTyping = useRef(false);
+  const timeoutRef = useRef<any>(null);
 
-    useEffect(() => {
-      if (!isTyping.current && value !== undefined && localValue !== value) {
-        setLocalValue(value);
-      }
-    }, [value]);
+  useEffect(() => {
+    if (!isTyping.current && value !== undefined && localValue !== value) {
+      setLocalValue(value);
+    }
+  }, [value]);
 
-    const handleChange = (text: string) => {
-      setLocalValue(text);
-      isTyping.current = true;
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  const handleChange = (text: string) => {
+    setLocalValue(text);
+    isTyping.current = true;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         isTyping.current = false;
       }, 500);
-      if (onChangeText) onChangeText(text);
-    };
+    if (onChangeText) onChangeText(text);
+  };
 
     return (
       <TextareaInput
@@ -165,6 +165,12 @@ export interface SchemaFormRendererProps {
   onSaveDraft?: (values: Record<string, string>) => void | Promise<void>;
   /** Disables the Previous/Continue/Save Draft/Submit footer buttons while a request is in flight */
   isSubmitting?: boolean;
+  /** Whether to render SectionNode inside a Card (defaults to true) */
+  renderSectionCard?: boolean;
+  sectionHeaderProps?: {
+    iconColor?: string;
+    titleProps?: any;
+  };
 }
 
 // ─── Validation Engine ────────────────────────────────────────────────────────
@@ -321,7 +327,7 @@ function validateField(
 
   const err = getFieldError(field, values);
   if (err && field.name) {
-    errors[field.name] = err;
+      errors[field.name] = err;
   }
 }
 
@@ -602,7 +608,7 @@ function countRequiredFieldProgress(
       countRequiredFieldProgress(subField, values, optionsMap, counts),
     );
     return;
-  }
+      }
 
   if (!field.name || !field.required) return;
   if (!isVisible(field.visibleWhen, values, optionsMap)) return;
@@ -763,6 +769,94 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       </HStack>
     );
   }
+  // ── Checkbox Group ───────────────────────────────────────────────────────────
+  if (field.type === FORM_FIELD_TYPES.CHECKBOX_GROUP) {
+    // Resolve options: inline schema options OR from optionsMap via optionsSource
+    const opts =
+      (field.options && field.options.length > 0)
+        ? field.options
+        : (field.optionsSource ? (optionsMap[field.optionsSource] ?? []) : []);
+
+    // Value is a comma-separated string of selected values
+    const selectedSet = new Set(
+      (value || '').split(',').map(v => v.trim()).filter(Boolean)
+    );
+
+    const toggle = (optValue: string) => {
+      if (disabled || field.disabled) return;
+      const next = new Set(selectedSet);
+      if (next.has(optValue)) next.delete(optValue); else next.add(optValue);
+      onChange(field.name || '', Array.from(next).join(', '));
+    };
+
+    if (opts.length === 0) {
+      // No options available yet — render a plain text input as fallback
+      return (
+        <Input
+          {...(useProfileStyle ? profileInputStyle : (styles.createUserFormInput as any))}
+          isInvalid={!!error}
+          isDisabled={disabled || field.disabled}
+        >
+          <FastInputField
+            placeholder={field.placeholder?.fallback ?? ''}
+            value={value}
+            onChangeText={(text: string) => onChange(field.name || '', text)}
+          />
+        </Input>
+      );
+    }
+
+    return (
+      <Box width="100%" flexDirection="row" flexWrap="wrap" gap="$2">
+        {opts.map(opt => {
+          const isChecked = selectedSet.has(opt.value);
+          return (
+            <Pressable
+              key={opt.value}
+              onPress={() => toggle(opt.value)}
+              disabled={disabled || field.disabled}
+              style={{ minWidth: '22%', flexShrink: 1 }}
+            >
+              <HStack
+                space="xs"
+                alignItems="center"
+                borderWidth={1}
+                borderColor={isChecked ? '$primary700' : '$borderLight200'}
+                borderRadius="$md"
+                bg={isChecked ? '$primary50' : '$white'}
+                px="$3"
+                py="$2"
+              >
+                <Box
+                  width={16}
+                  height={16}
+                  borderRadius={3}
+                  borderWidth={isChecked ? 0 : 1}
+                  borderColor="$borderLight300"
+                  bg={isChecked ? '$primary700' : '$white'}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  {isChecked && (
+                    <LucideIcon name="Check" size={11} color="white" />
+                  )}
+                </Box>
+                <Text
+                  fontSize="$xs"
+                  color={isChecked ? '$primary700' : '$textForeground'}
+                  fontWeight={isChecked ? '$medium' : '$normal'}
+                  flex={1}
+                >
+                  {opt.label}
+                </Text>
+              </HStack>
+            </Pressable>
+          );
+        })}
+      </Box>
+    );
+  }
+
   // ── Note ────────────────────────────────────────────────────────────────────
   if (field.type === FORM_FIELD_TYPES.NOTE) {
     return (
@@ -977,7 +1071,14 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
           <Pressable
             onPress={() => toggleVisibilityGroup(group)}
             disabled={disabled || field.disabled}
-            style={styles.resetPasswordEyeIconButton}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: '50%',
+              transform: [{ translateY: -12 }],
+              padding: 4,
+              zIndex: 1,
+            }}
           >
             <LucideIcon
               name={isVisible ? 'EyeOff' : 'Eye'}
@@ -1018,6 +1119,83 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     );
   }
 
+  // ── File Upload ─────────────────────────────────────────────────────────────
+  if (field.type === FORM_FIELD_TYPES.FILE_UPLOAD) {
+    const uploadText = field.placeholder?.fallback ?? 'Click to upload PDF / DOC / JPG';
+    const uploadedFileName = value ? (value.split('/').pop() || value) : '';
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleFilePick = () => {
+      if (disabled || field.disabled || isUploading) return;
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+      input.onchange = async (e: any) => {
+        const file: File | undefined = e.target?.files?.[0];
+        if (!file) return;
+        setIsUploading(true);
+        try {
+          const signedUrlResponse = await getSignedUrl(file.name);
+          if (!signedUrlResponse.result?.signedUrl) {
+            throw new Error('Could not get upload URL');
+          }
+          await uploadFileToSignedUrl(signedUrlResponse.result.signedUrl, file);
+          const filePath =
+            signedUrlResponse.result.filePath ||
+            signedUrlResponse.result.destFilePath ||
+            file.name;
+          onChange(field.name || '', filePath);
+        } catch (err) {
+          console.error('File upload error:', err);
+        } finally {
+          setIsUploading(false);
+        }
+      };
+      input.click();
+    };
+
+    return (
+      <Pressable
+        onPress={handleFilePick}
+        disabled={disabled || field.disabled || isUploading}
+        width="100%"
+      >
+        <Box
+          width="100%"
+          borderWidth={1}
+          borderStyle="dashed"
+          borderColor="$borderLight300"
+          borderRadius="$lg"
+          py="$8"
+          px="$4"
+          alignItems="center"
+          justifyContent="center"
+          bg="$white"
+        >
+          <Box mb="$2">
+            <LucideIcon
+              name={isUploading ? 'LoaderCircle' : 'Upload'}
+              size={24}
+              color="$textMutedForeground"
+            />
+          </Box>
+          {uploadedFileName ? (
+            <Text fontSize="$sm" color="$success600" fontWeight="$medium" textAlign="center">
+              {uploadedFileName}
+            </Text>
+          ) : (
+            <Text fontSize="$sm" color="$primary600" fontWeight="$medium" textAlign="center">
+              {isUploading ? 'Uploading...' : uploadText}
+            </Text>
+          )}
+          <Text fontSize="$xs" color="$textMutedForeground" mt="$1" textAlign="center">
+            Max 10 MB
+          </Text>
+        </Box>
+      </Pressable>
+    );
+  }
+
   // ── Text / Email / Tel ───────────────────────────────────────────────────────
   const keyboardType = (field.inputProps?.keyboardType as any) ?? 'default';
   const autoCapitalize =
@@ -1033,9 +1211,9 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       alignItems={field.icon ? 'center' : undefined}
       {...(isNested
         ? {
-            borderColor: 'transparent',
-            bg: 'transparent',
-            flex: 1,
+        borderColor: 'transparent',
+        bg: 'transparent',
+        flex: 1,
             variant: 'outline',
           }
         : {})}
@@ -1088,6 +1266,13 @@ interface NodeRenderContext {
   registerFieldRef?: (name: string, node: any) => void;
   /** Name of the field to temporarily highlight (set after navigating from the validation popup) */
   highlightedField?: string | null;
+  renderSectionCard?: boolean;
+  sectionHeaderProps?: {
+    iconSize?: number;
+    iconColor?: string;
+    titleColor?: string;
+    titleProps?: any;
+  };
 }
 
 function nodeTitleText(
@@ -1230,6 +1415,48 @@ const SectionNode: React.FC<{ node: FormSection; ctx: NodeRenderContext }> = ({
       )
     : undefined;
 
+  const content = (
+    <VStack space={subTitleText ? 'xl' : 'sm'}>
+      {!!titleText && (
+        <VStack space="xs">
+          <HStack space="xs" alignItems="center">
+            {!!node.icon && (
+              <LucideIcon
+                name={node.icon as any}
+                size={ctx.sectionHeaderProps?.iconSize ?? 20}
+                color={ctx.sectionHeaderProps?.iconColor ?? '$primary500'}
+              />
+            )}
+            <Text
+              {...(ctx.sectionHeaderProps?.titleProps || TYPOGRAPHY.h2)}
+              color={ctx.sectionHeaderProps?.titleColor ?? '$blueGray900'}
+              fontWeight="600"
+            >
+              {titleText}
+            </Text>
+          </HStack>
+          {!!subTitleText && (
+            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+              {subTitleText}
+            </Text>
+          )}
+        </VStack>
+      )}
+
+      {!!node.rows?.length && <RenderRow rows={node.rows} {...ctx} />}
+
+      {!!node.children?.length && (
+        <RenderNodes nodes={node.children} ctx={ctx} />
+      )}
+
+      {!!node.hint && <HintDisplay hint={node.hint} t={ctx.t} />}
+    </VStack>
+  );
+
+  if (ctx.renderSectionCard === false) {
+    return content;
+  }
+
   return (
     <Card
       variant="outline"
@@ -1239,37 +1466,7 @@ const SectionNode: React.FC<{ node: FormSection; ctx: NodeRenderContext }> = ({
       p="$6"
       width="100%"
     >
-      <VStack space={subTitleText ? 'xl' : 'sm'}>
-        {!!titleText && (
-          <VStack space="xs">
-            <HStack space="xs" alignItems="center">
-              {!!node.icon && (
-                <LucideIcon
-                  name={node.icon as any}
-                  size={16}
-                  color="$textMutedForeground"
-                />
-              )}
-              <Text {...TYPOGRAPHY.h2} color="$blueGray900" fontWeight="$bold">
-                {titleText}
-              </Text>
-            </HStack>
-            {!!subTitleText && (
-              <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
-                {subTitleText}
-              </Text>
-            )}
-          </VStack>
-        )}
-
-        {!!node.rows?.length && <RenderRow rows={node.rows} {...ctx} />}
-
-        {!!node.children?.length && (
-          <RenderNodes nodes={node.children} ctx={ctx} />
-        )}
-
-        {!!node.hint && <HintDisplay hint={node.hint} t={ctx.t} />}
-      </VStack>
+      {content}
     </Card>
   );
 };
@@ -1543,6 +1740,8 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   onSubmit,
   onSaveDraft,
   isSubmitting = false,
+  renderSectionCard,
+  sectionHeaderProps,
 }) => {
   // Track password visibility per group
   const [visibilityGroups, setVisibilityGroups] = useState<
@@ -1734,6 +1933,8 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
     toggleVisibilityGroup,
     firstNameRef,
     fieldsByName,
+    renderSectionCard,
+    sectionHeaderProps,
   };
 
   if (isMultiStep) {
@@ -1757,8 +1958,8 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
     const { total: requiredTotal, completed: requiredCompleted } =
       computeRequiredFieldProgress(schema, values, optionsMap);
 
-    return (
-      <VStack space="md" width="100%">
+  return (
+    <VStack space="md" width="100%">
         <VStack width="100%">
           <StepProgress
             total={requiredTotal}
@@ -1777,7 +1978,7 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
         {!!stepSubTitleText && (
           <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
             {stepSubTitleText}
-          </Text>
+              </Text>
         )}
 
         {!!activeTab?.hint && <HintDisplay hint={activeTab.hint} t={t} />}
@@ -1819,9 +2020,9 @@ export const RenderRow = memo(
   ({ rows, values = {}, optionsMap = {}, mode, ...rest }: any) => {
     const renderedRows = useMemo(() => {
       return rows?.map((row: any, index: number) => {
-        if (!isVisible(row.visibleWhen, values, optionsMap)) {
-          return null;
-        }
+            if (!isVisible(row.visibleWhen, values, optionsMap)) {
+              return null;
+            }
 
         const visibleFields = row.fields.flatMap((field: any) => {
           if (!isVisible(field.visibleWhen, values, optionsMap)) {
@@ -1898,11 +2099,11 @@ const RowRenderer = memo(
   }: FieldType | { isMobile: boolean; fields: FormField[] }) => {
     const isMultiField = fields.length > 1;
 
-    return (
-      <HStack
-        space="md"
-        flexDirection={isMobile || !isMultiField ? 'column' : 'row'}
-      >
+            return (
+              <HStack
+                space="md"
+                flexDirection={isMobile || !isMultiField ? 'column' : 'row'}
+              >
         {fields.map((field: any) => (
           <FieldContainer
             key={field.name ?? field.label.key}
@@ -1990,7 +2191,7 @@ const HintDisplay: React.FC<{
     ? t(`admin.users.createUser.${hint.title.key}`, hint.title.fallback)
     : undefined;
 
-  return (
+                      return (
     <VStack
       space="xs"
       bg={config.bg}
@@ -2016,7 +2217,7 @@ const HintDisplay: React.FC<{
               fontWeight="$medium"
             >
               {titleText}
-            </Text>
+                            </Text>
           )}
           {!!hint.bullets?.length && (
             <VStack space="xs">
@@ -2028,22 +2229,22 @@ const HintDisplay: React.FC<{
                 >
                   <Text color={config?.bulletTextColor || config.textColor}>
                     {'•'}
-                  </Text>
+                            </Text>
                   <Text
                     {...TYPOGRAPHY.bodySmall}
                     color={config?.bulletTextColor || config.textColor}
                     flex={1}
                   >
                     {t(`admin.users.createUser.${bullet.key}`, bullet.fallback)}
-                  </Text>
+                                  </Text>
                 </HStack>
               ))}
             </VStack>
-          )}
+                            )}
         </VStack>
-      </HStack>
-    </VStack>
-  );
+                          </HStack>
+                        </VStack>
+                      );
 };
 
 // ─── View Field (read-only display of another field's label/value) ───────────
@@ -2088,20 +2289,20 @@ const ViewFieldDisplay: React.FC<ViewFieldDisplayProps> = ({
   }
   displayValue = displayValue.replace(/_/g, '-');
 
-  return (
+                      return (
     <VStack
       space="xs"
       flex={isMultiField ? 1 : undefined}
       width={!isMultiField ? '100%' : undefined}
     >
-      <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+                            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
         {label}
-      </Text>
-      <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
+                            </Text>
+                          <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
         {displayValue}
-      </Text>
-    </VStack>
-  );
+                          </Text>
+                        </VStack>
+                      );
 };
 
 const FieldContainer = memo(
@@ -2151,27 +2352,31 @@ const FieldContainer = memo(
 
       let displayValue = value || '-';
 
-      if (field.optionsSource) {
+                    if (field.optionsSource) {
         const option = optionsMap[field.optionsSource]?.find(
           o => o.value === value,
         );
 
         displayValue = option?.label || value || '-';
-      }
+                      }
 
       displayValue =
         typeof displayValue === 'string'
           ? displayValue.replace(/_/g, '-')
           : String(displayValue);
 
-      return (
+                    return (
         <VStack
           ref={containerRef}
           space="xs"
           flex={isMultiField ? 1 : undefined}
           width={!isMultiField ? '100%' : undefined}
         >
-          <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+          <Text
+            {...TYPOGRAPHY.bodySmall}
+            color="$textForeground"
+            fontWeight="$medium"
+          >
             {t(
               `admin.users.createUser.${field.label.key}`,
               field.label.fallback,
@@ -2184,17 +2389,17 @@ const FieldContainer = memo(
                 `admin.users.createUser.${field.subTitle.key}`,
                 field.subTitle.fallback,
               )}
-            </Text>
-          )}
+                          </Text>
+                        )}
 
           <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
-            {displayValue}
-          </Text>
-        </VStack>
-      );
-    }
+                            {displayValue}
+                          </Text>
+                      </VStack>
+                    );
+                  }
 
-    return (
+                  return (
       <VStack
         ref={containerRef}
         space="xs"
@@ -2204,7 +2409,7 @@ const FieldContainer = memo(
         borderRadius={isHighlighted ? '$md' : undefined}
         bg={isHighlighted ? '$warning100' : undefined}
       >
-        {field.type !== FORM_FIELD_TYPES.NOTE && (
+                      {field.type !== FORM_FIELD_TYPES.NOTE && (
           <>
             <Text
               {...TYPOGRAPHY.bodySmall}
@@ -2216,40 +2421,40 @@ const FieldContainer = memo(
                 field.label.fallback,
               )}
               {field.required && <Text color="$red500"> *</Text>}
-            </Text>
+                          </Text>
             {!!field.subTitle && (
               <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
                 {t(
                   `admin.users.createUser.${field.subTitle.key}`,
                   field.subTitle.fallback,
                 )}
-              </Text>
+                        </Text>
             )}
             {!!field.hint && <HintDisplay hint={field.hint} t={t} />}
           </>
-        )}
+                      )}
 
-        <FieldRenderer
-          field={field}
+                      <FieldRenderer
+                        field={field}
           value={value}
           error={error}
-          errors={errors}
-          onChange={onFieldChange}
-          disabled={disabled}
-          optionsMap={optionsMap}
-          values={values}
-          t={t}
-          visibilityGroups={visibilityGroups}
-          toggleVisibilityGroup={toggleVisibilityGroup}
-          autoFocusRef={firstNameRef}
-        />
+                        errors={errors}
+                        onChange={onFieldChange}
+                        disabled={disabled}
+                        optionsMap={optionsMap}
+                        values={values}
+                        t={t}
+                        visibilityGroups={visibilityGroups}
+                        toggleVisibilityGroup={toggleVisibilityGroup}
+                        autoFocusRef={firstNameRef}
+                      />
 
         {error && (
-          <Text color="$error600" fontSize="$xs">
+                        <Text color="$error600" fontSize="$xs">
             {error}
-          </Text>
+                        </Text>
         )}
-      </VStack>
-    );
+                    </VStack>
+                  );
   },
 );

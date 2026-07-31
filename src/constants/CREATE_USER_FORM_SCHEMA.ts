@@ -81,6 +81,10 @@ export const FORM_FIELD_TYPES = {
   PILLSELECT: 'pillselect',
   /** File upload trigger */
   FILE: 'file',
+  /** Multi-select checkbox list — value stored as comma-separated string */
+  CHECKBOX_GROUP: 'checkbox-group',
+  /** File upload area — renders a dashed-border click-to-upload zone */
+  FILE_UPLOAD: 'file-upload',
 } as const;
 
 export type FormFieldType = typeof FORM_FIELD_TYPES[keyof typeof FORM_FIELD_TYPES];
