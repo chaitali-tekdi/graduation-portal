@@ -7,6 +7,7 @@ import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRender
 import { createUser, getSitesByProvince } from '../../services/usersService';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import type { AdminUserManagementData } from '@app-types/Users';
+import { styles } from './Styles';
 
 interface CreateUserFormProps {
   isOpen: boolean;
@@ -144,6 +145,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           isMobile={isMobile}
           t={t}
           firstNameRef={firstNameRef}
+          inputProps={styles.createUserFormInput}
+          selectProps={styles.createUserFormSelect}
         />
         <VStack space="md" width="100%">
           <HStack space="md" justifyContent="flex-end">

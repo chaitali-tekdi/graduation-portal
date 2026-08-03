@@ -30,7 +30,6 @@ import {
   Pressable,
   Textarea,
   TextareaInput,
-  Card,
   Tabs,
   TabsTabList,
   TabsTab,
@@ -49,7 +48,6 @@ import DatePicker from '@components/ui/Inputs/DatePicker';
 import { openFilePicker } from '../../project-player/components/Task/FileEvidence/file-picker';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { getSignedUrl, uploadFileToSignedUrl } from '../../services/bulkUploadService';
-import { styles } from '../../screens/UserManagement/Styles';
 import { FORM_FIELD_TYPES } from '@constants/CREATE_USER_FORM_SCHEMA';
 import type {
   FormSection,
@@ -58,6 +56,90 @@ import type {
   VisibleIfCondition,
   Hint,
 } from '@constants/CREATE_USER_FORM_SCHEMA';
+//checkbox card pill
+const HoverablePill: React.FC<{
+  badgeText: string;
+  fieldName: string;
+  orgProfileStyles?: any;
+}> = ({ badgeText, fieldName, orgProfileStyles }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Defaults
+  let bg = '$blue50';
+  let borderColor = '$blue600';
+  let borderWidth = 1;
+  let textColor = '$blue800';
+
+  if (orgProfileStyles) {
+    if (fieldName === 'providerType') {
+      bg = 'transparent';
+      borderColor = '$gray300';
+      borderWidth = 1;
+      textColor = isHovered ? '$primary500' : '$textSecondary';
+    } else if (fieldName === 'province') {
+      bg = 'transparent';
+      borderColor = 'transparent';
+      borderWidth = 0;
+      textColor = isHovered ? '$primary500' : '$blue800';
+    } else if (fieldName === 'siteCoverage') {
+      bg = 'transparent';
+      borderColor = '$gray300';
+      borderWidth = 1;
+      textColor = isHovered ? '$primary500' : '$textPrimary';
+    }
+  }
+
+  return (
+    <Pressable
+      onHoverIn={() => setIsHovered(true)}
+      onHoverOut={() => setIsHovered(false)}
+      bg={bg}
+      borderColor={borderColor}
+      borderWidth={borderWidth}
+      borderRadius="$full"
+      px="$3"
+      py="$1"
+      mb="$1"
+      $web={{
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      } as any}
+    >
+      <Text fontSize="$xs" color={textColor} fontWeight="$medium">
+        {badgeText}
+      </Text>
+    </Pressable>
+  );
+};
+
+const getCheckboxItemStyle = (fieldName: string, isEdit: boolean, orgStyles: any) => {
+  if (!orgStyles) return undefined;
+  
+  // Use responsive minWidth/flexBasis logic so cards wrap smoothly on mobile screens
+  let minWidth: string | number = 200; // default min-width in pixels for mobile friendly wrap
+  
+  if (fieldName === 'assetTypes') {
+    minWidth = '100%';
+  } else if (fieldName === 'specificTrainingAreas') {
+    minWidth = 240;
+  }
+  
+  return {
+    ...orgStyles.orgProfileCheckboxItem,
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth,
+    maxWidth: '100%',
+  };
+};
+
+const getCheckboxTextStyles = (fieldName: string, isChecked: boolean, orgStyles: any) => {
+  if (!orgStyles) return undefined;
+  const baseTextProps = isChecked
+    ? orgStyles.orgProfileCheckboxCheckedText
+    : orgStyles.orgProfileCheckboxText;
+  return baseTextProps;
+};
 
 // ─── Local FastInputField ─────────────────────────────────────────────────────
 // Inlined here to avoid a circular import from the parent screen module.
@@ -167,24 +249,9 @@ export interface SchemaFormRendererProps {
   /** Disables the Previous/Continue/Save Draft/Submit footer buttons while a request is in flight */
   isSubmitting?: boolean;
   isMobile?: boolean;
-  /** Whether to render SectionNode inside a Card (defaults to true) */
-  renderSectionCard?: boolean;
-  sectionHeaderProps?: {
-    iconSize?: number;
-    iconColor?: string;
-    titleColor?: string;
-    titleProps?: any;
-  };
-  orgProfileInputProps?: any;
-  orgProfileSelectProps?: any;
-  orgProfileLabelProps?: any;
-  orgProfileRequiredStarProps?: any;
-  orgProfileValueProps?: any;
-  orgProfileSubTitleProps?: any;
-  orgProfileCheckboxCardSelected?: any;
-  orgProfileCheckboxCardUnselected?: any;
-  orgProfileCheckboxTextSelected?: any;
-  orgProfileCheckboxTextUnselected?: any;
+  inputProps?: any;
+  selectProps?: any;
+  orgProfileStyles?: any;
 }
 
 // ─── Validation Engine ────────────────────────────────────────────────────────
@@ -676,13 +743,105 @@ interface FieldRendererProps {
   autoFocusRef?: React.RefObject<any>;
   isNested?: boolean;
   isEditMode?: boolean;
-  orgProfileInputProps?: any;
-  orgProfileSelectProps?: any;
-  orgProfileCheckboxCardSelected?: any;
-  orgProfileCheckboxCardUnselected?: any;
-  orgProfileCheckboxTextSelected?: any;
-  orgProfileCheckboxTextUnselected?: any;
+  inputProps?: any;
+  selectProps?: any;
+  orgProfileStyles?: any;
 }
+
+const GroupFieldRenderer: React.FC<{
+  field: FormField;
+  values: Record<string, string>;
+  errors: Record<string, string>;
+  onChange: (name: string, value: string) => void;
+  disabled: boolean;
+  optionsMap: OptionsMap;
+  t: (key: string, fallback?: string) => string;
+  visibilityGroups: Record<string, boolean>;
+  toggleVisibilityGroup: (group: string) => void;
+  autoFocusRef?: React.RefObject<any>;
+  inputProps?: any;
+  selectProps?: any;
+}> = ({
+  field,
+  values,
+  errors,
+  onChange,
+  disabled,
+  optionsMap,
+  t,
+  visibilityGroups,
+  toggleVisibilityGroup,
+  autoFocusRef,
+  inputProps,
+  selectProps,
+}) => {
+  const subFields = field.fields || [];
+  const combinedError = subFields.map(sf => errors[sf.name!]).find(Boolean);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const isCreateUserForm = inputProps && inputProps.bg === '$blue50';
+  const groupStyles = isCreateUserForm
+    ? {
+        bg: inputProps.bg,
+        borderRadius: inputProps.borderRadius,
+        borderWidth: inputProps.borderWidth ?? 1,
+        borderColor: combinedError
+          ? '$red500'
+          : isFocused
+          ? '$primary500'
+          : inputProps.borderColor ?? 'transparent',
+        boxShadow: isFocused
+          ? '0 0 0 2px rgba(139, 40, 66, 0.2)'
+          : inputProps.boxShadow,
+        '$web-boxShadow': isFocused
+          ? '0 0 0 2px rgba(139, 40, 66, 0.2)'
+          : inputProps['$web-boxShadow'],
+        px: inputProps.px ?? '$3',
+        py: inputProps.py ?? 0,
+      }
+    : {};
+
+  return (
+    <HStack
+      alignItems="center"
+      height={40}
+      width="100%"
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      {...(groupStyles as any)}
+    >
+      {subFields.map((subField, idx) => (
+        <React.Fragment key={subField.name || subField.label.key}>
+          {idx > 0 && (
+            <Box
+              width={1}
+              bg="$borderColor"
+              height="60%"
+              alignSelf="center"
+            />
+          )}
+          <FieldRenderer
+            field={subField}
+            value={subField.name ? values[subField.name] ?? '' : ''}
+            error={subField.name ? errors[subField.name] : undefined}
+            errors={errors}
+            onChange={onChange}
+            disabled={disabled || !!subField.disabled}
+            optionsMap={optionsMap}
+            values={values}
+            t={t}
+            visibilityGroups={visibilityGroups}
+            toggleVisibilityGroup={toggleVisibilityGroup}
+            autoFocusRef={autoFocusRef}
+            isNested={true}
+            inputProps={inputProps}
+            selectProps={selectProps}
+          />
+        </React.Fragment>
+      ))}
+    </HStack>
+  );
+};
 
 const FieldRenderer: React.FC<FieldRendererProps> = ({
   field,
@@ -699,12 +858,9 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   autoFocusRef,
   isNested = false,
   isEditMode = false,
-  orgProfileInputProps,
-  orgProfileSelectProps,
-  orgProfileCheckboxCardSelected,
-  orgProfileCheckboxCardUnselected,
-  orgProfileCheckboxTextSelected,
-  orgProfileCheckboxTextUnselected,
+  inputProps,
+  selectProps,
+  orgProfileStyles,
 }) => {
   const isFieldDisabled =
     disabled || !!field.disabled || (isEditMode && field.name === 'roleId');
@@ -750,48 +906,21 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   // ── Group ───────────────────────────────────────────────────────────────────
   if (field.type === FORM_FIELD_TYPES.GROUP) {
-    const subFields = field.fields || [];
-    if (subFields.length === 0) return null;
-
-    const combinedError = subFields.map(sf => errors[sf.name!]).find(Boolean);
-
     return (
-      <HStack
-        isInvalid={!!combinedError}
-        isDisabled={disabled || field.disabled}
-        alignItems="center"
-        paddingLeft={0}
-        height={40}
-        width="100%"
-      >
-        {subFields.map((subField, idx) => (
-          <React.Fragment key={subField.name || subField.label.key}>
-            {idx > 0 && (
-              <Box
-                width={1}
-                bg="$borderColor"
-                height="60%"
-                alignSelf="center"
-              />
-            )}
-            <FieldRenderer
-              field={subField}
-              value={subField.name ? values[subField.name] ?? '' : ''}
-              error={subField.name ? errors[subField.name] : undefined}
-              errors={errors}
-              onChange={onChange}
-              disabled={disabled || !!subField.disabled}
-              optionsMap={optionsMap}
-              values={values}
-              t={t}
-              visibilityGroups={visibilityGroups}
-              toggleVisibilityGroup={toggleVisibilityGroup}
-              autoFocusRef={autoFocusRef}
-              isNested={true}
-            />
-          </React.Fragment>
-        ))}
-      </HStack>
+      <GroupFieldRenderer
+        field={field}
+        values={values}
+        errors={errors}
+        onChange={onChange}
+        disabled={disabled}
+        optionsMap={optionsMap}
+        t={t}
+        visibilityGroups={visibilityGroups}
+        toggleVisibilityGroup={toggleVisibilityGroup}
+        autoFocusRef={autoFocusRef}
+        inputProps={inputProps}
+        selectProps={selectProps}
+      />
     );
   }
   // ── Checkbox Group ───────────────────────────────────────────────────────────
@@ -818,7 +947,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       // No options available yet — render a plain text input as fallback
       return (
         <Input
-          {...(orgProfileInputProps || (styles.createUserFormInput as any))}
+          {...(inputProps as any)}
           isInvalid={!!error}
           isDisabled={disabled || field.disabled}
         >
@@ -831,39 +960,110 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       );
     }
 
+    const orgStyles = orgProfileStyles;
+    const containerProps = orgStyles?.orgProfileCheckboxContainer ?? { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: '$2' };
+    const itemStyle = orgStyles?.orgProfileCheckboxItem ?? { minWidth: '22%', flexShrink: 1 };
+
+    // Check if options have group headers (e.g. Site Coverage or Specific Training Areas)
+    const hasGroups = opts.some((o: any) => !!o.group);
+
+    if (hasGroups) {
+      const groupedMap: Record<string, any[]> = {};
+      opts.forEach((opt: any) => {
+        const gName = opt.group || 'OTHER';
+        if (!groupedMap[gName]) groupedMap[gName] = [];
+        groupedMap[gName].push(opt);
+      });
+
+      return (
+        <VStack space="sm" width="100%">
+          {Object.entries(groupedMap).map(([groupTitle, groupOpts]) => (
+            <VStack key={groupTitle} space="xs" width="100%" mb="$1">
+              <Text
+                fontSize="$xs"
+                fontWeight="$bold"
+                color="$textMutedForeground"
+                textTransform="uppercase"
+                letterSpacing={0.5}
+                mt="$1"
+                mb="$1"
+              >
+                {groupTitle}
+              </Text>
+              <Box {...containerProps}>
+                {groupOpts.map((opt: any) => {
+                  const isChecked = selectedSet.has(opt.value);
+                  const cardProps = isChecked
+                    ? (orgStyles?.orgProfileCheckboxCheckedCard ?? { bg: '$primary50', borderColor: '$primary700', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' })
+                    : (orgStyles?.orgProfileCheckboxCard ?? { bg: '$white', borderColor: '$borderLight200', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' });
+                  const textProps = getCheckboxTextStyles(field.name || '', isChecked, orgStyles) ?? (isChecked
+                    ? (orgStyles?.orgProfileCheckboxCheckedText ?? { fontSize: '$xs', color: '$primary700', fontWeight: '$medium' })
+                    : (orgStyles?.orgProfileCheckboxText ?? { fontSize: '$xs', color: '$textForeground', fontWeight: '$normal' }));
+                  const boxProps = isChecked
+                    ? (orgStyles?.orgProfileCheckboxCheckedBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 0, borderColor: 'transparent', bg: '$primary700', alignItems: 'center', justifyContent: 'center' })
+                    : (orgStyles?.orgProfileCheckboxBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 1, borderColor: '$borderLight300', bg: '$white', alignItems: 'center', justifyContent: 'center' });
+
+                  return (
+                    <Pressable
+                      key={opt.value}
+                      onPress={() => toggle(opt.value)}
+                      disabled={disabled || field.disabled}
+                      style={itemStyle}
+                    >
+                      <HStack
+                        space="sm"
+                        alignItems="center"
+                        {...cardProps}
+                      >
+                        <Box {...boxProps}>
+                          {isChecked && (
+                            <LucideIcon name="Check" size={11} color="white" />
+                          )}
+                        </Box>
+                        <Text
+                          {...textProps}
+                          flex={1}
+                        >
+                          {opt.label}
+                        </Text>
+                      </HStack>
+                    </Pressable>
+                  );
+                })}
+              </Box>
+            </VStack>
+          ))}
+        </VStack>
+      );
+    }
+
     return (
-      <Box width="100%" flexDirection="row" flexWrap="wrap" gap="$2">
+      <Box {...containerProps}>
         {opts.map((opt: any) => {
           const isChecked = selectedSet.has(opt.value);
           const cardProps = isChecked
-            ? (orgProfileCheckboxCardSelected || { bg: '$primary50', borderColor: '$primary700', borderWidth: 1, borderRadius: '$md', px: '$3', py: '$2' })
-            : (orgProfileCheckboxCardUnselected || { bg: '$white', borderColor: '$borderLight200', borderWidth: 1, borderRadius: '$md', px: '$3', py: '$2' });
-          const textProps = isChecked
-            ? (orgProfileCheckboxTextSelected || { fontSize: '$xs', color: '$primary700', fontWeight: '$medium' })
-            : (orgProfileCheckboxTextUnselected || { fontSize: '$xs', color: '$textForeground', fontWeight: '$normal' });
+            ? (orgStyles?.orgProfileCheckboxCheckedCard ?? { bg: '$primary50', borderColor: '$primary700', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' })
+            : (orgStyles?.orgProfileCheckboxCard ?? { bg: '$white', borderColor: '$borderLight200', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' });
+          const textProps = getCheckboxTextStyles(field.name || '', isChecked, orgStyles) ?? (isChecked
+            ? (orgStyles?.orgProfileCheckboxCheckedText ?? { fontSize: '$xs', color: '$primary700', fontWeight: '$medium' })
+            : (orgStyles?.orgProfileCheckboxText ?? { fontSize: '$xs', color: '$textForeground', fontWeight: '$normal' }));
+          const boxProps = isChecked
+            ? (orgStyles?.orgProfileCheckboxCheckedBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 0, borderColor: 'transparent', bg: '$primary700', alignItems: 'center', justifyContent: 'center' })
+            : (orgStyles?.orgProfileCheckboxBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 1, borderColor: '$borderLight300', bg: '$white', alignItems: 'center', justifyContent: 'center' });
 
           return (
             <Pressable
               key={opt.value}
               onPress={() => toggle(opt.value)}
               disabled={disabled || field.disabled}
-              style={{ minWidth: '22%', flexShrink: 1 }}
+              style={itemStyle}
             >
               <HStack
-                space="xs"
+                space="sm"
                 alignItems="center"
                 {...cardProps}
               >
-                <Box
-                  width={16}
-                  height={16}
-                  borderRadius={3}
-                  borderWidth={isChecked ? 0 : 1}
-                  borderColor="$borderLight300"
-                  bg={isChecked ? (orgProfileCheckboxCardSelected?.borderColor || '$primary700') : '$white'}
-                  alignItems="center"
-                  justifyContent="center"
-                >
+                <Box {...boxProps}>
                   {isChecked && (
                     <LucideIcon name="Check" size={11} color="white" />
                   )}
@@ -933,7 +1133,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
         zIndex={field.zIndex ?? (isNested ? 1000 : 1)}
       >
         <Select
-          {...(isNested ? {} : (orgProfileSelectProps || styles.createUserFormSelect))}
+          {...(isNested ? {} : selectProps)}
           options={options}
           value={value}
           onChange={(val: string, _lbl: string) =>
@@ -1052,7 +1252,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box zIndex={field.zIndex ?? 999}>
         <DatePicker
-          {...(orgProfileInputProps || styles.createUserFormInput)}
+          {...inputProps}
           placeholder={placeholder || 'YYYY-MM-DD'}
           value={displayValue}
           onChange={(date: string) =>
@@ -1079,7 +1279,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box position="relative">
         <Input
-          {...(orgProfileInputProps || styles.createUserFormInput)}
+          {...inputProps}
           isInvalid={!!error}
           isDisabled={disabled || field.disabled}
           isReadOnly={field.isReadOnly}
@@ -1108,7 +1308,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             <LucideIcon
               name={isVisible ? 'EyeOff' : 'Eye'}
               size={20}
-              color="#6B7280"
+              color="$textSecondary"
             />
           </Pressable>
         )}
@@ -1125,7 +1325,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
       <Textarea
-        {...(orgProfileInputProps || (styles.createUserFormInput as any))}
+        {...(inputProps as any)}
         isInvalid={!!error}
         isDisabled={disabled || field.disabled}
         isReadOnly={field.isReadOnly}
@@ -1229,7 +1429,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   return (
     <Input
-      {...(isNested ? {} : (orgProfileInputProps || (styles.createUserFormInput as any)))}
+      {...(isNested ? {} : (inputProps as any))}
       isInvalid={!!error}
       isDisabled={isFieldDisabled}
       isReadOnly={field.isReadOnly}
@@ -1291,13 +1491,9 @@ interface NodeRenderContext {
   registerFieldRef?: (name: string, node: any) => void;
   /** Name of the field to temporarily highlight (set after navigating from the validation popup) */
   highlightedField?: string | null;
-  renderSectionCard?: boolean;
-  sectionHeaderProps?: {
-    iconSize?: number;
-    iconColor?: string;
-    titleColor?: string;
-    titleProps?: any;
-  };
+  inputProps?: any;
+  selectProps?: any;
+  orgProfileStyles?: any;
 }
 
 function nodeTitleText(
@@ -1306,7 +1502,13 @@ function nodeTitleText(
 ): string | undefined {
   const titleDef = node.title ?? node.label;
   if (!titleDef) return undefined;
-  return t(`admin.users.createUser.${titleDef.key}`, titleDef.fallback);
+  const key = titleDef.key || '';
+  return t(
+    key.includes('.')
+      ? key
+      : `admin.users.createUser.${key}`,
+    titleDef.fallback,
+  );
 }
 
 /** Renders a sibling list of nodes, grouping consecutive `tab` nodes into one Tabs system. */
@@ -1433,35 +1635,44 @@ const SectionNode: React.FC<{ node: FormSection; ctx: NodeRenderContext }> = ({
   ctx,
 }) => {
   const titleText = nodeTitleText(node, ctx.t);
+  const subTitleKey = node.subTitle?.key || '';
   const subTitleText = node.subTitle
     ? ctx.t(
-        `admin.users.createUser.${node.subTitle.key}`,
+        subTitleKey.includes('.')
+          ? subTitleKey
+          : `admin.users.createUser.${subTitleKey}`,
         node.subTitle.fallback,
       )
     : undefined;
 
+  const orgStyles = ctx.orgProfileStyles;
+  const sectionIconSize = orgStyles?.orgProfileSectionIcon?.size ?? 16;
+  const sectionIconColor = orgStyles?.orgProfileSectionIcon?.color ?? '$textMutedForeground';
+
   const content = (
-    <VStack space={subTitleText ? 'xl' : 'sm'}>
+    <VStack space="sm">
       {!!titleText && (
-        <VStack space="xs">
+        <VStack {...(orgStyles?.orgProfileSectionHeaderContainer ?? { space: 'xs' })}>
           <HStack space="xs" alignItems="center">
             {!!node.icon && (
               <LucideIcon
                 name={node.icon as any}
-                size={ctx.sectionHeaderProps?.iconSize ?? 20}
-                color={ctx.sectionHeaderProps?.iconColor ?? '$primary500'}
+                size={sectionIconSize}
+                color={sectionIconColor}
               />
             )}
             <Text
-              {...(ctx.sectionHeaderProps?.titleProps || TYPOGRAPHY.h2)}
-              color={ctx.sectionHeaderProps?.titleColor ?? '$blueGray900'}
-              fontWeight="600"
+              {...(orgStyles?.orgProfileSectionTitle ?? {
+                ...TYPOGRAPHY.bodySmall,
+                color: '$textMutedForeground',
+                fontWeight: '$normal',
+              })}
             >
               {titleText}
             </Text>
           </HStack>
           {!!subTitleText && (
-            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+            <Text {...(orgStyles?.orgProfileFieldSubTitle ?? { ...TYPOGRAPHY.caption, color: '$textMutedForeground' })}>
               {subTitleText}
             </Text>
           )}
@@ -1478,22 +1689,15 @@ const SectionNode: React.FC<{ node: FormSection; ctx: NodeRenderContext }> = ({
     </VStack>
   );
 
-  if (ctx.renderSectionCard === false) {
-    return content;
+  if (orgStyles?.orgProfileSectionContainer) {
+    return (
+      <Box {...orgStyles.orgProfileSectionContainer}>
+        {content}
+      </Box>
+    );
   }
 
-  return (
-    <Card
-      variant="outline"
-      borderRadius="$lg"
-      borderWidth={1}
-      borderColor="$borderColor"
-      p="$6"
-      width="100%"
-    >
-      {content}
-    </Card>
-  );
+  return content;
 };
 
 // ─── Multi-Step Navigation (Previous / Continue / Save Draft / Submit) ────────
@@ -1765,8 +1969,9 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   onSubmit,
   onSaveDraft,
   isSubmitting = false,
-  renderSectionCard,
-  sectionHeaderProps,
+  inputProps,
+  selectProps,
+  orgProfileStyles,
 }) => {
   // Track password visibility per group
   const [visibilityGroups, setVisibilityGroups] = useState<
@@ -1958,8 +2163,9 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
     toggleVisibilityGroup,
     firstNameRef,
     fieldsByName,
-    renderSectionCard,
-    sectionHeaderProps,
+    inputProps,
+    selectProps,
+    orgProfileStyles,
   };
 
   if (isMultiStep) {
@@ -2281,6 +2487,7 @@ interface ViewFieldDisplayProps {
   t: (key: string, fallback?: string) => string;
   isMultiField?: boolean;
   fieldsByName: Record<string, FormField>;
+  orgProfileStyles?: any;
 }
 
 const ViewFieldDisplay: React.FC<ViewFieldDisplayProps> = ({
@@ -2290,12 +2497,15 @@ const ViewFieldDisplay: React.FC<ViewFieldDisplayProps> = ({
   t,
   isMultiField,
   fieldsByName,
+  orgProfileStyles,
 }) => {
   const targetField = field.name ? fieldsByName[field.name] : undefined;
 
   const label = targetField?.label
     ? t(
-        `admin.users.createUser.${targetField.label.key}`,
+        targetField.label.key.includes('.')
+          ? targetField.label.key
+          : `admin.users.createUser.${targetField.label.key}`,
         targetField.label.fallback,
       )
     : field.name ?? '-';
@@ -2306,7 +2516,10 @@ const ViewFieldDisplay: React.FC<ViewFieldDisplayProps> = ({
   }
 
   let displayValue: string = rawValue || '-';
-  if (targetField?.optionsSource) {
+  const isNoDoc = !rawValue && targetField?.type === FORM_FIELD_TYPES.FILE_UPLOAD;
+  if (isNoDoc) {
+    displayValue = t('organizationProfile.noDocumentUploaded');
+  } else if (targetField?.optionsSource) {
     const option = optionsMap[targetField.optionsSource]?.find(
       o => o.value === rawValue,
     );
@@ -2314,20 +2527,48 @@ const ViewFieldDisplay: React.FC<ViewFieldDisplayProps> = ({
   }
   displayValue = displayValue.replace(/_/g, '-');
 
-                      return (
+  const orgStyles = orgProfileStyles;
+
+  const getFieldLabelStyle = () => {
+    if (!orgStyles) return undefined;
+    if (field.name === 'specificTrainingAreas') {
+      return orgStyles.orgProfileSpecificTrainingAreasTitle;
+    }
+    if (field.name === 'assetTypes') {
+      return orgStyles.orgProfileAssetTypesTitle;
+    }
+    return orgStyles.orgProfileFieldLabel;
+  };
+
+  const labelStyle = getFieldLabelStyle() ?? {
+    ...TYPOGRAPHY.caption,
+    color: '$textMutedForeground',
+  };
+
+  const valueStyle = isNoDoc
+    ? {
+        ...(orgStyles?.orgProfileFieldValue ?? { ...TYPOGRAPHY.bodySmall }),
+        color: '$textMutedForeground',
+      }
+    : (orgStyles?.orgProfileFieldValue ?? { ...TYPOGRAPHY.bodySmall, color: '$textForeground' });
+
+  return (
     <VStack
       space="xs"
       flex={isMultiField ? 1 : undefined}
       width={!isMultiField ? '100%' : undefined}
     >
-                            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+      <Text {...labelStyle}>
         {label}
-                            </Text>
-                          <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
+        {targetField?.required && field.name !== 'supportCategories' && (
+          <Text {...(orgStyles?.orgProfileRequiredAsterisk ?? { color: '$red500' })}> *</Text>
+        )}
+      </Text>
+      <Text {...valueStyle}>
         {displayValue}
-                          </Text>
-                        </VStack>
-                      );
+      </Text>
+    </VStack>
+  );
 };
 
 const FieldContainer = memo(
@@ -2346,15 +2587,12 @@ const FieldContainer = memo(
     fieldsByName = {},
     registerFieldRef,
     highlightedField,
+    inputProps,
+    selectProps,
+    orgProfileStyles,
     onFieldChange = (...e: any[]) => {
       console.log(e);
     },
-    orgProfileInputProps,
-    orgProfileSelectProps,
-    orgProfileCheckboxCardSelected,
-    orgProfileCheckboxCardUnselected,
-    orgProfileCheckboxTextSelected,
-    orgProfileCheckboxTextUnselected,
   }: any) => {
     const value = field.name ? values[field.name] ?? '' : '';
     const error = field.name ? errors[field.name] : undefined;
@@ -2363,8 +2601,29 @@ const FieldContainer = memo(
       if (field.name) registerFieldRef?.(field.name, node);
     };
 
+    const subTextDef = field.subTitle ?? field.subtitle;
+    const orgStyles = orgProfileStyles;
+    const showRequiredAsterisk = field.required;
+
+    const getFieldLabelStyle = () => {
+      if (!orgStyles) return undefined;
+      if (field.name === 'specificTrainingAreas') {
+        return orgStyles.orgProfileSpecificTrainingAreasTitle;
+      }
+      if (field.name === 'assetTypes') {
+        return orgStyles.orgProfileAssetTypesTitle;
+      }
+      return orgStyles.orgProfileFieldLabel;
+    };
+
+    const labelStyle = getFieldLabelStyle() ?? {
+      ...TYPOGRAPHY.bodySmall,
+      color: '$textForeground',
+      fontWeight: '$medium',
+    };
+
     if (field.type === FORM_FIELD_TYPES.VIEW) {
-      return (
+      const element = (
         <ViewFieldDisplay
           field={field}
           values={values}
@@ -2372,126 +2631,407 @@ const FieldContainer = memo(
           t={t}
           isMultiField={isMultiField}
           fieldsByName={fieldsByName}
+          orgProfileStyles={orgProfileStyles}
         />
       );
+      if (orgStyles) {
+        if (field.name === 'specificTrainingAreas') {
+          return (
+            <Box {...orgStyles.orgProfileSpecificTrainingAreasContainer}>
+              {element}
+            </Box>
+          );
+        }
+        if (field.name === 'assetTypes') {
+          return (
+            <Box {...orgStyles.orgProfileAssetTypesContainer}>
+              {element}
+            </Box>
+          );
+        }
+      }
+      return element;
     }
+
+    let element: React.ReactNode = null;
 
     if (mode === 'preview') {
       if (field.type === FORM_FIELD_TYPES.NOTE) {
         return null;
       }
 
-      let displayValue = value || '-';
+      if (orgStyles && field.type === FORM_FIELD_TYPES.CHECKBOX_GROUP) {
+        const isCheckboxCardView =
+          field.name === 'supportCategories' ||
+          field.name === 'specificTrainingAreas' ||
+          field.name === 'assetTypes';
 
-                    if (field.optionsSource) {
-        const option = optionsMap[field.optionsSource]?.find(
-          (o: any) => o.value === value,
-        );
+        const opts =
+          ((field as any).options && (field as any).options.length > 0)
+            ? (field as any).options
+            : (field.optionsSource ? (optionsMap[field.optionsSource] ?? []) : []);
 
-        displayValue = option?.label || value || '-';
-      }
+        const selectedValues = (value || '')
+          .split(',')
+          .map((v: string) => v.trim())
+          .filter(Boolean);
 
-      displayValue =
-        typeof displayValue === 'string'
-          ? displayValue.replace(/_/g, '-')
-          : String(displayValue);
+        const selectedSet = new Set(selectedValues);
+
+        if (isCheckboxCardView) {
+          const containerProps = orgStyles?.orgProfileCheckboxContainer ?? { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: '$2' };
+          const itemStyle = getCheckboxItemStyle(field.name || '', false, orgStyles) ?? (orgStyles?.orgProfileCheckboxItem ?? { minWidth: '22%', flexShrink: 1 });
+
+          const hasGroups = opts.some((o: any) => !!o.group);
+
+          element = (
+            <VStack
+              ref={containerRef}
+              space="xs"
+              flex={isMultiField ? 1 : undefined}
+              width={!isMultiField ? '100%' : undefined}
+            >
+              <Text {...labelStyle}>
+                {t(
+                  field.label.key.includes('.')
+                    ? field.label.key
+                    : `admin.users.createUser.${field.label.key}`,
+                  field.label.fallback,
+                )}
+                {showRequiredAsterisk && field.name !== 'supportCategories' && (
+                  <Text {...(orgStyles?.orgProfileRequiredAsterisk ?? { color: '$red500' })}> *</Text>
+                )}
+              </Text>
+
+              {!!subTextDef && (
+                <Text {...(orgStyles?.orgProfileFieldSubTitle ?? { ...TYPOGRAPHY.caption, color: '$textMutedForeground' })}>
+                  {t(
+                    subTextDef.key.includes('.')
+                      ? subTextDef.key
+                      : `admin.users.createUser.${subTextDef.key}`,
+                    subTextDef.fallback,
+                  )}
+                </Text>
+              )}
+
+              {hasGroups ? (
+                <VStack space="sm" width="100%" mt="$1">
+                  {Object.entries(
+                    opts.reduce((acc: Record<string, any[]>, opt: any) => {
+                      const gName = opt.group || 'OTHER';
+                      if (!acc[gName]) acc[gName] = [];
+                      acc[gName].push(opt);
+                      return acc;
+                    }, {})
+                  ).map(([groupTitle, groupOpts]) => (
+                    <VStack key={groupTitle} space="xs" width="100%" mb="$1">
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$bold"
+                        color="$textMutedForeground"
+                        textTransform="uppercase"
+                        letterSpacing={0.5}
+                        mt="$1"
+                        mb="$1"
+                      >
+                        {groupTitle}
+                      </Text>
+                      <Box {...containerProps}>
+                        {groupOpts.map((opt: any) => {
+                          const isChecked = selectedSet.has(opt.value);
+                          const cardProps = isChecked
+                            ? (orgStyles?.orgProfileCheckboxCheckedCard ?? { bg: '$primary50', borderColor: '$primary500', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' })
+                            : (orgStyles?.orgProfileCheckboxCard ?? { bg: '$white', borderColor: '$borderLight200', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' });
+                          const textProps = getCheckboxTextStyles(field.name || '', isChecked, orgStyles) ?? (isChecked
+                            ? (orgStyles?.orgProfileCheckboxCheckedText ?? { fontSize: '$xs', color: '$primary500', fontWeight: '$medium' })
+                            : (orgStyles?.orgProfileCheckboxText ?? { fontSize: '$xs', color: '$textForeground', fontWeight: '$normal' }));
+                          const boxProps = isChecked
+                            ? (orgStyles?.orgProfileCheckboxCheckedBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 0, borderColor: 'transparent', bg: '$primary500', alignItems: 'center', justifyContent: 'center' })
+                            : (orgStyles?.orgProfileCheckboxBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 1, borderColor: '$borderLight300', bg: '$white', alignItems: 'center', justifyContent: 'center' });
+
+                          return (
+                            <Box
+                              key={opt.value}
+                              style={itemStyle}
+                            >
+                              <HStack
+                                space="sm"
+                                alignItems="center"
+                                {...cardProps}
+                              >
+                                <Box {...boxProps}>
+                                  {isChecked && (
+                                    <LucideIcon name="Check" size={11} color="white" />
+                                  )}
+                                </Box>
+                                <Text
+                                  {...textProps}
+                                  flex={1}
+                                >
+                                  {opt.label}
+                                </Text>
+                              </HStack>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </VStack>
+                  ))}
+                </VStack>
+              ) : (
+                <Box {...containerProps} mt="$1">
+                  {opts.map((opt: any) => {
+                    const isChecked = selectedSet.has(opt.value);
+                    const cardProps = isChecked
+                      ? (orgStyles?.orgProfileCheckboxCheckedCard ?? { bg: '$primary50', borderColor: '$primary500', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' })
+                      : (orgStyles?.orgProfileCheckboxCard ?? { bg: '$white', borderColor: '$borderLight200', borderWidth: 1, borderRadius: 10, px: '$3', py: '$2' });
+                    const textProps = getCheckboxTextStyles(field.name || '', isChecked, orgStyles) ?? (isChecked
+                      ? (orgStyles?.orgProfileCheckboxCheckedText ?? { fontSize: '$xs', color: '$primary500', fontWeight: '$medium' })
+                      : (orgStyles?.orgProfileCheckboxText ?? { fontSize: '$xs', color: '$textForeground', fontWeight: '$normal' }));
+                    const boxProps = isChecked
+                      ? (orgStyles?.orgProfileCheckboxCheckedBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 0, borderColor: 'transparent', bg: '$primary500', alignItems: 'center', justifyContent: 'center' })
+                      : (orgStyles?.orgProfileCheckboxBox ?? { width: 16, height: 16, borderRadius: 3, borderWidth: 1, borderColor: '$borderLight300', bg: '$white', alignItems: 'center', justifyContent: 'center' });
 
                     return (
+                      <Box
+                        key={opt.value}
+                        style={itemStyle}
+                      >
+                        <HStack
+                          space="sm"
+                          alignItems="center"
+                          {...cardProps}
+                        >
+                          <Box {...boxProps}>
+                            {isChecked && (
+                              <LucideIcon name="Check" size={11} color="white" />
+                            )}
+                          </Box>
+                          <Text
+                            {...textProps}
+                            flex={1}
+                          >
+                            {opt.label}
+                          </Text>
+                        </HStack>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              )}
+            </VStack>
+          );
+        } else {
+          const optionsByVal: Record<string, string> = {};
+          opts.forEach((o: any) => {
+            optionsByVal[o.value] = o.label;
+          });
+
+          const pillBadges = selectedValues.map((v: string) => optionsByVal[v] || v);
+
+          element = (
+            <VStack
+              ref={containerRef}
+              space="xs"
+              flex={isMultiField ? 1 : undefined}
+              width={!isMultiField ? '100%' : undefined}
+            >
+              <Text {...labelStyle}>
+                {t(
+                  field.label.key.includes('.')
+                    ? field.label.key
+                    : `admin.users.createUser.${field.label.key}`,
+                  field.label.fallback,
+                )}
+                {showRequiredAsterisk && field.name !== 'supportCategories' && (
+                  <Text {...(orgStyles?.orgProfileRequiredAsterisk ?? { color: '$red500' })}> *</Text>
+                )}
+              </Text>
+
+              {!!subTextDef && (
+                <Text {...(orgStyles?.orgProfileFieldSubTitle ?? { ...TYPOGRAPHY.caption, color: '$textMutedForeground' })}>
+                  {t(
+                    subTextDef.key.includes('.')
+                      ? subTextDef.key
+                      : `admin.users.createUser.${subTextDef.key}`,
+                    subTextDef.fallback,
+                  )}
+                </Text>
+              )}
+
+              {pillBadges.length > 0 ? (
+                <HStack space="xs" flexWrap="wrap" mt="$1">
+                  {pillBadges.map((badgeText: string, idx: number) => (
+                    <HoverablePill
+                      key={`${badgeText}-${idx}`}
+                      badgeText={badgeText}
+                      fieldName={field.name}
+                      orgProfileStyles={orgStyles}
+                    />
+                  ))}
+                </HStack>
+              ) : (
+                <Text {...(orgStyles?.orgProfileFieldValue ?? { ...TYPOGRAPHY.bodySmall, color: '$textForeground' })}>
+                  -
+                </Text>
+              )}
+            </VStack>
+          );
+        }
+      } else {
+        let displayValue = value || '-';
+        const isNoDoc = !value && field.type === FORM_FIELD_TYPES.FILE_UPLOAD;
+        if (isNoDoc) {
+          displayValue = t('organizationProfile.noDocumentUploaded');
+        }
+
+        if (field.optionsSource) {
+          const option = optionsMap[field.optionsSource]?.find(
+            (o: any) => o.value === value,
+          );
+
+          displayValue = option?.label || value || '-';
+        }
+
+        displayValue =
+          typeof displayValue === 'string'
+            ? displayValue.replace(/_/g, '-')
+            : String(displayValue);
+
+        element = (
+          <VStack
+            ref={containerRef}
+            space="xs"
+            flex={isMultiField ? 1 : undefined}
+            width={!isMultiField ? '100%' : undefined}
+          >
+            <Text {...labelStyle}>
+              {t(
+                field.label.key.includes('.')
+                  ? field.label.key
+                  : `admin.users.createUser.${field.label.key}`,
+                field.label.fallback,
+              )}
+              {showRequiredAsterisk && (
+                <Text {...(orgStyles?.orgProfileRequiredAsterisk ?? { color: '$red500' })}> *</Text>
+              )}
+            </Text>
+
+            {!!subTextDef && (
+              <Text {...(orgStyles?.orgProfileFieldSubTitle ?? { ...TYPOGRAPHY.caption, color: '$textMutedForeground' })}>
+                {t(
+                  subTextDef.key.includes('.')
+                    ? subTextDef.key
+                    : `admin.users.createUser.${subTextDef.key}`,
+                  subTextDef.fallback,
+                )}
+              </Text>
+            )}
+
+            <HStack space="xs" alignItems="center">
+              {!!field.icon && (
+                <LucideIcon
+                  name={field.icon as any}
+                  size={14}
+                  color="$textMutedForeground"
+                />
+              )}
+              <Text
+                {...(isNoDoc
+                  ? {
+                      ...(orgStyles?.orgProfileFieldValue ?? { ...TYPOGRAPHY.bodySmall }),
+                      color: '$textMutedForeground',
+                    }
+                  : (orgStyles?.orgProfileFieldValue ?? { ...TYPOGRAPHY.bodySmall, color: '$textForeground' }))}
+              >
+                {displayValue}
+              </Text>
+            </HStack>
+          </VStack>
+        );
+      }
+    } else {
+      element = (
         <VStack
           ref={containerRef}
           space="xs"
           flex={isMultiField ? 1 : undefined}
           width={!isMultiField ? '100%' : undefined}
+          p={isHighlighted ? '$2' : undefined}
+          borderRadius={isHighlighted ? '$md' : undefined}
+          bg={isHighlighted ? '$warning100' : undefined}
         >
-          <Text
-            {...TYPOGRAPHY.bodySmall}
-            color="$textForeground"
-            fontWeight="$medium"
-          >
-            {t(
-              `admin.users.createUser.${field.label.key}`,
-              field.label.fallback,
-            )}
-          </Text>
-
-          {!!field.subTitle && (
-            <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
-              {t(
-                `admin.users.createUser.${field.subTitle.key}`,
-                field.subTitle.fallback,
-              )}
-                          </Text>
-                        )}
-
-          <Text {...TYPOGRAPHY.bodySmall} color="$textForeground">
-                            {displayValue}
-                          </Text>
-                      </VStack>
-                    );
-                  }
-
-                  return (
-      <VStack
-        ref={containerRef}
-        space="xs"
-        flex={isMultiField ? 1 : undefined}
-        width={!isMultiField ? '100%' : undefined}
-        p={isHighlighted ? '$2' : undefined}
-        borderRadius={isHighlighted ? '$md' : undefined}
-        bg={isHighlighted ? '$warning100' : undefined}
-      >
-                      {field.type !== FORM_FIELD_TYPES.NOTE && (
-          <>
-            <Text
-              {...TYPOGRAPHY.bodySmall}
-              color="$textForeground"
-              fontWeight="$medium"
-            >
-              {t(
-                `admin.users.createUser.${field.label.key}`,
-                field.label.fallback,
-              )}
-              {field.required && <Text color="$red500"> *</Text>}
-                          </Text>
-            {!!field.subTitle && (
-              <Text {...TYPOGRAPHY.caption} color="$textMutedForeground">
+          {field.type !== FORM_FIELD_TYPES.NOTE && (
+            <>
+              <Text {...labelStyle}>
                 {t(
-                  `admin.users.createUser.${field.subTitle.key}`,
-                  field.subTitle.fallback,
+                  field.label.key.includes('.')
+                    ? field.label.key
+                    : `admin.users.createUser.${field.label.key}`,
+                  field.label.fallback,
                 )}
-                        </Text>
-            )}
-            {!!field.hint && <HintDisplay hint={field.hint} t={t} />}
-          </>
-                      )}
+                {field.required && (
+                  <Text {...(orgStyles?.orgProfileRequiredAsterisk ?? { color: '$red500' })}> *</Text>
+                )}
+              </Text>
+              {!!subTextDef && (
+                <Text {...(orgStyles?.orgProfileFieldSubTitle ?? { ...TYPOGRAPHY.caption, color: '$textMutedForeground' })}>
+                  {t(
+                    subTextDef.key.includes('.')
+                      ? subTextDef.key
+                      : `admin.users.createUser.${subTextDef.key}`,
+                    subTextDef.fallback,
+                  )}
+                </Text>
+              )}
+              {!!field.hint && <HintDisplay hint={field.hint} t={t} />}
+            </>
+          )}
 
-                      <FieldRenderer
-                        field={field}
-          value={value}
-          error={error}
-                        errors={errors}
-                        onChange={onFieldChange}
-                        disabled={disabled}
-                        optionsMap={optionsMap}
-                        values={values}
-                        t={t}
-                        visibilityGroups={visibilityGroups}
-                        toggleVisibilityGroup={toggleVisibilityGroup}
-                        autoFocusRef={firstNameRef}
-                        orgProfileInputProps={orgProfileInputProps}
-                        orgProfileSelectProps={orgProfileSelectProps}
-                        orgProfileCheckboxCardSelected={orgProfileCheckboxCardSelected}
-                        orgProfileCheckboxCardUnselected={orgProfileCheckboxCardUnselected}
-                        orgProfileCheckboxTextSelected={orgProfileCheckboxTextSelected}
-                        orgProfileCheckboxTextUnselected={orgProfileCheckboxTextUnselected}
-                      />
+          <FieldRenderer
+            field={field}
+            value={value}
+            error={error}
+            errors={errors}
+            onChange={onFieldChange}
+            disabled={disabled}
+            optionsMap={optionsMap}
+            values={values}
+            t={t}
+            visibilityGroups={visibilityGroups}
+            toggleVisibilityGroup={toggleVisibilityGroup}
+            autoFocusRef={firstNameRef}
+            inputProps={inputProps}
+            selectProps={selectProps}
+            orgProfileStyles={orgProfileStyles}
+          />
 
-        {error && (
-                        <Text color="$error600" fontSize="$xs">
-            {error}
-                        </Text>
-        )}
-                    </VStack>
-                  );
+          {error && (
+            <Text color="$error600" fontSize="$xs">
+              {error}
+            </Text>
+          )}
+        </VStack>
+      );
+    }
+
+    if (orgStyles) {
+      if (field.name === 'specificTrainingAreas') {
+        return (
+          <Box {...orgStyles.orgProfileSpecificTrainingAreasContainer}>
+            {element}
+          </Box>
+        );
+      }
+      if (field.name === 'assetTypes') {
+        return (
+          <Box {...orgStyles.orgProfileAssetTypesContainer}>
+            {element}
+          </Box>
+        );
+      }
+    }
+
+    return element;
   },
 );

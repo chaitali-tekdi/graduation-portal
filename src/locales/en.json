@@ -2442,6 +2442,9 @@
         "phoneRequired": "Phone number is required."
       }
     },
+    "organizationProfile": {
+      "noDocumentUploaded": "No document uploaded"
+    },
     "supportOfferings": {
       "title": "My Support Offerings",
       "subtitle": "Manage all published support — training sessions, services, and assets",

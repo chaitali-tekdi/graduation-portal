@@ -11,8 +11,8 @@
  * inline so SchemaFormRenderer can render checkboxes without an async optionsMap call.
  */
 
-import { FORM_FIELD_TYPES } from './CREATE_USER_FORM_SCHEMA';
-import type { FormSection } from './CREATE_USER_FORM_SCHEMA';
+
+import { FORM_FIELD_TYPES, FormSection } from '@constants/CREATE_USER_FORM_SCHEMA';
 
 export const ORG_PROFILE_SCHEMA: FormSection[] = [
   // ─── Basic Information ────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
           {
             name: 'phone',
             type: FORM_FIELD_TYPES.TEL,
-            required: false,
+            required: true,
             icon: 'Phone',
             label: { key: 'phone', fallback: 'Phone' },
             placeholder: { fallback: 'Enter phone number' },

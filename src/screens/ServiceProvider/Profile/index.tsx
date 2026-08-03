@@ -7,6 +7,7 @@ import { useLanguage } from '@contexts/LanguageContext';
 
 const App = (): React.JSX.Element => {
   const { t } = useLanguage();
+  const [isCancelHovered, setIsCancelHovered] = useState(false);
   const [headerActions, setHeaderActions] = useState<{
     mode: 'preview' | 'edit';
     isSaving: boolean;
@@ -16,7 +17,7 @@ const App = (): React.JSX.Element => {
   } | null>(null);
 
   return (
-    <VStack {...styles.orgProfileMainWrapper}>
+    <VStack {...(styles.orgProfileMainWrapper as any)}>
       <SPTitleHeader
         title={t('supportProvider.profile.title', 'Organisation Profile')}
         subTitle={t(
@@ -25,25 +26,38 @@ const App = (): React.JSX.Element => {
         )}
         rightSection={
           headerActions?.mode === 'edit' ? (
-            <HStack {...styles.orgProfileHeaderActionsGroup}>
+            <HStack {...(styles.orgProfileHeaderActionsGroup as any)}>
               <Button
-                {...styles.orgProfileCancelButton}
+                variant="outline"
+                action="secondary"
+                {...(styles.orgProfileCancelButton as any)}
                 onPress={headerActions.handleCancel}
                 isDisabled={headerActions.isSaving}
+                onHoverIn={() => setIsCancelHovered(true)}
+                onHoverOut={() => setIsCancelHovered(false)}
               >
-                <ButtonIcon as={LucideIcon} name="X" color="$textLight700" size={16} mr="$2" />
-                <ButtonText {...styles.orgProfileCancelButtonText}>
+                <ButtonIcon
+                  as={LucideIcon}
+                  name="X"
+                  {...(styles.orgProfileCancelButtonIcon as any)}
+                  color={isCancelHovered ? '$primary500' : '$textLight700'}
+                  mr="$2"
+                />
+                <ButtonText
+                  {...(styles.orgProfileCancelButtonText as any)}
+                  color={isCancelHovered ? '$primary500' : '$textLight700'}
+                >
                   {t('supportProvider.profile.cancel', 'Cancel')}
                 </ButtonText>
               </Button>
 
               <Button
-                {...styles.orgProfileSaveButton}
+                {...(styles.orgProfileSaveButton as any)}
                 onPress={headerActions.handleSave}
                 isDisabled={headerActions.isSaving}
               >
-                <ButtonIcon as={LucideIcon} name="Save" />
-                <ButtonText>
+                <ButtonIcon as={LucideIcon} name="Save" {...(styles.orgProfileSaveButtonIcon as any)} mr="$2" />
+                <ButtonText {...(styles.orgProfileSaveButtonText as any)}>
                   {headerActions.isSaving
                     ? t('common.saving', 'Saving...')
                     : t('supportProvider.profile.saveChanges', 'Save Changes')}
@@ -51,15 +65,15 @@ const App = (): React.JSX.Element => {
               </Button>
             </HStack>
           ) : (
-            <Button onPress={() => headerActions?.handleEditPress()}>
-              <ButtonIcon as={LucideIcon} name="SquarePen" />
-              <ButtonText>{t('supportProvider.profile.editProfile', 'Edit Profile')}</ButtonText>
+            <Button {...(styles.orgProfileEditButton as any)} onPress={() => headerActions?.handleEditPress()}>
+              <ButtonIcon as={LucideIcon} name="SquarePen" color="$white" size={16} mr="$2" />
+              <ButtonText color="$white">{t('supportProvider.profile.editProfile', 'Edit Profile')}</ButtonText>
             </Button>
           )
         }
       />
 
-      <Container {...styles.orgProfileContainer}>
+      <Container {...(styles.orgProfileContainer as any)}>
         <OrgProfileView renderHeaderActions={setHeaderActions} />
       </Container>
     </VStack>

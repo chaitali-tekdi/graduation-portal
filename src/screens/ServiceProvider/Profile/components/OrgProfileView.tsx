@@ -259,37 +259,19 @@ const OrgProfileView: React.FC<OrgProfileViewProps> = ({
 
   return (
     <VStack space="lg" w="100%">
-      {ORG_PROFILE_SCHEMA.map(section => (
-        <Box key={section.id} {...profileStyles.orgProfileSectionCard}>
-          <SchemaFormRenderer
-            schema={[section]}
-            values={values}
-            errors={errors}
-            onFieldChange={handleFieldChange}
-            optionsMap={optionsMap}
-            mode={mode}
-            disabled={isSaving}
-            t={profileT}
-            renderSectionCard={false}
-            sectionHeaderProps={{
-              iconColor: profileStyles.orgProfileSectionIcon.color,
-              iconSize: profileStyles.orgProfileSectionIcon.size,
-              titleProps: profileStyles.orgProfileSectionTitleText,
-              titleColor: profileStyles.orgProfileSectionTitleText.color,
-            }}
-            orgProfileInputProps={profileStyles.orgProfileFormInput}
-            orgProfileSelectProps={profileStyles.orgProfileFormSelect}
-            orgProfileLabelProps={profileStyles.orgProfileLabel}
-            orgProfileRequiredStarProps={profileStyles.orgProfileRequiredStar}
-            orgProfileValueProps={profileStyles.orgProfileValue}
-            orgProfileSubTitleProps={profileStyles.orgProfileSubTitle}
-            orgProfileCheckboxCardSelected={profileStyles.orgProfileCheckboxCardSelected}
-            orgProfileCheckboxCardUnselected={profileStyles.orgProfileCheckboxCardUnselected}
-            orgProfileCheckboxTextSelected={profileStyles.orgProfileCheckboxTextSelected}
-            orgProfileCheckboxTextUnselected={profileStyles.orgProfileCheckboxTextUnselected}
-          />
-        </Box>
-      ))}
+      <SchemaFormRenderer
+        schema={ORG_PROFILE_SCHEMA}
+        values={values}
+        errors={errors}
+        onFieldChange={handleFieldChange}
+        optionsMap={optionsMap}
+        mode={mode}
+        disabled={isSaving}
+        t={profileT}
+        orgProfileStyles={profileStyles}
+        inputProps={profileStyles.orgProfileInput}
+        selectProps={profileStyles.orgProfileSelect}
+      />
     </VStack>
   );
 };
