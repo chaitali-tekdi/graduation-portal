@@ -31,7 +31,7 @@ const App = (): React.JSX.Element => {
                 onPress={headerActions.handleCancel}
                 isDisabled={headerActions.isSaving}
               >
-                <ButtonIcon as={LucideIcon} name="X" />
+                <ButtonIcon as={LucideIcon} name="X" color="$textLight700" size={16} mr="$2" />
                 <ButtonText {...styles.orgProfileCancelButtonText}>
                   {t('supportProvider.profile.cancel', 'Cancel')}
                 </ButtonText>

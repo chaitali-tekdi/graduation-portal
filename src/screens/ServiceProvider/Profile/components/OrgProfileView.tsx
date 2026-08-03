@@ -277,6 +277,16 @@ const OrgProfileView: React.FC<OrgProfileViewProps> = ({
               titleProps: profileStyles.orgProfileSectionTitleText,
               titleColor: profileStyles.orgProfileSectionTitleText.color,
             }}
+            orgProfileInputProps={profileStyles.orgProfileFormInput}
+            orgProfileSelectProps={profileStyles.orgProfileFormSelect}
+            orgProfileLabelProps={profileStyles.orgProfileLabel}
+            orgProfileRequiredStarProps={profileStyles.orgProfileRequiredStar}
+            orgProfileValueProps={profileStyles.orgProfileValue}
+            orgProfileSubTitleProps={profileStyles.orgProfileSubTitle}
+            orgProfileCheckboxCardSelected={profileStyles.orgProfileCheckboxCardSelected}
+            orgProfileCheckboxCardUnselected={profileStyles.orgProfileCheckboxCardUnselected}
+            orgProfileCheckboxTextSelected={profileStyles.orgProfileCheckboxTextSelected}
+            orgProfileCheckboxTextUnselected={profileStyles.orgProfileCheckboxTextUnselected}
           />
         </Box>
       ))}

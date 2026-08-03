@@ -5,7 +5,7 @@ export default {
   orgProfileContainer: {
     px: '$4',
     py: '$6',
-  '$md-px': '$6',
+    '$md-px': '$6',
   },
   orgProfileTitle: {
     fontSize: 24,
@@ -18,20 +18,31 @@ export default {
   orgProfileCancelButton: {
     variant: 'outline' as const,
     borderColor: '$borderLight300' as const,
+    bg: '$white' as const,
+    borderRadius: 10 as const,
+    h: 38,
+    px: '$3' as const,
+    space: 'xs' as const,
     sx: {
       ':hover': {
         bg: '$backgroundLight50',
         borderColor: '$borderLight300',
+        // Text
+        '_text': {
+          color: '$primary500',
+        },
+        // Icon
+        '_icon': {
+          color: '$primary500',
+        },
       },
     },
   },
+
   orgProfileCancelButtonText: {
     color: '$textLight700' as const,
-    sx: {
-      ':hover': {
-        color: '$primary600',
-      },
-    },
+    fontSize: '$sm' as const,
+    fontWeight: '$medium' as const,
   },
   orgProfileSaveButton: {
     variant: 'solid' as const,

@@ -48,6 +48,7 @@ import Select from '@components/ui/Inputs/Select';
 import DatePicker from '@components/ui/Inputs/DatePicker';
 import { openFilePicker } from '../../project-player/components/Task/FileEvidence/file-picker';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
+import { getSignedUrl, uploadFileToSignedUrl } from '../../services/bulkUploadService';
 import { styles } from '../../screens/UserManagement/Styles';
 import { FORM_FIELD_TYPES } from '@constants/CREATE_USER_FORM_SCHEMA';
 import type {
@@ -165,12 +166,25 @@ export interface SchemaFormRendererProps {
   onSaveDraft?: (values: Record<string, string>) => void | Promise<void>;
   /** Disables the Previous/Continue/Save Draft/Submit footer buttons while a request is in flight */
   isSubmitting?: boolean;
+  isMobile?: boolean;
   /** Whether to render SectionNode inside a Card (defaults to true) */
   renderSectionCard?: boolean;
   sectionHeaderProps?: {
+    iconSize?: number;
     iconColor?: string;
+    titleColor?: string;
     titleProps?: any;
   };
+  orgProfileInputProps?: any;
+  orgProfileSelectProps?: any;
+  orgProfileLabelProps?: any;
+  orgProfileRequiredStarProps?: any;
+  orgProfileValueProps?: any;
+  orgProfileSubTitleProps?: any;
+  orgProfileCheckboxCardSelected?: any;
+  orgProfileCheckboxCardUnselected?: any;
+  orgProfileCheckboxTextSelected?: any;
+  orgProfileCheckboxTextUnselected?: any;
 }
 
 // ─── Validation Engine ────────────────────────────────────────────────────────
@@ -662,6 +676,12 @@ interface FieldRendererProps {
   autoFocusRef?: React.RefObject<any>;
   isNested?: boolean;
   isEditMode?: boolean;
+  orgProfileInputProps?: any;
+  orgProfileSelectProps?: any;
+  orgProfileCheckboxCardSelected?: any;
+  orgProfileCheckboxCardUnselected?: any;
+  orgProfileCheckboxTextSelected?: any;
+  orgProfileCheckboxTextUnselected?: any;
 }
 
 const FieldRenderer: React.FC<FieldRendererProps> = ({
@@ -679,6 +699,12 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   autoFocusRef,
   isNested = false,
   isEditMode = false,
+  orgProfileInputProps,
+  orgProfileSelectProps,
+  orgProfileCheckboxCardSelected,
+  orgProfileCheckboxCardUnselected,
+  orgProfileCheckboxTextSelected,
+  orgProfileCheckboxTextUnselected,
 }) => {
   const isFieldDisabled =
     disabled || !!field.disabled || (isEditMode && field.name === 'roleId');
@@ -731,7 +757,6 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
       <HStack
-        {...(styles.createUserFormInput as any)}
         isInvalid={!!combinedError}
         isDisabled={disabled || field.disabled}
         alignItems="center"
@@ -773,8 +798,8 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   if (field.type === FORM_FIELD_TYPES.CHECKBOX_GROUP) {
     // Resolve options: inline schema options OR from optionsMap via optionsSource
     const opts =
-      (field.options && field.options.length > 0)
-        ? field.options
+      ((field as any).options && (field as any).options.length > 0)
+        ? (field as any).options
         : (field.optionsSource ? (optionsMap[field.optionsSource] ?? []) : []);
 
     // Value is a comma-separated string of selected values
@@ -793,7 +818,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       // No options available yet — render a plain text input as fallback
       return (
         <Input
-          {...(useProfileStyle ? profileInputStyle : (styles.createUserFormInput as any))}
+          {...(orgProfileInputProps || (styles.createUserFormInput as any))}
           isInvalid={!!error}
           isDisabled={disabled || field.disabled}
         >
@@ -808,8 +833,15 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
       <Box width="100%" flexDirection="row" flexWrap="wrap" gap="$2">
-        {opts.map(opt => {
+        {opts.map((opt: any) => {
           const isChecked = selectedSet.has(opt.value);
+          const cardProps = isChecked
+            ? (orgProfileCheckboxCardSelected || { bg: '$primary50', borderColor: '$primary700', borderWidth: 1, borderRadius: '$md', px: '$3', py: '$2' })
+            : (orgProfileCheckboxCardUnselected || { bg: '$white', borderColor: '$borderLight200', borderWidth: 1, borderRadius: '$md', px: '$3', py: '$2' });
+          const textProps = isChecked
+            ? (orgProfileCheckboxTextSelected || { fontSize: '$xs', color: '$primary700', fontWeight: '$medium' })
+            : (orgProfileCheckboxTextUnselected || { fontSize: '$xs', color: '$textForeground', fontWeight: '$normal' });
+
           return (
             <Pressable
               key={opt.value}
@@ -820,12 +852,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
               <HStack
                 space="xs"
                 alignItems="center"
-                borderWidth={1}
-                borderColor={isChecked ? '$primary700' : '$borderLight200'}
-                borderRadius="$md"
-                bg={isChecked ? '$primary50' : '$white'}
-                px="$3"
-                py="$2"
+                {...cardProps}
               >
                 <Box
                   width={16}
@@ -833,7 +860,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                   borderRadius={3}
                   borderWidth={isChecked ? 0 : 1}
                   borderColor="$borderLight300"
-                  bg={isChecked ? '$primary700' : '$white'}
+                  bg={isChecked ? (orgProfileCheckboxCardSelected?.borderColor || '$primary700') : '$white'}
                   alignItems="center"
                   justifyContent="center"
                 >
@@ -842,9 +869,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                   )}
                 </Box>
                 <Text
-                  fontSize="$xs"
-                  color={isChecked ? '$primary700' : '$textForeground'}
-                  fontWeight={isChecked ? '$medium' : '$normal'}
+                  {...textProps}
                   flex={1}
                 >
                   {opt.label}
@@ -908,7 +933,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
         zIndex={field.zIndex ?? (isNested ? 1000 : 1)}
       >
         <Select
-          {...(isNested ? {} : styles.createUserFormSelect)}
+          {...(isNested ? {} : (orgProfileSelectProps || styles.createUserFormSelect))}
           options={options}
           value={value}
           onChange={(val: string, _lbl: string) =>
@@ -1027,7 +1052,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box zIndex={field.zIndex ?? 999}>
         <DatePicker
-          {...styles.createUserFormInput}
+          {...(orgProfileInputProps || styles.createUserFormInput)}
           placeholder={placeholder || 'YYYY-MM-DD'}
           value={displayValue}
           onChange={(date: string) =>
@@ -1054,7 +1079,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     return (
       <Box position="relative">
         <Input
-          {...styles.createUserFormInput}
+          {...(orgProfileInputProps || styles.createUserFormInput)}
           isInvalid={!!error}
           isDisabled={disabled || field.disabled}
           isReadOnly={field.isReadOnly}
@@ -1100,7 +1125,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
       <Textarea
-        {...(styles.createUserFormInput as any)}
+        {...(orgProfileInputProps || (styles.createUserFormInput as any))}
         isInvalid={!!error}
         isDisabled={disabled || field.disabled}
         isReadOnly={field.isReadOnly}
@@ -1204,7 +1229,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   return (
     <Input
-      {...(isNested ? {} : (styles.createUserFormInput as any))}
+      {...(isNested ? {} : (orgProfileInputProps || (styles.createUserFormInput as any)))}
       isInvalid={!!error}
       isDisabled={isFieldDisabled}
       isReadOnly={field.isReadOnly}
@@ -2096,7 +2121,7 @@ const RowRenderer = memo(
     fields,
     t,
     ...fieldsProps
-  }: FieldType | { isMobile: boolean; fields: FormField[] }) => {
+  }: any) => {
     const isMultiField = fields.length > 1;
 
             return (
@@ -2313,18 +2338,24 @@ const FieldContainer = memo(
     errors = {},
     optionsMap = {},
     mode = '',
-    t = e => e,
+    t = (e: any) => e,
     disabled = false,
-    visibilityGroups,
-    toggleVisibilityGroup,
+    visibilityGroups = {},
+    toggleVisibilityGroup = () => {},
     firstNameRef,
     fieldsByName = {},
     registerFieldRef,
     highlightedField,
-    onFieldChange = (...e) => {
+    onFieldChange = (...e: any[]) => {
       console.log(e);
     },
-  }: FieldType) => {
+    orgProfileInputProps,
+    orgProfileSelectProps,
+    orgProfileCheckboxCardSelected,
+    orgProfileCheckboxCardUnselected,
+    orgProfileCheckboxTextSelected,
+    orgProfileCheckboxTextUnselected,
+  }: any) => {
     const value = field.name ? values[field.name] ?? '' : '';
     const error = field.name ? errors[field.name] : undefined;
     const isHighlighted = !!field.name && highlightedField === field.name;
@@ -2354,11 +2385,11 @@ const FieldContainer = memo(
 
                     if (field.optionsSource) {
         const option = optionsMap[field.optionsSource]?.find(
-          o => o.value === value,
+          (o: any) => o.value === value,
         );
 
         displayValue = option?.label || value || '-';
-                      }
+      }
 
       displayValue =
         typeof displayValue === 'string'
@@ -2447,6 +2478,12 @@ const FieldContainer = memo(
                         visibilityGroups={visibilityGroups}
                         toggleVisibilityGroup={toggleVisibilityGroup}
                         autoFocusRef={firstNameRef}
+                        orgProfileInputProps={orgProfileInputProps}
+                        orgProfileSelectProps={orgProfileSelectProps}
+                        orgProfileCheckboxCardSelected={orgProfileCheckboxCardSelected}
+                        orgProfileCheckboxCardUnselected={orgProfileCheckboxCardUnselected}
+                        orgProfileCheckboxTextSelected={orgProfileCheckboxTextSelected}
+                        orgProfileCheckboxTextUnselected={orgProfileCheckboxTextUnselected}
                       />
 
         {error && (
