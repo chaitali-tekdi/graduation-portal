@@ -134,7 +134,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             required: true,
             optionsSource: 'provinces',
             label: { key: 'province', fallback: 'Province' },
-            subTitle: { key: 'provinceSubtitle', fallback: 'Provinces where they operate' },
+            subHeader: { key: 'provinceSubtitle', fallback: 'Provinces where they operate' },
             placeholder: { fallback: 'Select provinces' },
             validation: [
               {
@@ -153,7 +153,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             required: true,
             optionsSource: 'sites',
             label: { key: 'siteCoverage', fallback: 'Site Coverage' },
-            subTitle: { key: 'siteCoverageSubtitle', fallback: 'Sites where they operate' },
+            subHeader: { key: 'siteCoverageSubtitle', fallback: 'Sites where they operate' },
             placeholder: { fallback: 'Select sites' },
             // Sites are loaded dynamically via optionsMap['sites'] from the parent component.
             // The static options array here is intentionally empty.
@@ -183,7 +183,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             type: FORM_FIELD_TYPES.SELECT,
             required: true,
             label: { key: 'supportCategories', fallback: 'Support Categories' },
-            subTitle: { key: 'supportCategoriesSubtitle', fallback: 'Select all that apply' },
+            subHeader: { key: 'supportCategoriesSubtitle', fallback: 'Select all that apply' },
             optionsSource: 'supportCategories',
             validation: [
               {
@@ -233,7 +233,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             type: FORM_FIELD_TYPES.FILE_UPLOAD,
             required: false,
             label: { key: 'agreementMou', fallback: 'Agreement / MoU' },
-            subTitle: { key: 'agreementMouSubtitle', fallback: 'Upload if applicable' },
+            subHeader: { key: 'agreementMouSubtitle', fallback: 'Upload if applicable' },
             placeholder: { fallback: 'Click to upload PDF / DOC / JPG' },
           },
         ],
@@ -245,7 +245,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             type: FORM_FIELD_TYPES.FILE_UPLOAD,
             required: false,
             label: { key: 'orgCredentials', fallback: 'Organisation Credentials' },
-            subTitle: { key: 'orgCredentialsSubtitle', fallback: 'Certificates, Portfolio, etc.' },
+            subHeader: { key: 'orgCredentialsSubtitle', fallback: 'Certificates, Portfolio, etc.' },
             placeholder: { fallback: 'Click to upload PDF / DOC / JPG' },
           },
         ],
