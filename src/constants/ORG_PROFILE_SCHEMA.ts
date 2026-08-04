@@ -43,19 +43,11 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'providerType',
-            type: FORM_FIELD_TYPES.CHECKBOX_GROUP,
+            type: FORM_FIELD_TYPES.SELECT,
             required: true,
             label: { key: 'providerType', fallback: 'Provider Type' },
             placeholder: { fallback: 'Select provider type' },
-            options: [
-              { value: 'ngo', label: 'NGO' },
-              { value: 'government_agency', label: 'Government agency' },
-              { value: 'private_company', label: 'Private company' },
-              { value: 'training_provider', label: 'Training provider' },
-              { value: 'service_provider', label: 'Service provider' },
-              { value: 'financial_institution', label: 'Financial institution' },
-              { value: 'others', label: 'Others' },
-            ],
+            optionsSource: 'providerType',
             validation: [
               {
                 rule: 'required',
@@ -138,23 +130,12 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'province',
-            type: FORM_FIELD_TYPES.CHECKBOX_GROUP,
+            type: FORM_FIELD_TYPES.SELECT,
             required: true,
             optionsSource: 'provinces',
             label: { key: 'province', fallback: 'Province' },
-            subtitle: { key: 'provinceSubtitle', fallback: 'Provinces where they operate' },
+            subTitle: { key: 'provinceSubtitle', fallback: 'Provinces where they operate' },
             placeholder: { fallback: 'Select provinces' },
-            options: [
-              { value: 'eastern_cape', label: 'Eastern Cape' },
-              { value: 'free_state', label: 'Free State' },
-              { value: 'gauteng', label: 'Gauteng' },
-              { value: 'kwazulu_natal', label: 'KwaZulu-Natal' },
-              { value: 'limpopo', label: 'Limpopo' },
-              { value: 'mpumalanga', label: 'Mpumalanga' },
-              { value: 'north_west', label: 'North West' },
-              { value: 'northern_cape', label: 'Northern Cape' },
-              { value: 'western_cape', label: 'Western Cape' },
-            ],
             validation: [
               {
                 rule: 'required',
@@ -168,15 +149,14 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'siteCoverage',
-            type: FORM_FIELD_TYPES.CHECKBOX_GROUP,
+            type: FORM_FIELD_TYPES.SELECT,
             required: true,
             optionsSource: 'sites',
             label: { key: 'siteCoverage', fallback: 'Site Coverage' },
-            subtitle: { key: 'siteCoverageSubtitle', fallback: 'Sites where they operate' },
+            subTitle: { key: 'siteCoverageSubtitle', fallback: 'Sites where they operate' },
             placeholder: { fallback: 'Select sites' },
             // Sites are loaded dynamically via optionsMap['sites'] from the parent component.
             // The static options array here is intentionally empty.
-            options: [],
             validation: [
               {
                 rule: 'required',
@@ -200,16 +180,11 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'supportCategories',
-            type: FORM_FIELD_TYPES.CHECKBOX_GROUP,
+            type: FORM_FIELD_TYPES.SELECT,
             required: true,
             label: { key: 'supportCategories', fallback: 'Support Categories' },
-            subtitle: { key: 'supportCategoriesSubtitle', fallback: 'Select all that apply' },
-            options: [
-              { value: 'trainings_sessions', label: 'Trainings/Sessions' },
-              { value: 'linkage_additional_services', label: 'Linkage to Additional Services' },
-              { value: 'assets', label: 'Assets' },
-              { value: 'others', label: 'Others' },
-            ],
+            subTitle: { key: 'supportCategoriesSubtitle', fallback: 'Select all that apply' },
+            optionsSource: 'supportCategories',
             validation: [
               {
                 rule: 'required',
@@ -223,24 +198,10 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'specificTrainingAreas',
-            type: FORM_FIELD_TYPES.CHECKBOX_GROUP,
+            type: FORM_FIELD_TYPES.SELECT,
             required: false,
             label: { key: 'specificTrainingAreas', fallback: 'Specific Training Areas' },
-            options: [
-              { value: 'personal_mastery_training', label: 'Personal Mastery Training' },
-              { value: 'parenting_skills_training', label: 'Parenting Skills Training' },
-              { value: 'gbv_awareness_session', label: 'GBV Awareness Session' },
-              { value: 'substance_abuse_awareness', label: 'Substance Abuse Awareness Session' },
-              { value: 'financial_literacy_training', label: 'Financial Literacy Training' },
-              { value: 'generate_business_idea', label: 'Generate Your Business Idea Training' },
-              { value: 'start_your_business', label: 'Start Your Business Training' },
-              { value: 'diversification_strategy', label: 'Diversification Strategy' },
-              { value: 'market_growth_strategy', label: 'Market Growth Strategy' },
-              { value: 'livelihood_specific_training', label: 'Livelihood Specific Training' },
-              { value: 'job_readiness_training', label: 'Job Readiness Training' },
-              { value: 'technical_vocational_training', label: 'Technical/Vocational Training' },
-              { value: 'work_placement', label: 'Work Placement' },
-            ],
+            optionsSource: 'specificTrainingAreas',
           },
         ],
       },
@@ -248,14 +209,10 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
         fields: [
           {
             name: 'assetTypes',
-            type: FORM_FIELD_TYPES.CHECKBOX_GROUP,
+            type: FORM_FIELD_TYPES.SELECT,
             required: false,
             label: { key: 'assetTypes', fallback: 'Asset Types' },
-            options: [
-              { value: 'cash', label: 'Cash' },
-              { value: 'in_kind', label: 'In-kind' },
-              { value: 'voucher', label: 'Voucher' },
-            ],
+            optionsSource: 'assetTypes',
           },
         ],
       },
@@ -276,7 +233,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             type: FORM_FIELD_TYPES.FILE_UPLOAD,
             required: false,
             label: { key: 'agreementMou', fallback: 'Agreement / MoU' },
-            subtitle: { key: 'agreementMouSubtitle', fallback: 'Upload if applicable' },
+            subTitle: { key: 'agreementMouSubtitle', fallback: 'Upload if applicable' },
             placeholder: { fallback: 'Click to upload PDF / DOC / JPG' },
           },
         ],
@@ -288,7 +245,7 @@ export const ORG_PROFILE_SCHEMA: FormSection[] = [
             type: FORM_FIELD_TYPES.FILE_UPLOAD,
             required: false,
             label: { key: 'orgCredentials', fallback: 'Organisation Credentials' },
-            subtitle: { key: 'orgCredentialsSubtitle', fallback: 'Certificates, Portfolio, etc.' },
+            subTitle: { key: 'orgCredentialsSubtitle', fallback: 'Certificates, Portfolio, etc.' },
             placeholder: { fallback: 'Click to upload PDF / DOC / JPG' },
           },
         ],

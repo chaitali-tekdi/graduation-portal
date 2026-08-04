@@ -9,13 +9,57 @@ import {
 } from '@ui';
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
-import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
+import SchemaFormRenderer, { validateSchema, OptionsMap } from '@components/SchemaFormRenderer';
 import { ORG_PROFILE_SCHEMA } from '@constants/ORG_PROFILE_SCHEMA';
 import { getUserProfile } from '../../../../services/authenticationService';
 import { updateUser, getProvincesList, getAllSites } from '../../../../services/usersService';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import profileStyles from '../styles';
+
+// ─── Static Options Extractor ─────────────────────────────────────────────────
+// Walks the Org Profile schema and collects every field whose optionsSource is
+// a plain string key pointing to a hard-coded options list defined elsewhere.
+// Those lists are declared directly below and registered into optionsMap so that
+// SchemaFormRenderer can resolve them via optionsMap[field.optionsSource].
+
+const STATIC_OPTIONS: OptionsMap = {
+  providerType: [
+    { value: 'ngo', label: 'NGO' },
+    { value: 'government_agency', label: 'Government agency' },
+    { value: 'private_company', label: 'Private company' },
+    { value: 'training_provider', label: 'Training provider' },
+    { value: 'service_provider', label: 'Service provider' },
+    { value: 'financial_institution', label: 'Financial institution' },
+    { value: 'others', label: 'Others' },
+  ],
+  supportCategories: [
+    { value: 'trainings_sessions', label: 'Trainings/Sessions' },
+    { value: 'linkage_additional_services', label: 'Linkage to Additional Services' },
+    { value: 'assets', label: 'Assets' },
+    { value: 'others', label: 'Others' },
+  ],
+  specificTrainingAreas: [
+    { value: 'personal_mastery_training', label: 'Personal Mastery Training' },
+    { value: 'parenting_skills_training', label: 'Parenting Skills Training' },
+    { value: 'gbv_awareness_session', label: 'GBV Awareness Session' },
+    { value: 'substance_abuse_awareness', label: 'Substance Abuse Awareness Session' },
+    { value: 'financial_literacy_training', label: 'Financial Literacy Training' },
+    { value: 'generate_business_idea', label: 'Generate Your Business Idea Training' },
+    { value: 'start_your_business', label: 'Start Your Business Training' },
+    { value: 'diversification_strategy', label: 'Diversification Strategy' },
+    { value: 'market_growth_strategy', label: 'Market Growth Strategy' },
+    { value: 'livelihood_specific_training', label: 'Livelihood Specific Training' },
+    { value: 'job_readiness_training', label: 'Job Readiness Training' },
+    { value: 'technical_vocational_training', label: 'Technical/Vocational Training' },
+    { value: 'work_placement', label: 'Work Placement' },
+  ],
+  assetTypes: [
+    { value: 'cash', label: 'Cash' },
+    { value: 'in_kind', label: 'In-kind' },
+    { value: 'voucher', label: 'Voucher' },
+  ],
+};
 
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -171,6 +215,10 @@ const OrgProfileView: React.FC<OrgProfileViewProps> = ({
         if (!active) return;
 
         setOptionsMap({
+          // Static option lists defined in the Org Profile schema, keyed by
+          // their optionsSource string so SchemaFormRenderer can look them up.
+          ...STATIC_OPTIONS,
+          // Dynamic options fetched from the API at runtime.
           provinces: provinces.map((p: any) => ({
             value: p._id,
             label: p.metaInformation?.name || p.name || '',
@@ -268,9 +316,6 @@ const OrgProfileView: React.FC<OrgProfileViewProps> = ({
         mode={mode}
         disabled={isSaving}
         t={profileT}
-        orgProfileStyles={profileStyles}
-        inputProps={profileStyles.orgProfileInput}
-        selectProps={profileStyles.orgProfileSelect}
       />
     </VStack>
   );
