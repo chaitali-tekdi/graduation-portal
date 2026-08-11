@@ -208,7 +208,7 @@ const Card: React.FC<CardProps> = ({ item }) => {
               </Button>
             ) : (
               <Button
-                variant="solid"
+                variant="outlineghost"
                 {...styles.outlineActionBtn}
                 onPress={handleCopy}
               >

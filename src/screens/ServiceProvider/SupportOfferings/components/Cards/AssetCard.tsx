@@ -217,7 +217,7 @@ const Card: React.FC<CardProps> = ({ item }) => {
               </Button>
             ) : (
               <Button
-                variant="solid"
+                variant="outlineghost"
                 {...styles.outlineActionBtn}
                 onPress={handleCopy}
               >
@@ -229,7 +229,7 @@ const Card: React.FC<CardProps> = ({ item }) => {
             )}
 
             <Button
-              variant="solid"
+              variant="outlineghost"
               {...styles.detailsBtn}
               onPress={handleViewDetails}
             >
