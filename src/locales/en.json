@@ -2439,6 +2439,9 @@
       },
       "cards": {
         "requestedBy": "Requested by: {{name}}",
+        "viewDetails": "View Details",
+        "hideDetails": "Hide Details",
+        "sessionResources": "Session Resources",
         "copySession": "Copy Session",
         "copyOffering": "Copy Offering",
         "viewRequests": "View Requests",
@@ -2490,7 +2493,8 @@
       "subtitle": "Choose the type of support you want to create",
       "changeType": "Change type",
       "training": {
-        "title": "Create Training Session"
+        "title": "Create Training Session",
+        "editDraftTitle": "Edit Draft Training Session"
       },
       "additionalService": {
         "title": "Create Additional Service"

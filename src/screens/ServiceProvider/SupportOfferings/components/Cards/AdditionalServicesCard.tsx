@@ -17,6 +17,60 @@ import { getAdditionalServices } from '../../../../../services/SupportOfferingsS
 import type { ServiceItem } from '../../../../../constants/SUPPORT_OFFERINGS_MOCK';
 import styles from '../../styles';
 
+// ---------- Helpers ----------
+
+const getStatusColors = (status: string) => {
+  switch (status) {
+    case 'Draft':
+      return { bg: '$backgroundLight100', border: '$borderColor', text: '$textSecondary', icon: 'FileText' };
+    case 'Upcoming':
+      return { bg: '$blue50', border: '#bfdbfe', text: '$blue600', icon: 'Clock' };
+    case 'In progress':
+    case 'In Progress':
+      return { bg: '$observationTaskBg', border: '#fde68a', text: '$warningIconColor', icon: 'AlertCircle' };
+    case 'Pending':
+      return { bg: '$warning50', border: '#fde68a', text: '$warning600', icon: 'Clock' };
+    case 'Completed':
+    default:
+      return { bg: '$success50', border: '#a7f3d0', text: '$success600', icon: 'CheckCircle' };
+  }
+};
+
+const getDeliveryBadge = (format?: string) => {
+  const f = (format || 'Offline').toLowerCase();
+  if (f === 'virtual' || f === 'online') {
+    return { label: 'Online', bg: '$blue50', border: '#bfdbfe', color: '$blue600', icon: 'Video' };
+  }
+  if (f === 'hybrid') {
+    return { label: 'Hybrid', bg: '$purple50', border: '#e9d5ff', color: '$purple600', icon: 'Users' };
+  }
+  return { label: 'Offline', bg: '$warning50', border: '#fef08a', color: '$warning800', icon: 'MapPin' };
+};
+
+const formatRequestsDisplay = (requests?: string | number) => {
+  if (!requests) return '0 requests / spots';
+  const str = String(requests);
+  const match = str.match(/\d+/);
+  const count = match ? match[0] : str;
+  return `${count} requests / spots`;
+};
+
+const getProviderInfo = (item: ServiceItem) => {
+  if ((item as any).providedBy) {
+    return (item as any).providedBy;
+  }
+  if ((item as any).requestedBy) {
+    return (item as any).requestedBy.split('•')[0].trim();
+  }
+  if (item.hubOffice) {
+    return `${item.hubOffice} Support Hub`;
+  }
+  if (item.location) {
+    return `${item.location} Support Hub`;
+  }
+  return 'Support Hub';
+};
+
 // ---------- Card ----------
 
 interface CardProps {
@@ -28,31 +82,53 @@ const Card: React.FC<CardProps> = ({ item }) => {
   const { showAlert } = useAlert();
   const navigation = useNavigation();
 
-  const getStatusColors = (status: string) => {
-    switch (status) {
-      case 'Upcoming':
-        return { bg: '$blue50', border: 'transparent', text: '$blue600', icon: 'Clock' };
-      case 'In progress':
-        return { bg: '$observationTaskBg', border: 'transparent', text: '$warningIconColor', icon: 'AlertCircle' };
-      case 'Completed':
-      default:
-        return { bg: '$success50', border: 'transparent', text: '$success600', icon: 'CheckCircle' };
+  const statusColors = getStatusColors(item.status);
+  const deliveryBadge = getDeliveryBadge((item as any).format);
+  const providerName = getProviderInfo(item);
+  const requestsText = formatRequestsDisplay(item.requests);
+  const locationDisplay = item.location && item.hubOffice
+    ? `${item.location} • ${item.hubOffice}`
+    : item.location || item.hubOffice || '';
+
+  const handleCopy = () => {
+    showAlert('success', t('supportProvider.supportOfferings.cards.alerts.offeringCopied', 'Offering copied to clipboard!'));
+  };
+
+  const handleViewDetails = () => {
+    try {
+      (navigation as any).navigate('requests', {
+        offeringId: item.id,
+        offeringType: 'additional_services',
+        item,
+      });
+    } catch (e) {
+      showAlert('info', t('supportProvider.supportOfferings.cards.alerts.navigatingRequests', 'Navigating to requests...'));
     }
   };
 
-  const statusColors = getStatusColors(item.status);
+  const handleEdit = () => {
+    try {
+      (navigation as any).navigate('create-additional-service', {
+        serviceId: item.id,
+        item,
+      });
+    } catch (e) {
+      // fallback
+    }
+  };
+
+  const isDraft = (item.status as string) === 'Draft';
 
   return (
     <Box {...styles.cardContainer}>
-      <HStack {...styles.cardHeaderHStack}>
-        {/* Left Side: Info */}
-        <VStack {...styles.cardLeftVStack}>
-          {/* Row 1: Title + Badge */}
-          <HStack {...styles.titleRowHStack}>
-            <Text {...styles.cardTitleText}>
+      <VStack {...styles.cardFullVStack}>
+        {/* Row 1: Title + Status Badge (Left) & Delivery Badge (Right) */}
+        <HStack {...styles.headerTopHStack}>
+          <HStack {...styles.headerTitleBadgeHStack}>
+            <Text {...styles.cardHeaderTitleText}>
               {item.title}
             </Text>
-            <Badge {...styles.badgeContainer(statusColors.bg)}>
+            <Badge {...styles.badgeContainer(statusColors.bg, statusColors.border)}>
               <HStack {...styles.badgeContentHStack}>
                 <LucideIcon name={statusColors.icon} {...styles.badgeIconProps(statusColors.text)} />
                 <BadgeText {...styles.badgeText(statusColors.text)}>
@@ -62,82 +138,95 @@ const Card: React.FC<CardProps> = ({ item }) => {
             </Badge>
           </HStack>
 
-          {/* Row 2: Description */}
-          {item.description ? (
-            <Text {...styles.cardDescriptionText}>
+          <Badge {...styles.deliveryBadgeContainer(deliveryBadge.bg, deliveryBadge.border)}>
+            <HStack {...styles.badgeContentHStack}>
+              <LucideIcon name={deliveryBadge.icon} {...styles.badgeIconProps(deliveryBadge.color)} />
+              <BadgeText {...styles.deliveryBadgeText(deliveryBadge.color)}>
+                {deliveryBadge.label}
+              </BadgeText>
+            </HStack>
+          </Badge>
+        </HStack>
+
+        {/* Row 2: Description Box */}
+        {item.description ? (
+          <Box {...styles.notesBox}>
+            <Text {...styles.notesText}>
               {item.description}
             </Text>
-          ) : null}
+          </Box>
+        ) : null}
 
-          {/* Row 3: Metadata */}
-          <HStack {...styles.metaRowHStack}>
+        {/* Row 3: Metadata */}
+        <HStack {...styles.headerMetaHStack}>
+          {locationDisplay ? (
             <HStack {...styles.metaItemHStack}>
               <LucideIcon name="MapPin" {...styles.cardMetaIconProps} />
               <Text {...styles.cardMetaSmText}>
-                {item.location}{item.hubOffice ? ` • ${item.hubOffice}` : ''}
+                {locationDisplay}
               </Text>
             </HStack>
+          ) : null}
 
+          {item.site ? (
             <HStack {...styles.metaItemHStack}>
               <LucideIcon name="Building2" {...styles.cardMetaIconProps} />
               <Text {...styles.cardMetaSmText}>
                 {item.site}
               </Text>
             </HStack>
+          ) : null}
 
-            <HStack {...styles.metaItemHStack}>
-              <LucideIcon name="Users" {...styles.cardMetaIconProps} />
-              <Text {...styles.cardMetaSmText}>
-                {item.requests}
-              </Text>
-            </HStack>
-          </HStack>
-        </VStack>
-
-        {/* Right Side: Action Buttons stacked vertically */}
-        <VStack {...styles.cardRightActionStack}>
-          <Pressable
-            {...styles.viewRequestsBtn}
-            onPress={() => {
-              try {
-                (navigation as any).navigate('requests');
-              } catch (e) {
-                showAlert('info', t('supportProvider.supportOfferings.cards.alerts.navigatingRequests'));
-              }
-            }}
-          >
-            <Text {...styles.cardBtnSecondaryText}>
-              {t('supportProvider.supportOfferings.cards.viewRequests')}
+          <HStack {...styles.metaItemHStack}>
+            <LucideIcon name="Users" {...styles.cardMetaIconProps} />
+            <Text {...styles.cardMetaSmText}>
+              {requestsText}
             </Text>
-          </Pressable>
+          </HStack>
+        </HStack>
 
-          {item.actionType === 'copy' ? (
-            <Pressable
-              {...styles.copyOfferingBtn}
-              onPress={() => showAlert('success', t('supportProvider.supportOfferings.cards.alerts.offeringCopied'))}
-            >
-              <HStack {...styles.pressableInnerHStack}>
-                <LucideIcon name="Copy" {...styles.cardCopyIconProps} />
-                <Text {...styles.cardBtnPrimaryText}>
-                  {t('supportProvider.supportOfferings.cards.copyOffering')}
+        {/* Row 4: Provided By & Action Buttons */}
+        <HStack {...styles.requestedByRowHStack}>
+          <Text {...styles.cardRequestedByText}>
+            {t('supportProvider.supportOfferings.cards.providedBy', 'Provided by:')}{' '}
+            <Text {...styles.cardRequestedByOrgText}>{providerName}</Text>
+          </Text>
+
+          <HStack {...styles.badgeContentHStack} space="sm">
+            {isDraft ? (
+              <Pressable
+                {...styles.outlineActionBtn}
+                onPress={handleEdit}
+              >
+                <Text {...styles.outlineActionBtnText}>
+                  {t('common.edit', 'Edit')}
                 </Text>
-              </HStack>
-            </Pressable>
-          ) : (
+              </Pressable>
+            ) : (
+              <Pressable
+                {...styles.outlineActionBtn}
+                onPress={handleCopy}
+              >
+                <HStack {...styles.badgeContentHStack}>
+                  <LucideIcon name="Copy" {...styles.cardCopyIconProps} />
+                  <Text {...styles.outlineActionBtnText}>
+                    {t('supportProvider.supportOfferings.cards.copyOffering', 'Copy Offering')}
+                  </Text>
+                </HStack>
+              </Pressable>
+            )}
+
             <Pressable
-              {...styles.completeBtn}
-              onPress={() => showAlert('success', t('supportProvider.supportOfferings.cards.alerts.offeringCompleted'))}
+              {...styles.detailsBtn}
+              onPress={handleViewDetails}
             >
-              <HStack {...styles.pressableInnerHStack}>
-                <LucideIcon name="CheckCircle" {...styles.cardWhiteIconProps} />
-                <Text {...styles.cardBtnWhiteText}>
-                  {t('supportProvider.supportOfferings.cards.complete')}
-                </Text>
-              </HStack>
+              <Text {...styles.detailsBtnText}>
+                {t('supportProvider.supportOfferings.cards.viewDetails', 'View Details')}
+              </Text>
             </Pressable>
-          )}
-        </VStack>
-      </HStack>
+          </HStack>
+        </HStack>
+      </VStack>
     </Box>
   );
 };

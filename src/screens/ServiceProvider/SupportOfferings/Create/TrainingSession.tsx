@@ -178,10 +178,16 @@ const App = (): React.JSX.Element => {
     }
   }
 
+  const isDraftEdit = route.params?.item?.status === 'Draft' || route.params?.isDraftEdit;
+
   return (
     <VStack flex={1}>
       <SPTitleHeader
-        title={t('supportProvider.createSupport.training.title', 'Create Training Session')}
+        title={
+          isDraftEdit
+            ? t('supportProvider.createSupport.training.editDraftTitle', 'Edit Draft Training Session')
+            : t('supportProvider.createSupport.training.title', 'Create Training Session')
+        }
         backButtonText={t('supportProvider.createSupport.changeType', 'Change type')}
         onNavigateBack={handleBackPress}
       />
