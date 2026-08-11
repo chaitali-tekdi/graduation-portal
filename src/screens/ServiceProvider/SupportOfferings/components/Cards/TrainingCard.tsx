@@ -311,41 +311,17 @@ const Card: React.FC<CardProps> = ({ item: initialItem }) => {
                 </Button>
 
                 <Button
-                  variant="solid"
-                  {...styles.detailsBtn}
+                  variant="outlineghost"
+
+
                   onPress={() => setIsExpanded(!isExpanded)}
                 >
                   <ButtonText {...styles.detailsBtnText}>
-            <Button variant="outlineghost" size="sm" onPress={onClose} isDisabled={isDownloading}>
-                  <ButtonIcon as={LucideIcon} name="Download" mr="$1" />
-                <ButtonText>{t('common.cancel')}</ButtonText>
-              </Button>
-Replace the Pressable components used for action buttons such as:
-
-View Details
-Hide Details
-Complete
-Edit
-Copy Session
-Any other button-style action
-
-Use the existing Button with variant="solid" instead.
-
-Keep the existing:
-
-onPress functionality
-Button text
-Icons
-Size
-Spacing
-Colors
-Border radius
-Styling
-
-Do not change any other UI or functionality.
-
-Only replace the button wrapper from Pressable to the existing solid Button component.
-         {isExpanded
+                    <Button variant="outlineghost" size="sm" onPress={onClose} isDisabled={isDownloading}>
+                      <ButtonIcon as={LucideIcon} name="Download" mr="$1" />
+                      <ButtonText>{t('common.cancel')}</ButtonText>
+                    </Button>
+                    {isExpanded
                       ? t('supportProvider.supportOfferings.cards.hideDetails', 'Hide Details')
                       : t('supportProvider.supportOfferings.cards.viewDetails', 'View Details')}
                   </ButtonText>
@@ -380,7 +356,7 @@ Only replace the button wrapper from Pressable to the existing solid Button comp
               <>
                 {item.hasCopyButton && (
                   <Button
-                    variant="solid"
+                    variant="outlineghost"
                     {...styles.outlineActionBtn}
                     onPress={handleCopySession}
                   >
