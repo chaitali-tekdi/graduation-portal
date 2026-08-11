@@ -6,6 +6,9 @@ import {
   VStack,
   Text,
   Pressable,
+  Button,
+  ButtonText,
+  ButtonIcon,
   LucideIcon,
   Badge,
   BadgeText,
@@ -295,79 +298,110 @@ const Card: React.FC<CardProps> = ({ item: initialItem }) => {
           <HStack {...styles.badgeContentHStack} space="sm">
             {(item.status as string) === 'Draft' ? (
               <>
-                <Pressable
+                <Button
+                  variant="solid"
                   {...styles.outlineActionBtn}
                   onPress={() => {
                     (navigation as any).navigate('create-training-session', { sessionId: item.id, item });
                   }}
                 >
-                  <Text {...styles.outlineActionBtnText}>
+                  <ButtonText {...styles.outlineActionBtnText}>
                     {t('common.edit', 'Edit')}
-                  </Text>
-                </Pressable>
+                  </ButtonText>
+                </Button>
 
-                <Pressable
+                <Button
+                  variant="solid"
                   {...styles.detailsBtn}
                   onPress={() => setIsExpanded(!isExpanded)}
                 >
-                  <Text {...styles.detailsBtnText}>
-                    {isExpanded
+                  <ButtonText {...styles.detailsBtnText}>
+            <Button variant="outlineghost" size="sm" onPress={onClose} isDisabled={isDownloading}>
+                  <ButtonIcon as={LucideIcon} name="Download" mr="$1" />
+                <ButtonText>{t('common.cancel')}</ButtonText>
+              </Button>
+Replace the Pressable components used for action buttons such as:
+
+View Details
+Hide Details
+Complete
+Edit
+Copy Session
+Any other button-style action
+
+Use the existing Button with variant="solid" instead.
+
+Keep the existing:
+
+onPress functionality
+Button text
+Icons
+Size
+Spacing
+Colors
+Border radius
+Styling
+
+Do not change any other UI or functionality.
+
+Only replace the button wrapper from Pressable to the existing solid Button component.
+         {isExpanded
                       ? t('supportProvider.supportOfferings.cards.hideDetails', 'Hide Details')
                       : t('supportProvider.supportOfferings.cards.viewDetails', 'View Details')}
-                  </Text>
-                </Pressable>
+                  </ButtonText>
+                </Button>
               </>
             ) : (item.status as string) === 'In progress' || (item.status as string) === 'In Progress' ? (
               <>
-                <Pressable
+                <Button
+                  variant="solid"
                   {...styles.completeActionBtn}
                   onPress={() => setIsCompleteModalOpen(true)}
                 >
-                  <HStack {...styles.badgeContentHStack}>
-                    <LucideIcon name="CheckCircle" {...styles.cardWhiteIconProps} />
-                    <Text {...styles.completeActionBtnText}>
-                      {t('supportProvider.supportOfferings.cards.complete', 'Complete')}
-                    </Text>
-                  </HStack>
-                </Pressable>
+                  <ButtonIcon as={LucideIcon} name="CheckCircle" {...styles.cardWhiteIconProps} />
+                  <ButtonText {...styles.completeActionBtnText}>
+                    {t('supportProvider.supportOfferings.cards.complete', 'Complete')}
+                  </ButtonText>
+                </Button>
 
-                <Pressable
+                <Button
+                  variant="solid"
                   {...styles.detailsBtn}
                   onPress={() => setIsExpanded(!isExpanded)}
                 >
-                  <Text {...styles.detailsBtnText}>
+                  <ButtonText {...styles.detailsBtnText}>
                     {isExpanded
                       ? t('supportProvider.supportOfferings.cards.hideDetails', 'Hide Details')
                       : t('supportProvider.supportOfferings.cards.viewDetails', 'View Details')}
-                  </Text>
-                </Pressable>
+                  </ButtonText>
+                </Button>
               </>
             ) : (
               <>
                 {item.hasCopyButton && (
-                  <Pressable
+                  <Button
+                    variant="solid"
                     {...styles.outlineActionBtn}
                     onPress={handleCopySession}
                   >
-                    <HStack {...styles.badgeContentHStack}>
-                      <LucideIcon name="Copy" {...styles.cardCopyIconProps} />
-                      <Text {...styles.outlineActionBtnText}>
-                        {t('supportProvider.supportOfferings.cards.copySession', 'Copy Session')}
-                      </Text>
-                    </HStack>
-                  </Pressable>
+                    <ButtonIcon as={LucideIcon} name="Copy" {...styles.cardCopyIconProps} />
+                    <ButtonText {...styles.outlineActionBtnText}>
+                      {t('supportProvider.supportOfferings.cards.copySession', 'Copy Session')}
+                    </ButtonText>
+                  </Button>
                 )}
 
-                <Pressable
+                <Button
+                  variant="solid"
                   {...styles.detailsBtn}
                   onPress={() => setIsExpanded(!isExpanded)}
                 >
-                  <Text {...styles.detailsBtnText}>
+                  <ButtonText {...styles.detailsBtnText}>
                     {isExpanded
                       ? t('supportProvider.supportOfferings.cards.hideDetails', 'Hide Details')
                       : t('supportProvider.supportOfferings.cards.viewDetails', 'View Details')}
-                  </Text>
-                </Pressable>
+                  </ButtonText>
+                </Button>
               </>
             )}
           </HStack>

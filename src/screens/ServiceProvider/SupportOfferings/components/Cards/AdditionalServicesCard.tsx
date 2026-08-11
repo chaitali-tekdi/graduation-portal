@@ -5,6 +5,9 @@ import {
   VStack,
   Text,
   Pressable,
+  Button,
+  ButtonText,
+  ButtonIcon,
   LucideIcon,
   Badge,
   BadgeText,
@@ -194,36 +197,37 @@ const Card: React.FC<CardProps> = ({ item }) => {
 
           <HStack {...styles.badgeContentHStack} space="sm">
             {isDraft ? (
-              <Pressable
+              <Button
+                variant="solid"
                 {...styles.outlineActionBtn}
                 onPress={handleEdit}
               >
-                <Text {...styles.outlineActionBtnText}>
+                <ButtonText {...styles.outlineActionBtnText}>
                   {t('common.edit', 'Edit')}
-                </Text>
-              </Pressable>
+                </ButtonText>
+              </Button>
             ) : (
-              <Pressable
+              <Button
+                variant="solid"
                 {...styles.outlineActionBtn}
                 onPress={handleCopy}
               >
-                <HStack {...styles.badgeContentHStack}>
-                  <LucideIcon name="Copy" {...styles.cardCopyIconProps} />
-                  <Text {...styles.outlineActionBtnText}>
-                    {t('supportProvider.supportOfferings.cards.copyOffering', 'Copy Offering')}
-                  </Text>
-                </HStack>
-              </Pressable>
+                <ButtonIcon as={LucideIcon} name="Copy" {...styles.cardCopyIconProps} />
+                <ButtonText {...styles.outlineActionBtnText}>
+                  {t('supportProvider.supportOfferings.cards.copyOffering', 'Copy Offering')}
+                </ButtonText>
+              </Button>
             )}
 
-            <Pressable
+            <Button
+              variant="solid"
               {...styles.detailsBtn}
               onPress={handleViewDetails}
             >
-              <Text {...styles.detailsBtnText}>
+              <ButtonText {...styles.detailsBtnText}>
                 {t('supportProvider.supportOfferings.cards.viewDetails', 'View Details')}
-              </Text>
-            </Pressable>
+              </ButtonText>
+            </Button>
           </HStack>
         </HStack>
       </VStack>

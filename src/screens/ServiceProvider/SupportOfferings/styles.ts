@@ -343,7 +343,7 @@ export default {
   cardRequestedByProvinceText: {
     fontSize: '$xs' as const,
     color: '$textSecondary' as const,
-    fontWeight: '$semibold' as const,
+    fontWeight: '$normal' as const,
   } as const,
   cardSectionTitleText: {
     fontSize: '$sm' as const,
