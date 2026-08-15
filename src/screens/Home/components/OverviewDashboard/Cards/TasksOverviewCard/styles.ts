@@ -1,5 +1,5 @@
-export const enrollmentStatusCardStyles = {
-  container: {
+export const tasksOverviewStyles = {
+  card: {
     bg: '$white',
     borderRadius: '$xl',
     p: '$4',
@@ -10,6 +10,7 @@ export const enrollmentStatusCardStyles = {
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    h: '$full',
   },
   header: {
     space: 'sm',
@@ -27,15 +28,14 @@ export const enrollmentStatusCardStyles = {
   content: {
     space: 'md',
   },
-  statusItem: {
-    space: 'xs',
-  },
-  statusRow: {
+  metricRow: {
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  progressSection: {
+    space: 'sm',
   },
   progressBar: {
     borderRadius: '$full',
   },
 } as const;
-
