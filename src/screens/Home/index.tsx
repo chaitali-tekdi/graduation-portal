@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { VStack, ScrollView, Box, Text } from '@ui';
+import { VStack, Box, Text } from '@ui';
 import Container from '@ui/Container';
 import PageHeader from '@components/PageHeader';
 import { useLanguage } from '@contexts/LanguageContext';
@@ -32,7 +32,7 @@ const DashboardScreen = () => {
         _subtitle={dashboardStyles.pageHeaderSubtitle}
       />
 
-      <ScrollView {...dashboardStyles.scrollView}>
+      <VStack {...dashboardStyles.contentWrapper}>
         <Container>
           <VStack {...dashboardStyles.mainVStack}>
             {/* Dashboard Header containing Filters and Tabs */}
@@ -67,7 +67,7 @@ const DashboardScreen = () => {
             )}
           </VStack>
         </Container>
-      </ScrollView>
+      </VStack>
     </VStack>
   );
 };

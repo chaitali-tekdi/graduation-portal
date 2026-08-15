@@ -14,7 +14,7 @@ export const dashboardStyles = {
     fontSize: '$md' as const,
     mt: '$1' as const,
   },
-  scrollView: {
+  contentWrapper: {
     bg: '$backgroundColor',
     flex: 1,
   },
