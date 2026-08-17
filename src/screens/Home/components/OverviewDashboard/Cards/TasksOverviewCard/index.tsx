@@ -15,8 +15,8 @@ const TasksOverviewCard: React.FC<TasksOverviewCardProps> = ({
   completedTasks = 806,
   recentActivity = 0,
 }) => {
-  const completionPercentage = totalTasks > 0 
-    ? Math.round((completedTasks / totalTasks) * 100) 
+  const completionPercentage = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
     : 0;
 
   return (
@@ -25,11 +25,11 @@ const TasksOverviewCard: React.FC<TasksOverviewCardProps> = ({
         <Box {...tasksOverviewStyles.iconContainer}>
           <LucideIcon name="Target" size={20} color="$primary500" />
         </Box>
-        <Text {...TYPOGRAPHY.h4} color="$textPrimary">
+        <Text {...tasksOverviewStyles.cardtitle} color="$textPrimary">
           Tasks Overview
         </Text>
       </HStack>
-      
+
       <VStack {...tasksOverviewStyles.content}>
         <HStack {...tasksOverviewStyles.metricRow}>
           <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary">

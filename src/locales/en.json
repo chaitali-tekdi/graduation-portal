@@ -2898,7 +2898,7 @@
         "title": "Overall Program Graduation Rate",
         "formula": "Ready to Graduate ÷ Total Exits",
         "subText": "of participants are ready to graduate",
-        "description": "Percentage of participants who meet the graduation criteria.",
+        "description": "Calculated from total completed and exited program participants.",
         "readyRate": "Ready to Graduate",
         "totalExits": "Total Exits"
       },

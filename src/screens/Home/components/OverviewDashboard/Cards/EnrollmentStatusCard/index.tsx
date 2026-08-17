@@ -28,11 +28,11 @@ const EnrollmentStatusCard: React.FC<EnrollmentStatusCardProps> = ({
         <Box {...enrollmentStatusStyles.iconContainer}>
           <LucideIcon name="User" size={20} color="$primary500" />
         </Box>
-        <Text {...TYPOGRAPHY.h4} color="$textPrimary">
+        <Text {...enrollmentStatusStyles.cardtitle} color="$textPrimary">
           Enrollment Status
         </Text>
       </HStack>
-      
+
       <VStack {...enrollmentStatusStyles.content}>
         {statuses.map((status, index) => (
           <VStack key={index} {...enrollmentStatusStyles.statusItem}>

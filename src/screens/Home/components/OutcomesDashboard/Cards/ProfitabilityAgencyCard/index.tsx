@@ -22,7 +22,7 @@ const ProfitabilityAgencyCard: React.FC<ProfitabilityAgencyCardProps> = ({
         {/* Business Profitability Box */}
         <Box {...outcomesStyles.profitabilityBox}>
           <VStack space="xs">
-            <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$semibold">
+            <Text {...outcomesStyles.metricTitle}>
               {t('requestorDashboard.outcomes.profitabilityAgency.profitability.title')}
             </Text>
             <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary">
@@ -47,7 +47,7 @@ const ProfitabilityAgencyCard: React.FC<ProfitabilityAgencyCardProps> = ({
           <VStack space="xs" flex={1}>
             <HStack alignItems="center" space="xs">
               <LucideIcon name="Heart" size={20} color="$primary500" />
-              <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$semibold">
+              <Text {...outcomesStyles.metricTitle}>
                 {t('requestorDashboard.outcomes.senseOfAgency.title')}
               </Text>
             </HStack>

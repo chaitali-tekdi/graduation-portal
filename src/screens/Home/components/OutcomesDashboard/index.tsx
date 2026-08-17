@@ -40,8 +40,8 @@ const OutcomesDashboard: React.FC<OutcomesDashboardProps> = ({
       {/* Conditionally render stacked cards or empty state */}
       {!outcomesData ? (
         <Box {...outcomesStyles.emptyStateContainer}>
-          <LucideIcon name="UserCheck" size={24} color="$textMutedForeground" />
-          <Text color="$textSecondary" textAlign="center">
+          {/* <LucideIcon name="UserCheck" size={24} color="$textMutedForeground" /> */}
+          <Text {...outcomesStyles.emptyStateText} textAlign="center" >
             {t('requestorDashboard.outcomes.selectParticipantMessage')}
           </Text>
         </Box>

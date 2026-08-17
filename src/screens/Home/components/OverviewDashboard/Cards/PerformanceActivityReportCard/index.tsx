@@ -16,9 +16,7 @@ const PerformanceActivityReportCard: React.FC = () => {
   ];
 
   return (
-    <Pressable
-      {...performanceActivityStyles.card}
-    >
+    <Pressable {...performanceActivityStyles.card}>
       <VStack>
         {/* Header Row */}
         <HStack {...performanceActivityStyles.header}>

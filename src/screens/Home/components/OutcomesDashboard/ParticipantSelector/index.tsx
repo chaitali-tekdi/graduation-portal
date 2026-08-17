@@ -28,7 +28,7 @@ const ParticipantSelector: React.FC<ParticipantSelectorProps> = ({
   return (
     <Box {...outcomesStyles.participantSelector}>
       <HStack {...outcomesStyles.selectorRow}>
-        <Text {...TYPOGRAPHY.paragraph} color="$textSecondary" fontWeight="$medium">
+        <Text {...outcomesStyles.titletextselector}>
           {label ?? t('requestorDashboard.outcomes.title')}
         </Text>
         <Box style={{ width: 280 } as any}>

@@ -23,7 +23,7 @@ const IncomeSelfEfficacyCard: React.FC<IncomeSelfEfficacyCardProps> = ({
         {/* Income Sources Box */}
         <Box {...outcomesStyles.incomeSourcesBox}>
           <VStack space="xs" flex={1}>
-            <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$semibold">
+            <Text {...outcomesStyles.metricTitle}>
               {t('requestorDashboard.outcomes.incomeSelfEfficacy.incomeSources.title')}
             </Text>
             <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary" mb="$4">
@@ -60,7 +60,7 @@ const IncomeSelfEfficacyCard: React.FC<IncomeSelfEfficacyCardProps> = ({
         {/* Self-Efficacy Box */}
         <Box {...outcomesStyles.selfEfficacyBox}>
           <VStack space="xs">
-            <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$semibold">
+            <Text {...outcomesStyles.metricTitle}>
               {t('requestorDashboard.outcomes.incomeSelfEfficacy.selfEfficacy.title')}
             </Text>
             <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary">

@@ -24,18 +24,18 @@ const ParticipantStatusMetricCard: React.FC<ParticipantStatusMetricCardProps> = 
 
           return (
             <Box key={metric.key} {...outcomesStyles.statusItem}>
-              <VStack>
+              <VStack style={{ gap: 3 } as any}>
                 <HStack {...outcomesStyles.statusItemHeader}>
                   {metric.icon && (
-                    <LucideIcon name={metric.icon} size={14} color="$textMutedForeground" />
+                    <LucideIcon name={metric.icon} size={14} color="$textMutedForeground" style={{ marginRight: 4 } as any} />
                   )}
-                  <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary" fontWeight="$semibold">
+                  <Text {...outcomesStyles.metricTitle1}>
                     {t(metric.labelKey)}
                   </Text>
                 </HStack>
 
                 <HStack {...outcomesStyles.statusItemValueRow}>
-                  <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$bold">
+                  <Text {...outcomesStyles.metricValue}>
                     {metricData.value}
                   </Text>
                   {metric.key === 'debtStatus' && (
@@ -50,14 +50,14 @@ const ParticipantStatusMetricCard: React.FC<ParticipantStatusMetricCardProps> = 
                 {(metric.key === 'monthlyIncome' || metric.key === 'currentSavings') && metricData.change && (
                   <HStack {...outcomesStyles.statusItemSubLabelRow}>
                     <LucideIcon name="TrendingUp" size={12} color="$success600" />
-                    <Text {...TYPOGRAPHY.bodySmall} color="$success600" fontSize="$2xs">
+                    <Text {...outcomesStyles.metricTitle1} color="$success600">
                       {metricData.change} from baseline
                     </Text>
                   </HStack>
                 )}
 
                 {metric.key === 'igaStatus' && metricData.details && (
-                  <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontSize="$xs" mt="$1">
+                  <Text {...outcomesStyles.metricSubtext} color="$textMutedForeground">
                     {metricData.details}
                   </Text>
                 )}
@@ -73,7 +73,7 @@ const ParticipantStatusMetricCard: React.FC<ParticipantStatusMetricCardProps> = 
                     >
                       <ProgressFilledTrack bg="$blue500" />
                     </Progress>
-                    <Text {...TYPOGRAPHY.bodySmall} color="$textMutedForeground" fontSize="$2xs" mt="$1">
+                    <Text {...outcomesStyles.metricSubtext} color="$textMutedForeground" mt="$1">
                       Baseline: 45/100
                     </Text>
                   </VStack>

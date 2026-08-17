@@ -21,10 +21,10 @@ const IncomeSavingsTrendCard: React.FC<IncomeSavingsTrendCardProps> = ({
         {/* Income Trend Box */}
         <Box {...outcomesStyles.incomeTrendBox}>
           <VStack space="xs">
-            <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$semibold">
+            <Text {...outcomesStyles.metricTitle}>
               {t('requestorDashboard.outcomes.incomeSavings.incomeTrend.title')}
             </Text>
-            <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary">
+            <Text {...outcomesStyles.metricsubtitle1}>
               {t('requestorDashboard.outcomes.incomeSavings.incomeTrend.description')}
             </Text>
             <Box {...outcomesStyles.chartContainer}>
@@ -44,10 +44,10 @@ const IncomeSavingsTrendCard: React.FC<IncomeSavingsTrendCardProps> = ({
         {/* Savings Trend Box */}
         <Box {...outcomesStyles.savingsTrendBox}>
           <VStack space="xs">
-            <Text {...TYPOGRAPHY.h4} color="$textPrimary" fontWeight="$semibold">
+            <Text {...outcomesStyles.metricTitle}>
               {t('requestorDashboard.outcomes.incomeSavings.savingsTrend.title')}
             </Text>
-            <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary">
+            <Text {...outcomesStyles.metricsubtitle1}>
               {t('requestorDashboard.outcomes.incomeSavings.savingsTrend.description')}
             </Text>
             <Box {...outcomesStyles.chartContainer}>

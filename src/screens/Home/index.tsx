@@ -30,6 +30,7 @@ const DashboardScreen = () => {
         _title={dashboardStyles.pageHeaderTitle}
         subtitle={t('requestorDashboard.pageHeader.description')}
         _subtitle={dashboardStyles.pageHeaderSubtitle}
+        _css={dashboardStyles.pageHeaderContainer}
       />
 
       <VStack {...dashboardStyles.contentWrapper}>

@@ -7,11 +7,11 @@ export const dashboardStyles = {
     color: '$primary500' as const,
     fontSize: '$3xl' as const,
     fontWeight: '$bold' as const,
-    pb: '$1' as const,
+    pb: 8 as const,
   },
   pageHeaderSubtitle: {
     color: '$textMutedForeground' as const,
-    fontSize: '$md' as const,
+    fontSize: 16 as const,
     mt: '$1' as const,
   },
   contentWrapper: {
