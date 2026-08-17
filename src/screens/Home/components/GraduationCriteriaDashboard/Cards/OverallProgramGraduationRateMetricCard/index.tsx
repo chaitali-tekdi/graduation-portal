@@ -15,20 +15,23 @@ const OverallProgramGraduationRateMetricCard: React.FC = () => {
           const label = t(metric.labelKey);
           const value = t(metric.valueKey);
           const description = t(metric.subLabelKey);
+          const isCoachWorkload = metric.key === 'coachWorkload';
 
           return (
             <VStack
               key={metric.key}
               {...graduationCriteriaStyles.metricItem(isLast)}
+              {...(!isCoachWorkload ? {
+                borderLeftWidth: 4,
+                borderLeftColor: metric.colorToken,
+              } : {})}
             >
-              {/* Colored Top Accent Bar */}
-              <Box
-                {...graduationCriteriaStyles.metricTopAccent(metric.colorToken)}
-              />
-
               {/* Text Content */}
               <VStack {...graduationCriteriaStyles.metricTextContainer}>
-                <Text {...graduationCriteriaStyles.metricLabel}>
+                <Text
+                  {...graduationCriteriaStyles.metricLabel}
+                  color={metric.colorToken}
+                >
                   {label}
                 </Text>
                 <Text

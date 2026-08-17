@@ -2906,22 +2906,22 @@
         "coachWorkload": {
           "label": "Coach Workload",
           "value": "36",
-          "description": "Participants currently assigned to coaches."
+          "description": "Total assigned active participants"
         },
         "readyToGraduate": {
           "label": "Ready to Graduate",
           "value": "14 (39%)",
-          "description": "Participants who currently meet the graduation criteria."
+          "description": "Met 10 to 12 graduation indicators (out of 12)"
         },
         "nearReady": {
           "label": "Near Ready",
           "value": "6 (17%)",
-          "description": "Participants who are close to meeting the graduation criteria."
+          "description": "Met 7 to 9 graduation indicators (out of 12)"
         },
         "notReady": {
           "label": "Not Ready",
           "value": "16 (44%)",
-          "description": "Participants who do not yet meet the graduation criteria."
+          "description": "Met less than 7 graduation indicators (out of 12)"
         }
       },
       "readinessStatus": {

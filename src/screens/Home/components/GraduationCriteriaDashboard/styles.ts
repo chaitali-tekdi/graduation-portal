@@ -156,21 +156,22 @@ export const graduationCriteriaStyles = {
     bg: bgToken,
   }),
   metricLabel: {
-    fontSize: 11,
-    fontWeight: '$semibold' as const,
-    color: '$textMutedForeground' as const,
+    fontSize: 10,
+    fontWeight: '700' as const,
+    letterSpacing: 1,
     textTransform: 'uppercase' as const,
-    mb: '$2' as const,
+    mb: '$4' as const,
   },
   metricValue: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '$bold' as const,
-    mb: '$2' as const,
+    mb: 0,
   },
   metricDescription: {
-    fontSize: 12,
+    fontSize: '$xs !important',
     color: '$textMutedForeground' as const,
     flexWrap: 'wrap' as const,
+    mt: 4,
   },
   // kept for backwards compat — no longer rendered
   metricLeftAccent: (_colorToken: string) => ({} as any),
@@ -308,7 +309,7 @@ export const graduationCriteriaStyles = {
 
   // ── Graduation Filters bar ─────────────────────────────────────
   graduationFilters: {
-    bg: '$white' as const,
+    bg: '$backgroundLight50' as const,
     borderWidth: 1,
     borderColor: '$borderColor' as const,
     borderRadius: 20,

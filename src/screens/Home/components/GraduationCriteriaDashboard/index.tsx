@@ -51,6 +51,7 @@ const GraduationCriteriaDashboard: React.FC<GraduationCriteriaDashboardProps> = 
         borderRadius="$md"
         px="$3"
         py="$1.5"
+        bg="$white"
       >
         <LucideIcon name="Filter" size={14} color="$textMutedForeground" />
         <Text fontSize={14} color="$textMutedForeground" fontWeight="$medium">
@@ -88,12 +89,15 @@ const GraduationCriteriaDashboard: React.FC<GraduationCriteriaDashboardProps> = 
               onFilterChange={handleFilterChange}
               _container={{
                 mt: 0,
-                p: '$2',
+                p: 0,
                 borderWidth: 0,
                 bg: 'transparent',
                 shadowOpacity: 0,
                 elevation: 0,
                 borderRadius: 0,
+              }}
+              _input={{
+                bg: '$white',
               }}
             />
           </Box>
