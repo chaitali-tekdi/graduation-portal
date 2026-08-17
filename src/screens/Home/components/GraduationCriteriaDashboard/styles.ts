@@ -309,11 +309,11 @@ export const graduationCriteriaStyles = {
 
   // ── Graduation Filters bar ─────────────────────────────────────
   graduationFilters: {
-    bg: '$backgroundLight50' as const,
+    bg: '$white !important' as const,
     borderWidth: 1,
     borderColor: '$borderColor' as const,
-    borderRadius: 20,
-    p: '$2' as const,
+    borderRadius: 12,
+    p: '$3' as const,
     width: '$full' as const,
     shadowColor: '$shadowColor' as const,
     shadowOffset: { width: 0, height: 1 },
@@ -390,11 +390,15 @@ export const graduationCriteriaStyles = {
     borderRadius: 14,
     p: '$3' as const,
     alignItems: 'flex-start' as const,
-    shadowColor: '$shadowColor' as const,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowColor: '$shadowColor',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    '$web-boxShadow': '0px 1px 3px rgba(0, 0, 0, 0.1)' as const,
   },
 
   // ── Graduation Indicators ──────────────────────────────────────
@@ -417,11 +421,15 @@ export const graduationCriteriaStyles = {
     borderRadius: 16,
     p: '$4' as const,
     width: '48.5%' as const,
-    shadowColor: '$shadowColor' as const,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowColor: '$shadowColor',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    '$web-boxShadow': '0px 1px 3px rgba(0, 0, 0, 0.1)' as const,
   },
   indicatorIconBox: {
     width: 40,

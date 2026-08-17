@@ -89,7 +89,7 @@ const GraduationCriteriaDashboard: React.FC<GraduationCriteriaDashboardProps> = 
               onFilterChange={handleFilterChange}
               _container={{
                 mt: 0,
-                p: 0,
+                p: '$2 !important',
                 borderWidth: 0,
                 bg: 'transparent',
                 shadowOpacity: 0,
