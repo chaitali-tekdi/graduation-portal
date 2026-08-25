@@ -204,7 +204,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     const alternativePhoneCode = formatPhoneCode(getFieldVal('alternativePhoneCode'));
     const alternativePhone = getFieldVal('alternativePhone');
     const gender = getFieldIdVal('gender');
-    const dob = getFieldVal('dob');
+    let dob = getFieldVal('dob');
+    if (dob) {
+      dob = dob.replace(/_/g, '-');
+    }
 
     const employee_id = getFieldVal('employee_id');
     let organisationId = getFieldVal('organisationId');
@@ -212,9 +215,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const userOrgs = (user as any)?.user_organizations || (userProfile as any)?.user_organizations || [];
       const org = userOrgs?.[0]?.organization || userOrgs?.[0]?.organisation;
       if (org) {
-        organisationId = org.name || org.title || org.label || '';
+        organisationId = getEntityId(org);
       }
     }
+
     const positionId = getFieldIdVal('positionId');
     const provinceId = getFieldIdVal('provinceId');
     const siteId = getFieldIdVal('siteId');
