@@ -9,6 +9,7 @@ import { getStatusColors } from '../../../ParticipantsList/StatusBadge';
 import { getInitials } from '@utils/helper';
 import { useAuth } from '@contexts/AuthContext';
 import { getParticipants } from '../../../../services/SessionSupportServices/sessionRequestorService';
+import { useLanguage } from '@contexts/LanguageContext';
 import styles from '../../styles';
 
 interface AssignParticipantsModalProps {
@@ -21,12 +22,36 @@ interface AssignParticipantsModalProps {
 const PAGE_SIZE = 20;
 const DEBOUNCE_MS = 500;
 
+const getParticipantStatusColors = (status: string) => {
+  const s = (status || '').toUpperCase();
+  if (s === 'IN_PROGRESS' || s === 'IN PROGRESS') {
+    return {
+      bg: '$observationTaskBg',
+      border: '#fde68a',
+      text: '$warningIconColor',
+    };
+  }
+  if (s === 'GRADUATED' || s === 'COMPLETED') {
+    return {
+      bg: '$success50',
+      border: '#a7f3d0',
+      text: '$success600',
+    };
+  }
+  return {
+    bg: '$gray100',
+    border: '$gray300',
+    text: '$gray700',
+  };
+};
+
 export default function AssignParticipantsModal({
   isOpen,
   onClose,
   session,
   onConfirm,
 }: AssignParticipantsModalProps): React.JSX.Element {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -72,14 +97,15 @@ export default function AssignParticipantsModal({
           page,
           limit: PAGE_SIZE,
           search: search || undefined,
+          status: 'IN_PROGRESS,GRADUATED',
         });
 
         // Discard response if a newer request has been initiated
         if (requestId !== requestCountRef.current) return;
 
         const fetchedList: any[] = response?.result?.data || [];
-        // Client-side filter: exclude dropped-out and graduated participants
-        const eligible = fetchedList.filter((p) => p.status !== STATUS.DROPOUT && p.status !== STATUS.GRADUATED,);
+        // Client-side filter: include only in-progress and graduated participants
+        const eligible = fetchedList.filter((p) => p.status === STATUS.IN_PROGRESS || p.status === STATUS.GRADUATED);
 
         // Total from the API; fall back to fetched data length
         const apiTotal = response?.count ?? response?.total ?? fetchedList.length;
@@ -130,13 +156,15 @@ export default function AssignParticipantsModal({
   const footerContent = (
     <HStack {...styles.assignParticipantsFooterContainer}>
       <Button
+        variant="outline"
         {...styles.assignParticipantsCancelButton}
         onPress={onClose}>
         <ButtonText {...styles.assignParticipantsCancelButtonText}>
-          Cancel
+          {t('lc.sessionsSupport.assignParticipantsModal.cancel', 'Cancel')}
         </ButtonText>
       </Button>
       <Button
+        variant="solid"
         {...styles.assignParticipantsConfirmButton}
         onPress={() => {
           onConfirm(selectedIds);
@@ -145,7 +173,7 @@ export default function AssignParticipantsModal({
         disabled={selectedIds.length === 0 || isLoading}
         opacity={selectedIds.length === 0 || isLoading ? 0.5 : 1}>
         <ButtonText {...styles.assignParticipantsConfirmButtonText}>
-          Assign Session
+          {t('lc.sessionsSupport.assignParticipantsModal.assignSession', 'Assign Session')}
         </ButtonText>
       </Button>
     </HStack>
@@ -177,23 +205,29 @@ export default function AssignParticipantsModal({
         </Input>
 
         {/* Counts display + Clear All */}
-        <HStack {...styles.assignParticipantsCountHeaderHStack}>
+        <HStack {...styles.assignParticipantsCountHeaderHStack} py="$3.5">
           <HStack {...styles.assignParticipantsCountLeftHStack}>
             <LucideIcon name="Users" size={14} color="$textMuted" />
             <Text {...styles.assignParticipantsCountLeftText}>
-              {total !== null ? total : '–'} eligible participants
+              <Text fontWeight="$medium" color="$black">
+                {total !== null ? total : '–'}{' '}
+              </Text>
+              {t('lc.sessionsSupport.assignParticipantsModal.eligibleParticipants', 'eligible participants')}
             </Text>
           </HStack>
           <HStack {...styles.assignParticipantsCountRightHStack}>
             <Text {...styles.assignParticipantsCountRightText}>
-              {selectedIds.length} selected
+              {selectedIds.length} {t('lc.sessionsSupport.assignParticipantsModal.selected', 'selected')}
             </Text>
             {selectedIds.length > 0 && (
-              <Pressable onPress={() => setSelectedIds([])}>
-                <Text {...styles.assignParticipantsClearAllText}>
-                  Clear
-                </Text>
-              </Pressable>
+              <>
+                <Box {...styles.assignParticipantsDivider} />
+                <Pressable onPress={() => setSelectedIds([])}>
+                  <Text {...styles.assignParticipantsClearAllText}>
+                    {t('lc.sessionsSupport.assignParticipantsModal.clear', 'Clear')}
+                  </Text>
+                </Pressable>
+              </>
             )}
           </HStack>
         </HStack>
@@ -205,7 +239,7 @@ export default function AssignParticipantsModal({
           keyExtractor={(p) => p.userId}
           renderItem={({ item: p }) => {
             const isSelected = selectedIds.includes(p.userId);
-            const colors = getStatusColors(p.status || '');
+            const colors = getParticipantStatusColors(p.status || '');
             const displayStatus =
               PARTICIPANT_DISPLAY_STATUS[
               p.status as keyof typeof PARTICIPANT_DISPLAY_STATUS
@@ -247,12 +281,12 @@ export default function AssignParticipantsModal({
                       <Text {...styles.assignParticipantsMetaText}>
                         {p.userId}
                       </Text>
-                      <Text {...styles.assignParticipantsMetaText}>
+                      {/* <Text {...styles.assignParticipantsMetaText}>
                         •
                       </Text>
                       <Text {...styles.assignParticipantsMetaText}>
                         {progressPercentage}% Progress
-                      </Text>
+                      </Text> */}
                     </HStack>
                   </VStack>
 
@@ -295,7 +329,7 @@ export default function AssignParticipantsModal({
                 <Box {...styles.assignParticipantsEmptyContainer}>
                   <LucideIcon name="SearchX" size={36} color="$textMutedForeground" />
                   <Text {...styles.assignParticipantsEmptyText}>
-                    No results found
+                    {t('lc.sessionsSupport.assignParticipantsModal.noResultsFound', 'No results found')}
                   </Text>
                 </Box>
               );

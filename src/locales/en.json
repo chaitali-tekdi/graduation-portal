@@ -2226,8 +2226,34 @@
         "title": "No history yet",
         "description": "Completed support will appear here"
       },
+      "assignParticipantsModal": {
+        "eligibleParticipants": "eligible participants",
+        "selected": "selected",
+        "clear": "Clear",
+        "assignSession": "Assign Session",
+        "cancel": "Cancel",
+        "noResultsFound": "No results found"
+      },
       "alerts": {
         "assignSuccess": "{{count}} participant(s) assigned to session successfully."
+      },
+      "sessionDetails": {
+        "aboutThisSession": "About This Session",
+        "learningObjectives": "Learning Objectives",
+        "assignParticipants": "Assign Participants",
+        "assignSubtitle": "Select participants from your active caseload to assign them to this session.",
+        "dateTime": "Date & Time",
+        "duration": "Duration",
+        "format": "Format",
+        "capacity": "Capacity",
+        "spotsRemaining": "spots remaining",
+        "providedBy": "Provided by:",
+        "backToSessions": "Back to Sessions",
+        "selectParticipants": "Select participants from your active caseload to assign them to this session.",
+        "enrolled": "enrolled",
+        "durationValueHours": "{{count}} hours",
+        "durationValueMinutes": "{{count}} minutes",
+        "durationValueHoursMinutes": "{{hours}} hours {{minutes}} minutes"
       }
     },
     "createSession": {
@@ -2425,8 +2451,8 @@
     "taskConflictReasonMultiple": "Multiple differences detected."
   },
   "schemaformrenderer": {
-    "file" : {
-      "fileSize" : "Max {{ size }} MB"
+    "file": {
+      "fileSize": "Max {{ size }} MB"
     }
   },
   "supportProvider": {

@@ -8,6 +8,7 @@ export const theme = {
       ...gluestackConfig.tokens.colors,
       shadowColor: '#0000001a',
       primary50: '#ebeaef',
+      primary501: '#faecf0ff',
       primary500: '#8B2842',
       primary600: '#A53E54',
       primary700: '#6B1E31',

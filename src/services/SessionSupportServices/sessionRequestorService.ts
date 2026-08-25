@@ -22,7 +22,7 @@ export const getRequestSessionsList = async (params: any): Promise<any> => {
     }
 
     if (search?.trim()) {
-      queryParams.append('search', encodeSearchText(search.trim()));
+      queryParams.append('search', search.trim());
     }
 
     if (provinces && provinces !== 'all-provinces') {
@@ -54,4 +54,27 @@ export const getParticipants = async (
   params: ParticipantSearchParams
 ): Promise<ParticipantSearchResponse> => {
   return getParticipantsList(params);
+};
+
+/**
+ * Assign Mentees/Participants to Session by the Requestor
+ * Endpoint: POST /mentoring/v1/sessions/addMentees/:sessionId
+ *
+ * @param sessionId - Session ID
+ * @param menteeIds - Array of mentee/participant IDs
+ * @returns A promise resolving to the API response
+ */
+export const requestorAssignMenteesToSession = async (
+  sessionId: string | number,
+  menteeIds: string[]
+): Promise<any> => {
+  try {
+    const response = await api.post(
+      API_ENDPOINTS.REQUESTOR_ASSIGN_MENTEES(sessionId),
+      { mentees: menteeIds }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
 };

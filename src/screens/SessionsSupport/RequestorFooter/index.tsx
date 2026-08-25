@@ -14,9 +14,7 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
   const navigation = useNavigation();
 
   const sessionId = item?.id || item?._id || '';
-  const orgName = (typeof item?.organization === 'object'
-    ? item.organization?.name || item.organization?.organization_code
-    : item?.organization) || item?.organization_code || '';
+  const mentorName = item?.mentor_name || '';
   const provinceName = (Array.isArray(item?.provinces) ? item.provinces[0] : item?.provinces) || '';
 
   const handleViewDetails = () => {
@@ -36,8 +34,8 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
     <HStack {...styles.requestorFooter}>
       <Text {...styles.requestorFooterText}>
         {t('supportProvider.supportOfferings.cards.providedBy', 'Provided by:')}{' '}
-        <Text {...styles.requestorFooterOrgText} fontWeight="700">
-          {orgName}
+        <Text {...styles.requestorFooterOrgText}>
+          {mentorName}
         </Text>
         {provinceName ? (
           <Text {...styles.requestorFooterProvinceText}>{` • ${provinceName}`}</Text>

@@ -16,7 +16,7 @@ import AdditionalServicesCard from '../ServiceProvider/SupportOfferings/componen
 import AssetCard from '../ServiceProvider/SupportOfferings/components/Cards/AssetCard';
 import { getProvincesList, getSitesByProvince } from '../../services/usersService';
 import { getTrainingSessions, getAdditionalServices, getAssets } from '../../services/SupportOfferingsServices/supportOfferingsService';
-import { getRequestSessionsList } from '../../services/SessionSupportServices/sessionRequestorService';
+import { getRequestSessionsList, requestorAssignMenteesToSession } from '../../services/SessionSupportServices/sessionRequestorService';
 import type { ProvinceEntity } from '@app-types/Users';
 import { getSessionCategories, getDeliveryModes } from '../../services/mentoringService';
 import { DEFAULT_PATHWAY_OPTIONS, DEFAULT_FORMAT_OPTIONS } from '../../constants/REQUESTOR_CONSTANTS';
@@ -42,15 +42,23 @@ const SessionsSupportScreen: React.FC = () => {
     setIsAssignModalOpen(true);
   };
 
-  const handleConfirmAssignment = (selectedIds: string[]) => {
-    showAlert(
-      'success',
-      t(
-        'lc.sessionsSupport.alerts.assignSuccess',
-        { count: selectedIds.length },
-        `${selectedIds.length} participant(s) assigned to session successfully.`
-      )
-    );
+  const handleConfirmAssignment = async (selectedIds: string[]) => {
+    if (!selectedSession) return;
+    const sessionId = selectedSession.id || selectedSession._id;
+    try {
+      await requestorAssignMenteesToSession(sessionId, selectedIds);
+      showAlert(
+        'success',
+        t(
+          'lc.sessionsSupport.alerts.assignSuccess',
+          { count: selectedIds.length },
+          `${selectedIds.length} participant(s) assigned to session successfully.`
+        )
+      );
+    } catch (err) {
+      console.error('Error assigning participants:', err);
+      showAlert('error', 'Failed to assign participants to session.');
+    }
   };
 
   // Listing state, filters, and tabs reused from SupportOfferings logic
@@ -158,7 +166,7 @@ const SessionsSupportScreen: React.FC = () => {
               { label: 'All Provinces', value: 'all-provinces' },
               ...provincesData.map((p: any) => ({
                 label: p.metaInformation?.name || p.name || p.title || p.label,
-                value: p.externalId || p._id || p.id || p.value,
+                value: p._id || p.id || p.value,
               })),
             ];
             setProvinceOptions(dynamicProvinces);
@@ -234,7 +242,7 @@ const SessionsSupportScreen: React.FC = () => {
             { label: 'All Sites', value: 'all-sites' },
             ...fetchedSites.map((s: any) => ({
               label: s.metaInformation?.name || s.name || s.title || s.label,
-              value: s.externalId || s._id || s.id || s.value,
+              value: s._id || s.id || s.value,
             })),
           ];
 
@@ -274,17 +282,31 @@ const SessionsSupportScreen: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params = {
+        const params: any = {
           page,
           limit,
           search: filters.search,
           status: filters.status,
-          province: filters.province,
-          site: filters.site,
           pathway: filters.pathway,
           format: filters.format,
           isSessionsSupport: true,
         };
+
+        if (filters.province && filters.province !== 'all-provinces') {
+          const selectedProvObj = provincesList.find(p => p._id === filters.province);
+          const provinceExtId = selectedProvObj ? (selectedProvObj.externalId || selectedProvObj.metaInformation?.externalId) : undefined;
+          if (provinceExtId) {
+            params.provinces = provinceExtId;
+          }
+        }
+
+        if (filters.site && filters.site !== 'all-sites') {
+          const selectedSiteObj = (allSiteOptions as any)?.find((s: any) => s._id === filters.site);
+          const siteExtId = selectedSiteObj ? (selectedSiteObj.externalId || selectedSiteObj.metaInformation?.externalId) : undefined;
+          if (siteExtId) {
+            params.sites = siteExtId;
+          }
+        }
 
         let fetchedData: any[] = [];
         let totalCount = 0;
