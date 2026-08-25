@@ -19,7 +19,7 @@ interface AssignParticipantsModalProps {
   onConfirm: (selectedIds: string[]) => void;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 const DEBOUNCE_MS = 500;
 
 const getParticipantStatusColors = (status: string) => {
@@ -107,7 +107,7 @@ export default function AssignParticipantsModal({
         const eligible = fetchedList;
 
         // Total from the API; fall back to fetched data length
-        const apiTotal = response?.count ?? response?.total ?? fetchedList.length;
+        const apiTotal = response?.total ?? response?.count ?? fetchedList.length;
 
         setTotal(apiTotal);
         setCurrentPage(page);
