@@ -21,7 +21,6 @@ const SessionDetailsScreen: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
-  const [provinces, setProvinces] = useState<any[]>([]);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // Fetch session details ONLY ONCE when sessionId mounts
@@ -124,7 +123,6 @@ const SessionDetailsScreen: React.FC = () => {
           } else {
             setSession(null);
           }
-          setProvinces(provincesData);
         }
       } catch (err) {
         console.error('Error fetching session details:', err);
