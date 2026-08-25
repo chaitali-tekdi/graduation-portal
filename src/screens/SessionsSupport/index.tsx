@@ -293,19 +293,11 @@ const SessionsSupportScreen: React.FC = () => {
         };
 
         if (filters.province && filters.province !== 'all-provinces') {
-          const selectedProvObj = provincesList.find(p => p._id === filters.province);
-          const provinceExtId = selectedProvObj ? (selectedProvObj.externalId || selectedProvObj.metaInformation?.externalId) : undefined;
-          if (provinceExtId) {
-            params.provinces = provinceExtId;
-          }
+          params.provinces = filters.province;
         }
 
         if (filters.site && filters.site !== 'all-sites') {
-          const selectedSiteObj = (allSiteOptions as any)?.find((s: any) => s._id === filters.site);
-          const siteExtId = selectedSiteObj ? (selectedSiteObj.externalId || selectedSiteObj.metaInformation?.externalId) : undefined;
-          if (siteExtId) {
-            params.sites = siteExtId;
-          }
+          params.sites = filters.site;
         }
 
         let fetchedData: any[] = [];
@@ -557,10 +549,10 @@ const SessionsSupportScreen: React.FC = () => {
                     <LucideIcon name="Clock" size={30} color="$textMutedForeground" />
                   </Box>
                   <Text {...styles.emptyStateTitle}>
-                    {t('lc.sessionsSupport.emptyState.title', 'No history yet')}
+                    {t('lc.sessionsSupport.emptyState.title')}
                   </Text>
                   <Text {...styles.emptyStateDescription}>
-                    {t('lc.sessionsSupport.emptyState.description', 'Completed support will appear here')}
+                    {t('lc.sessionsSupport.emptyState.description')}
                   </Text>
                 </VStack>
               </Box>
@@ -572,10 +564,10 @@ const SessionsSupportScreen: React.FC = () => {
                   <LucideIcon name="Clock" size={30} color="$textMutedForeground" />
                 </Box>
                 <Text {...styles.emptyStateTitle}>
-                  {t('lc.sessionsSupport.emptyState.title', 'No history yet')}
+                  {t('lc.sessionsSupport.emptyState.title')}
                 </Text>
                 <Text {...styles.emptyStateDescription}>
-                  {t('lc.sessionsSupport.emptyState.description', 'Completed support will appear here')}
+                  {t('lc.sessionsSupport.emptyState.description')}
                 </Text>
               </VStack>
             </Box>

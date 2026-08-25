@@ -19,7 +19,7 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
 
   const handleViewDetails = () => {
     // @ts-ignore
-    navigation.navigate('SessionDetails', { sessionId });
+    navigation.navigate('session-details', { sessionId });
   }
   const handleAssignSession = () => {
     if (onAssignSession) {

@@ -207,7 +207,7 @@ const getAccessPages = (
         { name: 'sessions-support', path: '/sessions-support', component: SessionsSupportScreen },
         { name: 'sessions-support/request', path: '/sessions-support/request', component: RequestSupportSessionScreen },
         { name: 'sessions-support/create', path: '/sessions-support/create', component: CreateSupportSessionScreen },
-        { name: 'SessionDetails', path: '/sessions-support/requestor-sessions-details/:sessionId', component: SessionDetailsScreen },
+        { name: 'session-details', path: '/sessions-support/requestor-sessions-details/:sessionId', component: SessionDetailsScreen },
         { name: 'project', path: '/project', component: ProjectPlayer },
       ];
     default:

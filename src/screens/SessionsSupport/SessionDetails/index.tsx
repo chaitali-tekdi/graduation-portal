@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, ButtonText, HStack, LucideIcon, Pressable, Text, VStack, useAlert, Spinner, Container } from '@ui';
+import { Box, Button, ButtonIcon, ButtonText, HStack, Loader, LucideIcon, Pressable, Text, VStack, useAlert, Spinner, Container } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import PageHeader from '@components/PageHeader';
@@ -41,7 +41,89 @@ const SessionDetailsScreen: React.FC = () => {
 
         if (isMounted) {
           const sessionObj = detailsRes?.result || detailsRes?.data || detailsRes;
-          setSession(sessionObj);
+          if (sessionObj) {
+            const rawProv = sessionObj.provinces?.[0] || sessionObj?.meta?.provinces?.[0];
+            const foundProvince = provincesData?.find((e: any) => e._id === rawProv || e.externalId === rawProv || e.name === rawProv);
+            const provinceName = foundProvince ? foundProvince.name : (rawProv || '');
+
+            const linkValue = sessionObj.meeting_info_details?.link || sessionObj.meeting_info?.link || '';
+            const descriptionText = sessionObj.description || sessionObj.notes || '';
+
+            const startMoment = sessionObj.start_date
+              ? moment(
+                typeof sessionObj.start_date === 'number' || !isNaN(Number(sessionObj.start_date))
+                  ? Number(sessionObj.start_date) * (Number(sessionObj.start_date) < 10000000000 ? 1000 : 1)
+                  : sessionObj.start_date
+              )
+              : null;
+            const endMoment = sessionObj.end_date
+              ? moment(
+                typeof sessionObj.end_date === 'number' || !isNaN(Number(sessionObj.end_date))
+                  ? Number(sessionObj.end_date) * (Number(sessionObj.end_date) < 10000000000 ? 1000 : 1)
+                  : sessionObj.end_date
+              )
+              : null;
+
+            const diffMinutes = startMoment && endMoment ? endMoment.diff(startMoment, 'minutes') : 0;
+            const durationHours = Math.floor(diffMinutes / 60);
+            const durationMins = diffMinutes % 60;
+            const durationText = diffMinutes > 0
+              ? (durationHours > 0 && durationMins > 0
+                ? t('lc.sessionsSupport.sessionDetails.durationValueHoursMinutes', { hours: durationHours, minutes: durationMins })
+                : durationHours > 0
+                  ? t('lc.sessionsSupport.sessionDetails.durationValueHours', { count: durationHours })
+                  : t('lc.sessionsSupport.sessionDetails.durationValueMinutes', { count: durationMins }))
+              : '';
+
+            const rawDeliveryMode = (
+              (typeof sessionObj.delivery_mode === 'object' ? sessionObj.delivery_mode?.value : sessionObj.delivery_mode) ||
+              sessionObj.deliveryMode ||
+              ''
+            ).toLowerCase();
+            const deliveryMode = rawDeliveryMode.includes('hybrid') ? 'hybrid' : (rawDeliveryMode.includes('online') || rawDeliveryMode.includes('virtual') ? 'online' : 'offline');
+
+            const formatLabel = deliveryMode === 'online' ? 'Online' : deliveryMode === 'hybrid' ? 'Hybrid' : 'Offline';
+            const formatIconName = deliveryMode === 'online' || deliveryMode === 'hybrid' ? 'Video' : 'MapPin';
+
+            const totalSeats = sessionObj.seats_limit || sessionObj.capacity || 0;
+            const remainingSeats = sessionObj.seats_remaining !== undefined ? sessionObj.seats_remaining : totalSeats;
+            const enrolledSeats = Math.max(0, totalSeats - remainingSeats);
+
+            const sessionTags = Array.from(
+              new Set([
+                ...(Array.isArray(sessionObj.categories) ? sessionObj.categories : []).map((c: any) => (typeof c === 'object' ? c.label || c.name || c.value : c)),
+                ...(Array.isArray(sessionObj.tags) ? sessionObj.tags : []).map((tg: any) => (typeof tg === 'object' ? tg.label || tg.name || tg.value : tg)),
+                ...(Array.isArray(sessionObj.pathways) ? sessionObj.pathways : []).map((p: any) => (typeof p === 'object' ? p.label || p.name || p.value : p)),
+                'Participants',
+              ])
+            ).filter(Boolean);
+
+            const rawObjectives = sessionObj.learning_objectives || sessionObj.meta?.learning_objectives || sessionObj.learningObjectives;
+            const learningObjectives = Array.isArray(rawObjectives)
+              ? rawObjectives.filter(Boolean)
+              : typeof rawObjectives === 'string' && rawObjectives.trim()
+                ? rawObjectives.split('\n').map((line: string) => line.replace(/^[•\-*\s]+/, '').trim()).filter(Boolean)
+                : [];
+
+            setSession({
+              ...sessionObj,
+              mentorName: sessionObj.mentor_name || '', provinceName, linkValue,
+              descriptionText,
+              startMoment,
+              endMoment,
+              durationText,
+              totalSeats,
+              remainingSeats,
+              enrolledSeats,
+              deliveryMode,
+              formatLabel,
+              formatIconName,
+              sessionTags,
+              learningObjectives,
+            });
+          } else {
+            setSession(null);
+          }
           setProvinces(provincesData);
         }
       } catch (err) {
@@ -64,11 +146,10 @@ const SessionDetailsScreen: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  const handleConfirmAssignment = async (selectedIds: string[]) => {
-    if (!session) return;
+  const handleConfirmAssignment = async (selectedIds: string[]): Promise<boolean> => {
+    if (!session) return false;
     const id = session.id || session._id;
     try {
-      setLoading(true);
       await requestorAssignMenteesToSession(id, selectedIds);
       showAlert(
         'success',
@@ -84,25 +165,23 @@ const SessionDetailsScreen: React.FC = () => {
         if (!prev) return prev;
         const currentRemaining = prev.seats_remaining !== undefined ? prev.seats_remaining : (prev.seats_limit || prev.capacity || 0);
         const newRemaining = Math.max(0, currentRemaining - selectedIds.length);
+        const newEnrolled = Math.max(0, prev.totalSeats - newRemaining);
         return {
           ...prev,
           seats_remaining: newRemaining,
+          remainingSeats: newRemaining,
+          enrolledSeats: newEnrolled,
         };
       });
+      return true;
     } catch (err) {
-      console.error('Error assigning participants:', err);
       showAlert('error', 'Failed to assign participants to session.');
-    } finally {
-      setLoading(false);
+      return false;
     }
   };
 
   if (loading) {
-    return (
-      <Box flex={1} justifyContent="center" alignItems="center" bg="$backgroundLight50">
-        <Spinner size="large" color="#8B2842" />
-      </Box>
-    );
+    return <Loader fullScreen message="Loading..." />;
   }
 
   if (!session) {
@@ -115,90 +194,21 @@ const SessionDetailsScreen: React.FC = () => {
           }}
           _backButton={styles.detailsHeaderBackButton}
         />
-        <Box flex={1} justifyContent="center" alignItems="center" p="$4">
+        <Box {...styles.detailsNotFoundContainer}>
           <Text color="$textMuted">{t('lc.sessionsSupport.sessionNotFound', 'Session not found.')}</Text>
         </Box>
       </Box>
     );
   }
 
-  // Parse delivery mode & organization name
-  const item = session || {};
-  const mentorName = item?.mentor_name || '';
-  const rawDeliveryMode = (
-    (typeof session.delivery_mode === 'object' ? session.delivery_mode?.value : session.delivery_mode) ||
-    session.deliveryMode ||
-    ''
-  ).toLowerCase();
-
-  const deliveryMode = rawDeliveryMode.includes('hybrid') ? 'hybrid' : (rawDeliveryMode.includes('online') || rawDeliveryMode.includes('virtual') ? 'online' : 'offline');
-
-
-  // Get Province Name
-  const rawProv = session.provinces?.[0] || session?.meta?.provinces?.[0];
-  const foundProvince = provinces?.find((e: any) => e._id === rawProv || e.externalId === rawProv || e.name === rawProv);
-  const provinceName = foundProvince ? foundProvince.name : (rawProv || '');
-
-  const linkValue = session.meeting_info_details?.link || session.meeting_info?.link || '';
-  const descriptionText = session.description || session.notes || '';
-
-  // Date & Time parsing helper
-  const parseMoment = (val: any) => {
-    if (!val) return null;
-    const num = Number(val);
-    return moment(!isNaN(num) ? (num < 10000000000 ? num * 1000 : num) : val);
-  };
-
-  const startMoment = parseMoment(session.start_date);
-  const endMoment = parseMoment(session.end_date);
-
-  // Duration formatting using moment
-  const diffMinutes = startMoment && endMoment ? endMoment.diff(startMoment, 'minutes') : 0;
-  const durationHours = Math.floor(diffMinutes / 60);
-  const durationMins = diffMinutes % 60;
-  const durationText = diffMinutes > 0
-    ? (durationHours > 0 && durationMins > 0
-      ? t('lc.sessionsSupport.sessionDetails.durationValueHoursMinutes', { hours: durationHours, minutes: durationMins })
-      : durationHours > 0
-        ? t('lc.sessionsSupport.sessionDetails.durationValueHours', { count: durationHours })
-        : t('lc.sessionsSupport.sessionDetails.durationValueMinutes', { count: durationMins }))
-    : '';
-
-  // Capacity calculation
-  const totalSeats = session.seats_limit || session.capacity || 0;
-  const remainingSeats = session.seats_remaining !== undefined ? session.seats_remaining : totalSeats;
-  const enrolledSeats = Math.max(0, totalSeats - remainingSeats);
-
-  // Format delivery mode label and icon
-  const formatLabel = deliveryMode === 'online' ? 'Online' : deliveryMode === 'hybrid' ? 'Hybrid' : 'Offline';
-  const formatIconName = deliveryMode === 'online' || deliveryMode === 'hybrid' ? 'Video' : 'MapPin';
-
-  // Dynamic tags mapping (simple, clean, no duplicates)
-  const sessionTags = Array.from(
-    new Set([
-      ...(Array.isArray(session.categories) ? session.categories : []).map((c: any) => (typeof c === 'object' ? c.label || c.name || c.value : c)),
-      ...(Array.isArray(session.tags) ? session.tags : []).map((tg: any) => (typeof tg === 'object' ? tg.label || tg.name || tg.value : tg)),
-      ...(Array.isArray(session.pathways) ? session.pathways : []).map((p: any) => (typeof p === 'object' ? p.label || p.name || p.value : p)),
-      'Participants',
-    ])
-  ).filter(Boolean);
-
-  // Parse learning objectives
-  const rawObjectives = session.learning_objectives || session.meta?.learning_objectives || session.learningObjectives;
-  const learningObjectives: string[] = Array.isArray(rawObjectives)
-    ? rawObjectives.filter(Boolean)
-    : typeof rawObjectives === 'string' && rawObjectives.trim()
-      ? rawObjectives.split('\n').map((line: string) => line.replace(/^[•\-*\s]+/, '').trim()).filter(Boolean)
-      : [];
-
   return (
     <Box {...styles.detailsScreenRoot}>
       <PageHeader
         title={session.title}
         _title={styles.detailsHeaderTitle}
-        subtitle={mentorName}
+        subtitle={session.mentorName}
         _subtitle={styles.detailsHeaderSubtitle}
-        backButtonText={t('lc.sessionsSupport.sessionDetails.backToSessions', 'Back to Sessions')}
+        backButtonText={t('lc.sessionsSupport.sessionDetails.backToSessions')}
         onBackPress={() => { navigation.navigate('sessions-support' as never) }}
         _leftSection={styles.detailsHeaderLeftSection}
         _backButton={styles.detailsHeaderBackButton}
@@ -209,23 +219,23 @@ const SessionDetailsScreen: React.FC = () => {
           {/* RIGHT COLUMN (Web): Session Details Metadata Info Card */}
           <VStack {...styles.detailsRightCol}>
             {/* About This Session */}
-            {descriptionText ? (
+            {session.descriptionText ? (
               <Box {...styles.detailsContentCard}>
                 <Text {...styles.detailsCardHeader}>
                   {t('lc.sessionsSupport.sessionDetails.aboutThisSession')}
                 </Text>
-                <Text {...styles.detailsCardBodyText}>{descriptionText}</Text>
+                <Text {...styles.detailsCardBodyText}>{session.descriptionText}</Text>
               </Box>
             ) : null}
 
             {/* Learning Objectives */}
-            {learningObjectives.length > 0 ? (
+            {session.learningObjectives && session.learningObjectives.length > 0 ? (
               <Box {...styles.detailsContentCard}>
                 <Text {...styles.detailsCardHeader}>
                   {t('lc.sessionsSupport.sessionDetails.learningObjectives')}
                 </Text>
                 <VStack>
-                  {learningObjectives.map((obj, index) => (
+                  {session.learningObjectives.map((obj: string, index: number) => (
                     <HStack key={index} {...styles.detailsLearningObjectiveItem}>
                       <Box {...styles.detailsLearningObjectiveBullet} bg="$primary500" />
                       <Text {...styles.detailsLearningObjectiveText}>{obj}</Text>
@@ -253,7 +263,7 @@ const SessionDetailsScreen: React.FC = () => {
                 {...styles.detailsAssignButton}
                 onPress={() => setIsAssignModalOpen(true)}
               >
-                <LucideIcon name="UserPlus" {...styles.detailsAssignIconProps1} />
+                <ButtonIcon as={LucideIcon} name="UserPlus" {...styles.detailsAssignIconProps1} />
                 <ButtonText {...styles.detailsAssignButtonText}>
                   {t('lc.sessionsSupport.sessionDetails.assignParticipants')}
                 </ButtonText>
@@ -274,16 +284,16 @@ const SessionDetailsScreen: React.FC = () => {
                     {t('lc.sessionsSupport.sessionDetails.dateTime')}
                   </Text>
                   <Text {...styles.detailsDateValue}>
-                    {startMoment ? startMoment.format('dddd, D MMMM YYYY') : ''}
+                    {session.startMoment ? session.startMoment.format('dddd, D MMMM YYYY') : ''}
                   </Text>
                   <Text {...styles.detailsTimeValue}>
-                    {startMoment ? startMoment.format('HH:mm') : ''}
+                    {session.startMoment ? session.startMoment.format('HH:mm') : ''}
                   </Text>
                 </VStack>
               </HStack>
 
               {/* Duration */}
-              {durationText ? (
+              {session.durationText ? (
                 <HStack {...styles.detailsInfoItem}>
                   <Box {...styles.detailsIconWrapper}>
                     <LucideIcon name="Clock" {...styles.detailsIconProps} />
@@ -292,7 +302,7 @@ const SessionDetailsScreen: React.FC = () => {
                     <Text {...styles.detailsItemLabel}>
                       {t('lc.sessionsSupport.sessionDetails.duration')}
                     </Text>
-                    <Text {...styles.detailsItemValue}>{durationText}</Text>
+                    <Text {...styles.detailsItemValue}>{session.durationText}</Text>
                   </VStack>
                 </HStack>
               ) : null}
@@ -300,18 +310,18 @@ const SessionDetailsScreen: React.FC = () => {
               {/* Format */}
               <HStack {...styles.detailsInfoItem}>
                 <Box {...styles.detailsIconWrapper}>
-                  <LucideIcon name={formatIconName} {...styles.detailsIconProps} />
+                  <LucideIcon name={session.formatIconName} {...styles.detailsIconProps} />
                 </Box>
                 <VStack>
                   <Text {...styles.detailsItemLabel}>
                     {t('lc.sessionsSupport.sessionDetails.format')}
                   </Text>
-                  <Text {...styles.detailsItemValue}>{formatLabel}</Text>
+                  <Text {...styles.detailsItemValue}>{session.formatLabel}</Text>
                 </VStack>
               </HStack>
 
               {/* Location (Show ONLY the Province name. Do NOT show Site.) */}
-              {provinceName ? (
+              {session.provinceName ? (
                 <HStack {...styles.detailsInfoItem}>
                   <Box {...styles.detailsIconWrapper}>
                     <LucideIcon name="MapPin" {...styles.detailsIconProps} />
@@ -320,14 +330,14 @@ const SessionDetailsScreen: React.FC = () => {
                     <Text {...styles.detailsItemLabel}>
                       {t('lc.sessionsSupport.sessionDetails.location')}
                     </Text>
-                    <Text {...styles.detailsItemValue}>{provinceName}</Text>
+                    <Text {...styles.detailsItemValue}>{session.provinceName}</Text>
                   </VStack>
                 </HStack>
               ) : null}
 
               {/* Virtual Link (Only render if online link is present) */}
-              {(deliveryMode === 'online' || deliveryMode === 'hybrid') && linkValue ? (
-                <Pressable onPress={() => openExternalLink(linkValue)}>
+              {(session.deliveryMode === 'online' || session.deliveryMode === 'hybrid') && session.linkValue ? (
+                <Pressable onPress={() => openExternalLink(session.linkValue)}>
                   <HStack {...styles.detailsInfoItem}>
                     <Box {...styles.detailsIconWrapper}>
                       <LucideIcon name="Video" {...styles.detailsIconProps} />
@@ -336,14 +346,14 @@ const SessionDetailsScreen: React.FC = () => {
                       <Text {...styles.detailsItemLabel}>
                         {t('lc.sessionsSupport.sessionDetails.virtualLink')}
                       </Text>
-                      <Text {...styles.detailsVirtualLinkText}>{linkValue}</Text>
+                      <Text {...styles.detailsVirtualLinkText}>{session.linkValue}</Text>
                     </VStack>
                   </HStack>
                 </Pressable>
               ) : null}
 
               {/* Capacity */}
-              {totalSeats > 0 ? (
+              {session.totalSeats > 0 ? (
                 <HStack {...styles.detailsInfoItem}>
                   <Box {...styles.detailsIconWrapper}>
                     <LucideIcon name="Users" {...styles.detailsIconProps} />
@@ -353,19 +363,19 @@ const SessionDetailsScreen: React.FC = () => {
                       {t('lc.sessionsSupport.sessionDetails.capacity')}
                     </Text>
                     <Text {...styles.detailsCapacityText}>
-                      {enrolledSeats} / {totalSeats} {t('lc.sessionsSupport.sessionDetails.enrolled')}
+                      {session.enrolledSeats} / {session.totalSeats} {t('lc.sessionsSupport.sessionDetails.enrolled')}
                     </Text>
                     <Text {...styles.detailsSpotsText}>
-                      {remainingSeats} {t('lc.sessionsSupport.sessionDetails.spotsRemaining')}
+                      {session.remainingSeats} {t('lc.sessionsSupport.sessionDetails.spotsRemaining')}
                     </Text>
                   </VStack>
                 </HStack>
               ) : null}
 
               {/* Tags */}
-              {sessionTags.length > 0 ? (
+              {session.sessionTags && session.sessionTags.length > 0 ? (
                 <Box {...styles.detailsTagsWrapper}>
-                  {sessionTags.map((tag, idx) => (
+                  {session.sessionTags.map((tag: string, idx: number) => (
                     <Box key={idx} {...styles.detailsTagBadge}>
                       <Text {...styles.detailsTagBadgeText}>{tag}</Text>
                     </Box>

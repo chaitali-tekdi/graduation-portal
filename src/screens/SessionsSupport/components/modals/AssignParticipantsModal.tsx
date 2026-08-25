@@ -27,14 +27,14 @@ const getParticipantStatusColors = (status: string) => {
   if (s === 'IN_PROGRESS' || s === 'IN PROGRESS') {
     return {
       bg: '$observationTaskBg',
-      border: '#fde68a',
+      border: '$optionalTaskYellowBorder',
       text: '$warningIconColor',
     };
   }
   if (s === 'GRADUATED' || s === 'COMPLETED') {
     return {
       bg: '$success50',
-      border: '#a7f3d0',
+      border: '$success300',
       text: '$success600',
     };
   }
@@ -97,15 +97,14 @@ export default function AssignParticipantsModal({
           page,
           limit: PAGE_SIZE,
           search: search || undefined,
-          status: 'IN_PROGRESS,GRADUATED',
+          status: `${STATUS.IN_PROGRESS},${STATUS.GRADUATED}`,
         });
 
         // Discard response if a newer request has been initiated
         if (requestId !== requestCountRef.current) return;
 
         const fetchedList: any[] = response?.result?.data || [];
-        // Client-side filter: include only in-progress and graduated participants
-        const eligible = fetchedList.filter((p) => p.status === STATUS.IN_PROGRESS || p.status === STATUS.GRADUATED);
+        const eligible = fetchedList;
 
         // Total from the API; fall back to fetched data length
         const apiTotal = response?.count ?? response?.total ?? fetchedList.length;
@@ -156,11 +155,10 @@ export default function AssignParticipantsModal({
   const footerContent = (
     <HStack {...styles.assignParticipantsFooterContainer}>
       <Button
-        variant="outline"
         {...styles.assignParticipantsCancelButton}
         onPress={onClose}>
         <ButtonText {...styles.assignParticipantsCancelButtonText}>
-          {t('lc.sessionsSupport.assignParticipantsModal.cancel', 'Cancel')}
+          {t('lc.sessionsSupport.assignParticipantsModal.cancel')}
         </ButtonText>
       </Button>
       <Button
@@ -173,7 +171,7 @@ export default function AssignParticipantsModal({
         disabled={selectedIds.length === 0 || isLoading}
         opacity={selectedIds.length === 0 || isLoading ? 0.5 : 1}>
         <ButtonText {...styles.assignParticipantsConfirmButtonText}>
-          {t('lc.sessionsSupport.assignParticipantsModal.assignSession', 'Assign Session')}
+          {t('lc.sessionsSupport.assignParticipantsModal.assignSession')}
         </ButtonText>
       </Button>
     </HStack>
