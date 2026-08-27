@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { VStack, HStack, Button, ButtonText, Modal, Text } from '@ui';
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
@@ -14,7 +14,6 @@ import {
   mapFormValuesToPayload,
   mapFiltersToOptionsMap,
 } from './CreateUserForm';
-import offlineStorage from '../../services/offlineStorage';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -48,21 +47,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [formSites, setFormSites] = useState<any[]>([]);
 
   const [values, setValues] = useState<Record<string, string>>({});
-  const [initialValues, setInitialValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const hasChanges = useMemo(() => {
-    const keys = Array.from(new Set([...Object.keys(initialValues), ...Object.keys(values)]));
-    for (const key of keys) {
-      const initialVal = (initialValues[key] || '').trim();
-      const currentVal = (values[key] || '').trim();
-      if (initialVal !== currentVal) {
-        return true;
-      }
-    }
-    return false;
-  }, [initialValues, values]);
+  const initialValuesRef = useRef<Record<string, string>>({});
 
   const editSchema = useMemo(
     () =>
@@ -94,8 +81,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   const mapUserToFormValues = (
     user: AdminUserManagementData | null,
-    userProfile: any | null,
-    isPhoneCleared = false
+    userProfile: any | null
   ): Record<string, string> => {
     if (!user) return {};
 
@@ -199,7 +185,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         'countryCode', 'phoneCode', 'alternativePhoneCode', 'alternatePhoneCode'
       ].includes(fieldName);
 
-      if (isPhoneField && (userProfile || isPhoneCleared)) {
+      if (isPhoneField && userProfile) {
         return null;
       }
 
@@ -236,7 +222,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     const username = getFieldVal('username') || (user as any)?.username || '';
     const nationalId = getFieldVal('nationalId');
     const countryCode = formatPhoneCode(getFieldVal('countryCode'));
-    const phoneNumber = isPhoneCleared ? '' : (getFieldVal('phoneNumber') || getFieldVal('phone'));
+    const phoneNumber = getFieldVal('phoneNumber') || getFieldVal('phone');
     const alternativePhoneCode = formatPhoneCode(getFieldVal('alternativePhoneCode'));
     const alternativePhone = getFieldVal('alternativePhone');
     const gender = getFieldIdVal('gender');
@@ -282,16 +268,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setProfileLoading(true);
       setSelectedUserProfile(null);
       setErrors({});
-
-      const loadProfile = async () => {
-        try {
-          const profile = await getUserProfile(user.id);
+      getUserProfile(user.id)
+        .then(profile => {
+          //console.log('PROFILE API =>', profile);
           setSelectedUserProfile(profile);
 
-          const isCleared = await offlineStorage.read<boolean>(`cleared_phone_${user.id}`);
-          const mapped = mapUserToFormValues(user, profile, !!isCleared);
+          const mapped = mapUserToFormValues(user, profile);
+          //console.log('MAPPED VALUES =>', mapped);
           setValues(mapped);
-          setInitialValues(mapped);
+          initialValuesRef.current = mapped;
 
           const provId = getEntityId(
             profile?.province || (user as any)?.province,
@@ -303,18 +288,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           } else {
             setFormSites([]);
           }
-        } catch (err) {
+        })
+        .catch(err => {
           console.error('Failed to load user profile for editing:', err);
-        } finally {
+        })
+        .finally(() => {
           setProfileLoading(false);
-        }
-      };
-
-      loadProfile();
+        });
     } else {
       setSelectedUserProfile(null);
       setValues({});
-      setInitialValues({});
+      initialValuesRef.current = {};
       setFormSites([]);
       setErrors({});
     }
@@ -379,9 +363,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    const hasChanges = Object.keys(initialValuesRef.current).some(key => {
+      const initialVal = (initialValuesRef.current[key] || '').trim();
+      const currentVal = (values[key] || '').trim();
+      return initialVal !== currentVal;
+    });
+
     if (!hasChanges) {
       return;
     }
+
     const validationErrors = validateSchema(
       CREATE_USER_FORM_SCHEMA,
       values,
@@ -401,14 +392,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const payload = mapFormValuesToPayload(values, roles);
 
       await updateOrgAdminUser(user!.id, payload);
-
-      const isPhoneBlank = !(values.phoneNumber && values.phoneNumber.trim());
-      if (isPhoneBlank) {
-        await offlineStorage.create(`cleared_phone_${user!.id}`, true);
-      } else {
-        await offlineStorage.remove(`cleared_phone_${user!.id}`);
-      }
-
       showAlert(
         'success',
         t('admin.users.edit.success', 'User updated successfully.'),
@@ -498,7 +481,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               variant="solid"
               action="primary"
               onPress={handleSubmit}
-              isDisabled={isSubmitting || !hasChanges}
+              isDisabled={isSubmitting}
             >
               <ButtonText color="$white" {...TYPOGRAPHY.bodySmall}>
                 {isSubmitting
