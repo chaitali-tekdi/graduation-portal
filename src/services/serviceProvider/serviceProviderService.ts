@@ -369,23 +369,61 @@ export const getSupportRequests = async (
 };
 
 /**
- * Accept and schedule a support request
+ * Accept and schedule a support request.
+ * Maps the AcceptAndSchedulePayload (form values) to the API contract for
+ * POST /mentoring/v1/requestSessions/accept?SkipValidation=true
  */
 export const acceptAndScheduleSupportRequest = async (
   payload: AcceptAndSchedulePayload
-): Promise<{ success: boolean; message: string }> => {
-  try {
-    if (API_ENDPOINTS && (API_ENDPOINTS as any).SERVICE_PROVIDER_ACCEPT_REQUEST) {
-      const response = await api.post((API_ENDPOINTS as any).SERVICE_PROVIDER_ACCEPT_REQUEST, payload);
-      return response.data;
-    }
-  } catch (error) {
-    console.warn('Backend API unavailable, using simulated success for Accept & Schedule:', error);
+): Promise<{ success: boolean; message: string; result?: string }> => {
+  // Build start_date unix timestamp from date + time strings
+  const startMoment = moment(
+    `${payload.date} ${payload.time}`,
+    'YYYY-MM-DD HH:mm'
+  );
+  const startDate = startMoment.isValid() ? Math.floor(startMoment.valueOf() / 1000) : 0;
+
+  // Build end_date by adding the duration in hours
+  const durationHours = DURATION_HOURS[payload.duration] ?? 2;
+  const endDate = startDate + Math.round(durationHours * 3600);
+
+  const body: Record<string, any> = {
+    request_session_id: String(payload.requestId),
+    type: 'public',
+    support_offering_type: 'training_session',
+    title: payload.title || '',
+    description: payload.description || '',
+    start_date: startDate,
+    end_date: endDate,
+    delivery_mode: payload.delivery_mode || 'online',
+    can_be_copied: false,
+    certificate_provided: false,
+    meeting_info: { link: payload.meetingLink || '' },
+  };
+
+  if (payload.province) {
+    body.provinces = [payload.province];
   }
 
+  if (payload.category) {
+    body.categories = [payload.category];
+  }
+
+  if (payload.targetAudience) {
+    body.learning_objectives = payload.targetAudience;
+  }
+
+  if (payload.capacity) {
+    body.seats = Number(payload.capacity);
+  }
+
+  const response = await api.post(API_ENDPOINTS.REQUEST_SESSIONS_ACCEPT, body);
+  const data = response.data;
+
   return {
-    success: true,
-    message: 'Support request accepted and scheduled successfully.',
+    success: data?.responseCode === 'OK',
+    message: data?.message || 'Request accepted.',
+    result: data?.result,
   };
 };
 

@@ -2425,8 +2425,8 @@
     "taskConflictReasonMultiple": "Multiple differences detected."
   },
   "schemaformrenderer": {
-    "file" : {
-      "fileSize" : "Max {{ size }} MB"
+    "file": {
+      "fileSize": "Max {{ size }} MB"
     }
   },
   "supportProvider": {
