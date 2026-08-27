@@ -209,8 +209,8 @@ const applySupportRequestFilters = (
     const q = search.toLowerCase();
     filtered = filtered.filter(
       (item) =>
-        item.title.toLowerCase().includes(q) ||
-        item.coach.toLowerCase().includes(q) ||
+        (item.title || '').toLowerCase().includes(q) ||
+        (item.coach || '').toLowerCase().includes(q) ||
         (item.category && item.category.toLowerCase().includes(q))
     );
   }
@@ -264,6 +264,8 @@ export const getSupportRequests = async (
 }> => {
   const { tab = 'sessions', provinces: province, sites: site, search } = params || {};
 
+  const { provinceMap, siteMap } = await getProvinceAndSiteMaps();
+
   let sessionsData: SupportRequestItem[] | null = null;
   let declinedData: SupportRequestItem[] | null = null;
   let sessionsCount = mockStore.sessions.length;
@@ -272,11 +274,25 @@ export const getSupportRequests = async (
 
   try {
     if (tab === 'sessions' || tab === 'declined') {
-      const { provinceMap, siteMap } = await getProvinceAndSiteMaps();
+      const apiParams: any = {};
+      if (tab === 'sessions') {
+        apiParams.status = 'REQUESTED';
+      } else {
+        apiParams.status = 'REJECTED';
+      }
+      if (search && search.trim() !== '') {
+        apiParams.search = search.trim();
+      }
+      if (province && province !== 'all-provinces') {
+        apiParams.provinces = province;
+      }
+      if (site && site !== 'all-sites') {
+        apiParams.sites = site;
+      }
 
       if (tab === 'sessions') {
         const requestedRes = await api.get(API_ENDPOINTS.REQUEST_SESSIONS_LIST, {
-          params: { status: 'REQUESTED' },
+          params: apiParams,
         });
         if (requestedRes?.data?.responseCode === 'OK') {
           const resObj = requestedRes.data.result;
@@ -289,7 +305,7 @@ export const getSupportRequests = async (
         }
       } else {
         const rejectedRes = await api.get(API_ENDPOINTS.REQUEST_SESSIONS_LIST, {
-          params: { status: 'REJECTED' },
+          params: apiParams,
         });
         if (rejectedRes?.data?.responseCode === 'OK') {
           const resObj = rejectedRes.data.result;
@@ -326,7 +342,10 @@ export const getSupportRequests = async (
       list = [];
   }
 
-  list = applySupportRequestFilters(list, { province, site, search });
+  const provinceParam = (province && provinceMap[province]) ? provinceMap[province] : province;
+  const siteParam = (site && siteMap[site]) ? siteMap[site] : site;
+
+  list = applySupportRequestFilters(list, { province: provinceParam, site: siteParam, search });
 
   const overdueTotal =
     sessionsOverdueCount +
