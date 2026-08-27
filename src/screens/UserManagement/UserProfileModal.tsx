@@ -14,6 +14,7 @@ import {
   mapFormValuesToPayload,
   mapFiltersToOptionsMap,
 } from './CreateUserForm';
+import offlineStorage from '../../services/offlineStorage';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -47,8 +48,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [formSites, setFormSites] = useState<any[]>([]);
 
   const [values, setValues] = useState<Record<string, string>>({});
+  const [initialValues, setInitialValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const hasChanges = useMemo(() => {
+    const keys = Array.from(new Set([...Object.keys(initialValues), ...Object.keys(values)]));
+    for (const key of keys) {
+      const initialVal = (initialValues[key] || '').trim();
+      const currentVal = (values[key] || '').trim();
+      if (initialVal !== currentVal) {
+        return true;
+      }
+    }
+    return false;
+  }, [initialValues, values]);
 
   const editSchema = useMemo(
     () =>
@@ -80,7 +94,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   const mapUserToFormValues = (
     user: AdminUserManagementData | null,
-    userProfile: any | null
+    userProfile: any | null,
+    isPhoneCleared = false
   ): Record<string, string> => {
     if (!user) return {};
 
@@ -150,7 +165,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         keys.push('address', 'location');
       }
 
-      const targets = [
+      const profileTargets = [
         userProfile?.userDetails,
         userProfile?.userDetails?.meta,
         userProfile?.userDetails?.extra,
@@ -158,6 +173,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         userProfile?.meta,
         userProfile?.extra,
         userProfile?.custom_entity_text,
+      ];
+
+      const userTargets = [
         (user as any)?.userDetails,
         (user as any)?.userDetails?.meta,
         (user as any)?.userDetails?.extra,
@@ -167,7 +185,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         (user as any)?.custom_entity_text,
       ];
 
-      for (const target of targets) {
+      for (const target of profileTargets) {
+        if (!target) continue;
+        for (const key of keys) {
+          if (target[key] !== undefined && target[key] !== null && target[key] !== '') {
+            return target[key];
+          }
+        }
+      }
+
+      const isPhoneField = [
+        'phoneNumber', 'phone', 'alternativePhone', 'alternatePhone',
+        'countryCode', 'phoneCode', 'alternativePhoneCode', 'alternatePhoneCode'
+      ].includes(fieldName);
+
+      if (isPhoneField && (userProfile || isPhoneCleared)) {
+        return null;
+      }
+
+      for (const target of userTargets) {
         if (!target) continue;
         for (const key of keys) {
           if (target[key] !== undefined && target[key] !== null && target[key] !== '') {
@@ -200,7 +236,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     const username = getFieldVal('username') || (user as any)?.username || '';
     const nationalId = getFieldVal('nationalId');
     const countryCode = formatPhoneCode(getFieldVal('countryCode'));
-    const phoneNumber = getFieldVal('phoneNumber') || getFieldVal('phone');
+    const phoneNumber = isPhoneCleared ? '' : (getFieldVal('phoneNumber') || getFieldVal('phone'));
     const alternativePhoneCode = formatPhoneCode(getFieldVal('alternativePhoneCode'));
     const alternativePhone = getFieldVal('alternativePhone');
     const gender = getFieldIdVal('gender');
@@ -246,14 +282,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setProfileLoading(true);
       setSelectedUserProfile(null);
       setErrors({});
-      getUserProfile(user.id)
-        .then(profile => {
-          //console.log('PROFILE API =>', profile);
+
+      const loadProfile = async () => {
+        try {
+          const profile = await getUserProfile(user.id);
           setSelectedUserProfile(profile);
 
-          const mapped = mapUserToFormValues(user, profile);
-          //console.log('MAPPED VALUES =>', mapped);
+          const isCleared = await offlineStorage.read<boolean>(`cleared_phone_${user.id}`);
+          const mapped = mapUserToFormValues(user, profile, !!isCleared);
           setValues(mapped);
+          setInitialValues(mapped);
 
           const provId = getEntityId(
             profile?.province || (user as any)?.province,
@@ -265,16 +303,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           } else {
             setFormSites([]);
           }
-        })
-        .catch(err => {
+        } catch (err) {
           console.error('Failed to load user profile for editing:', err);
-        })
-        .finally(() => {
+        } finally {
           setProfileLoading(false);
-        });
+        }
+      };
+
+      loadProfile();
     } else {
       setSelectedUserProfile(null);
       setValues({});
+      setInitialValues({});
       setFormSites([]);
       setErrors({});
     }
@@ -339,6 +379,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    if (!hasChanges) {
+      return;
+    }
     const validationErrors = validateSchema(
       CREATE_USER_FORM_SCHEMA,
       values,
@@ -358,6 +401,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const payload = mapFormValuesToPayload(values, roles);
 
       await updateOrgAdminUser(user!.id, payload);
+
+      const isPhoneBlank = !(values.phoneNumber && values.phoneNumber.trim());
+      if (isPhoneBlank) {
+        await offlineStorage.create(`cleared_phone_${user!.id}`, true);
+      } else {
+        await offlineStorage.remove(`cleared_phone_${user!.id}`);
+      }
+
       showAlert(
         'success',
         t('admin.users.edit.success', 'User updated successfully.'),
@@ -447,7 +498,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               variant="solid"
               action="primary"
               onPress={handleSubmit}
-              isDisabled={isSubmitting}
+              isDisabled={isSubmitting || !hasChanges}
             >
               <ButtonText color="$white" {...TYPOGRAPHY.bodySmall}>
                 {isSubmitting
