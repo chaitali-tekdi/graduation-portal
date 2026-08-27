@@ -130,8 +130,8 @@ export default {
     elevation: 2,
     sx: { ':active': { bg: '$green700' } },
   } as const,
-  subbox:{
-    bg:"$white",
+  subbox: {
+    bg: "$white",
     borderBottomWidth: 1,
     borderBottomColor: '$borderLight200',
   },
@@ -189,7 +189,7 @@ export default {
     flex: 1,
   } as const,
   footerRow: {
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '$borderLight200',
@@ -500,8 +500,8 @@ export default {
   } as const,
   declineHintText: {
     fontSize: '$xs',
-    color: '$gray400',
-    mt: '$1',
+    color: '$textMutedForeground',
+
   } as const,
   requestInfoBtnSend: {
     bg: '$red900',
@@ -626,7 +626,7 @@ export default {
     space: 'xs',
   } as const,
   coachInfoVStack1: {
-    bg:'$gray100',
+    bg: '$gray100',
     borderRadius: '$lg',
     p: '$3',
   } as const,
@@ -720,8 +720,101 @@ export default {
     paddingHorizontal: '$5',
   } as const,
   filterInputProps: {
-    size: 'sm',
-    bg: 'transparent',
+    size: 'sm' as const,
+    bg: 'transparent' as const,
+    borderColor: '$borderColor' as const,
+  } as const,
+  requestInfoButtonProps: {
     borderColor: '$borderLight200',
+    borderWidth: 0.5,
+    bg: '$white',
+    px: '$4',
+    py: '$2',
+    borderRadius: '$lg',
+    sx: { ':active': { bg: '$backgroundLight50' } },
+  } as const,
+  requestInfoIconProps: {
+    size: 14,
+    color: '$textDark700',
+    mr: '$2',
+  } as const,
+  requestInfoTextProps: {
+    fontSize: '$sm',
+    fontWeight: '$bold',
+    color: '$textDark700',
+  } as const,
+  declineButtonProps: {
+    borderColor: '$red200',
+    borderWidth: 1,
+    bg: '$white',
+    px: '$4',
+    py: '$2',
+    borderRadius: '$lg',
+    sx: { ':active': { bg: '$red50' } },
+  } as const,
+  declineIconProps: {
+    size: 14,
+    color: '$red600',
+    mr: '$2',
+  } as const,
+  declineTextProps: {
+    fontSize: '$sm',
+    fontWeight: '$bold',
+    color: '$red600',
+  } as const,
+  acceptButtonProps: {
+    bg: '$success600',
+    px: '$4.5',
+    py: '$2',
+    borderRadius: '$lg',
+    shadowColor: '$green800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 2,
+    sx: { ':active': { bg: '$green700' } },
+  } as const,
+  acceptIconProps: {
+    size: 16,
+    color: '$white',
+    mr: '$2',
+  } as const,
+  acceptTextProps: {
+    fontSize: '$sm',
+    fontWeight: '$bold',
+    color: '$white',
+  } as const,
+  declineCancelBtnProps: {
+    borderColor: '$borderLight200',
+    borderRadius: '$lg',
+    px: '$4',
+    py: '$2.5',
+    bg: '$white',
+    sx: { ':active': { bg: '$gray50' } },
+  } as const,
+  declineCancelBtnTextProps: {
+    color: '$textPrimary',
+    size: 'sm',
+    fontWeight: '$medium',
+  } as const,
+  declineConfirmBtnProps: {
+    bg: '$red600',
+    borderRadius: '$lg',
+    px: '$5',
+    py: '$2.5',
+    sx: { ':active': { opacity: 0.85 } },
+  } as const,
+  declineConfirmBtnRowProps: {
+    space: 'xs',
+    alignItems: 'center',
+  } as const,
+  declineConfirmBtnIconProps: {
+    size: 16,
+    color: '$white',
+  } as const,
+  declineConfirmBtnTextProps: {
+    color: '$white',
+    size: 'sm',
+    fontWeight: '$semibold',
   } as const,
 };

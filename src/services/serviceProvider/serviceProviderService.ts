@@ -398,8 +398,12 @@ export const declineSupportRequest = async (
   payload: DeclinePayload
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    if (API_ENDPOINTS && (API_ENDPOINTS as any).SERVICE_PROVIDER_DECLINE_REQUEST) {
-      const response = await api.post((API_ENDPOINTS as any).SERVICE_PROVIDER_DECLINE_REQUEST, payload);
+    if (API_ENDPOINTS && API_ENDPOINTS.SP_REQUEST_SESSIONS_REJECT) {
+      const response = await api.post(API_ENDPOINTS.SP_REQUEST_SESSIONS_REJECT, {
+        request_session_id: payload.requestId,
+        reason: payload.reason,
+        details: payload.details,
+      });
       return response.data;
     }
   } catch (error) {
