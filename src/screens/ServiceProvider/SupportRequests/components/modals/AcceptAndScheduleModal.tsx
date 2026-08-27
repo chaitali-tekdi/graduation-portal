@@ -48,6 +48,9 @@ export default function AcceptAndScheduleModal({
   const [deliveryModes, setDeliveryModes] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const coachName = item?.coach || '';
+  const hubName = item?.hub && item.hub !== '-' ? ` (${item.hub} Hub)` : '';
+
   const [values, setValues] = useState<Record<string, string>>({
     province: '',
     category: '',
@@ -191,9 +194,6 @@ export default function AcceptAndScheduleModal({
 
   if (!isOpen) return <></>;
 
-  const coachName = item?.coach || '';
-  const hubName = item?.hub && item.hub !== '-' ? ` (${item.hub} Hub)` : '';
-
   return (
     <Modal
       isOpen={isOpen}
@@ -213,7 +213,7 @@ export default function AcceptAndScheduleModal({
       }
       headerDescription={
         <Text {...modalStyles.acceptScheduleHeaderDescText}>
-          {t(`${BASE_PATH}.subtitles.preFilledFrom`, 'Pre-filled details from request by')}{' '}
+          {t(`${BASE_PATH}.subtitles.preFilledFrom`, 'Pre-filled details from request by')}
           <Text {...modalStyles.acceptScheduleCoachNameText}>{coachName}</Text>
           {hubName}
         </Text>
