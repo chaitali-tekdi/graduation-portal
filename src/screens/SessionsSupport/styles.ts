@@ -254,7 +254,7 @@ export const sessionsSupportStyles = {
     fontSize: '$xs !important' as const,
     lineHeight: 14 as const,
     fontWeight: '$semibold' as const,
-    color: '$white' as const,
+    color: '$white !important' as const,
   },
   sessionsFoundText: {
     fontSize: '$sm',
@@ -278,37 +278,6 @@ export const sessionsSupportStyles = {
     paddingLeft: 16,
     paddingRight: 16,
   } as const,
-  emptyStateContainer: {
-    borderWidth: 1,
-    borderColor: '$borderLight200',
-    borderRadius: 16,
-    py: '$10',
-    px: '$4',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    bg: '$white',
-  },
-  emptyStateVStack: {
-    alignItems: 'center' as const,
-    space: 'md' as const,
-  },
-  emptyStateIconContainer: {
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    w: '$12',
-    h: '$12',
-  },
-  emptyStateTitle: {
-    fontSize: '$md',
-    fontWeight: '$semibold' as const,
-    color: '$textPrimary',
-    textAlign: 'center' as const,
-  },
-  emptyStateDescription: {
-    fontSize: '$sm',
-    color: '$textSecondary',
-    textAlign: 'center' as const,
-  },
   // AssignParticipantsModal styles
   assignParticipantsFooterContainer: {
     space: 'md' as const,
@@ -321,40 +290,27 @@ export const sessionsSupportStyles = {
     bg: '$white',
     borderRadius: '$lg',
     px: '$5',
-    py: '$2.5',
-    sx: {
-      ':hover': {
-        bg: '$primary100',
-        borderColor: '$borderColor',
-        _text: {
-          color: '$primary500 !important',
-        },
-      },
-    }
+    py: '$2',
+    flex: 1,
   },
   assignParticipantsCancelButtonText: {
     color: '$textForegroundColor',
     fontSize: '$sm',
     fontWeight: '$semibold',
+    textAlign: 'center' as const,
   },
   assignParticipantsConfirmButton: {
-    bg: '$success600',
+    bg: '$primary500',
     borderRadius: '$lg',
     px: '$5',
-    py: '$2.5',
-    sx: {
-      ':hover': {
-        bg: '$success700',
-      },
-      ':active': {
-        bg: '$success700',
-      },
-    },
+    py: '$2',
+    flex: 1,
   },
   assignParticipantsConfirmButtonText: {
     color: '$white',
     fontSize: '$sm',
     fontWeight: '$semibold',
+    textAlign: 'center' as const,
   },
   assignParticipantsModalBodyProps: {
     flex: 1,
@@ -922,6 +878,98 @@ export const sessionsSupportStyles = {
         color: '$primary500 !important',
       },
     },
+  },
+  // ConfirmAssignment Modal styles
+  confirmAssignmentContainer: {
+    space: 'md' as const,
+    width: '100%' as const,
+  },
+  confirmAssignmentSubtitleText: {
+    fontSize: '$sm',
+    color: '$textSecondary',
+    lineHeight: '$md',
+    mb: '$4',
+  },
+  confirmAssignmentSessionBox: {
+    bg: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '$borderLight200',
+    borderRadius: 16,
+    px: '$5',
+    py: '$4',
+    width: '100%' as const,
+    mb: '$5',
+  },
+  confirmAssignmentSessionName: {
+    fontSize: '$md',
+    fontWeight: '$bold' as const,
+    color: '$textPrimary',
+    mb: '$1.5',
+  },
+  confirmAssignmentSessionMeta: {
+    fontSize: '$xs',
+    color: '$textMuted',
+  },
+  confirmAssignmentSectionHeader: {
+    fontSize: '$sm',
+    fontWeight: '$bold' as const,
+    color: '$textPrimary',
+    mb: '$3',
+  },
+  confirmAssignmentParticipantList: {
+    width: '100%' as const,
+    maxHeight: 200,
+    mb: '$6',
+  },
+  confirmAssignmentParticipantRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    py: '$2',
+    width: '100%' as const,
+    gap: '$3',
+  },
+  confirmAssignmentParticipantNameTextContainer: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: '$1.5',
+  },
+  confirmAssignmentParticipantName: {
+    fontSize: '$sm',
+    fontWeight: '$medium' as const,
+    color: '$textPrimary',
+  },
+  confirmAssignmentParticipantId: {
+    fontSize: '$sm',
+    color: '$textMutedForeground',
+    fontWeight: '$normal' as const,
+  },
+  confirmAssignmentFooter: {
+    flexDirection: 'row' as const,
+    justifyContent: 'flex-end' as const,
+    gap: '$3',
+    width: '100%' as const,
+    mt: '$2',
+  },
+  confirmAssignmentCancelButton: {
+    borderColor: '$borderColor',
+    bg: '$white',
+    borderRadius: '$lg',
+    py: "$2 !important"
+  },
+  confirmAssignmentCancelButtonText: {
+    color: '$textForegroundColor',
+    fontSize: '$sm',
+    fontWeight: '$semibold',
+  },
+  confirmAssignmentConfirmButton: {
+    bg: '$primary500',
+    borderRadius: '$lg',
+    py: "$2 !important"
+  },
+  confirmAssignmentConfirmButtonText: {
+    color: '$white',
+    fontSize: '$sm',
+    fontWeight: '$semibold',
   },
 } as const;
 

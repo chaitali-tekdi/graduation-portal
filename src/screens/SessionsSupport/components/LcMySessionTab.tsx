@@ -18,6 +18,8 @@ interface LcMySessionTabProps {
     [key: string]: any;
   };
   isFirst?: boolean;
+  onAssignParticipants?: (item: any) => void;
+  onEditSession?: (sessionId: string) => void;
 }
 
 const getStatusColors = (status: string) => {
@@ -59,7 +61,7 @@ const resolveStatus = (item: LcMySessionTabProps['item']): string => {
   return 'Upcoming';
 };
 
-const LcMySessionTab: React.FC<LcMySessionTabProps> = ({ item, isFirst }) => {
+const LcMySessionTab: React.FC<LcMySessionTabProps> = ({ item, isFirst, onAssignParticipants, onEditSession }) => {
   const { t } = useLanguage();
   const statusLabel = resolveStatus(item);
   const statusColors = getStatusColors(statusLabel);
@@ -167,15 +169,20 @@ const LcMySessionTab: React.FC<LcMySessionTabProps> = ({ item, isFirst }) => {
 
           {/* FOOTER: Action Buttons */}
           <HStack {...styles.mySessionCardFooter}>
-            <Button variant="outlineghost" {...styles.mySessionCardAssignBtn} onPress={() => { }}>
+            <Button variant="outlineghost" {...styles.mySessionCardAssignBtn} onPress={() => onAssignParticipants?.(item)}>
               <ButtonText {...styles.mySessionCardAssignBtnText}>
                 {t('lc.sessionsSupport.mySessionCard.assignParticipants')}
               </ButtonText>
             </Button>
 
-            <Button {...styles.mySessionCardManageBtn} variant="solid" onPress={() => { }}>
+            <Button {...styles.mySessionCardManageBtn} variant="solid" onPress={() => {
+              const sessionId = item.id || item._id;
+              if (sessionId) {
+                onEditSession?.(sessionId);
+              }
+            }}>
               <ButtonText {...styles.mySessionCardManageBtnText}>
-                {t('lc.sessionsSupport.mySessionCard.manageSession')}
+                {t('lc.sessionsSupport.mySessionCard.editSession')}
               </ButtonText>
             </Button>
           </HStack>

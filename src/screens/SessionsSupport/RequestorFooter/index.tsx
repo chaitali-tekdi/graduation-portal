@@ -21,14 +21,14 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
     // @ts-ignore
     navigation.navigate('session-details', { sessionId });
   }
-  const handleAssignSession = () => {
-    if (onAssignSession) {
-      onAssignSession(item);
-    } else {
-      // @ts-ignore
-      navigation.navigate('AssignSession', { sessionId });
-    }
-  }
+  // const handleAssignSession = () => {
+  //   if (onAssignSession) {
+  //     onAssignSession(item);
+  //   } else {
+  //     // @ts-ignore
+  //     navigation.navigate('AssignSession', { sessionId });
+  //   }
+  // }
 
   return (
     <HStack {...styles.requestorFooter}>
@@ -53,7 +53,7 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
           </ButtonText>
         </Button>
 
-        <Button
+        {/* <Button
           variant="solid"
           {...styles.requestorFooterAssignButton}
           onPress={handleAssignSession}
@@ -61,7 +61,7 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
           <ButtonText {...(styles.requestorFooterAssignText as any)}>
             {t('supportProvider.supportOfferings.cards.assignSession', 'Assign Session')}
           </ButtonText>
-        </Button>
+        </Button> */}
       </HStack>
     </HStack>
   );

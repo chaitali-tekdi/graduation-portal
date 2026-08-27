@@ -153,8 +153,10 @@ const SessionDetailsScreen: React.FC = () => {
         'success',
         t(
           'lc.sessionsSupport.alerts.assignSuccess',
-          { count: selectedIds.length },
-          `${selectedIds.length} participant(s) assigned to session successfully.`
+          {
+            defaultValue: `${selectedIds.length} participant(s) assigned to session successfully.`,
+            count: selectedIds.length
+          }
         )
       );
 
@@ -172,8 +174,9 @@ const SessionDetailsScreen: React.FC = () => {
         };
       });
       return true;
-    } catch (err) {
-      showAlert('error', 'Failed to assign participants to session.');
+    } catch (err: any) {
+      const errMsg = err?.response?.data?.message || err?.message || 'Failed to assign participants to session.';
+      showAlert('error', errMsg);
       return false;
     }
   };

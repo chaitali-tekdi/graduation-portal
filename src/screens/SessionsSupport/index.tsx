@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, ButtonIcon, ButtonText, Container, HStack, LucideIcon, Pressable, Text, VStack, useAlert } from '@ui';
+import { Box, Button, ButtonIcon, ButtonText, Container, HStack, LucideIcon, Pressable, Text, VStack, useAlert, Badge, BadgeText, Spinner } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import PageHeader from '@components/PageHeader';
-import {
-  REQUEST_SUPPORT_OPTIONS,
-  getSupportOfferingTabs,
-  DEFAULT_PROVINCE_OPTIONS,
-  DEFAULT_SITE_OPTIONS,
-} from '@constants/SUPPORT_PROVIDER_CARDS';
+import MyRequests from './MyRequests';
+import { REQUEST_SUPPORT_OPTIONS, getSupportOfferingTabs, DEFAULT_PROVINCE_OPTIONS, DEFAULT_SITE_OPTIONS, FORM_MODE } from '@constants/SUPPORT_PROVIDER_CARDS';
 import { TabButton } from '@components/Tabs';
 import FilterButton from '@components/Filter';
 import TrainingCard from '../ServiceProvider/SupportOfferings/components/Cards/TrainingCard';
@@ -16,7 +12,7 @@ import AdditionalServicesCard from '../ServiceProvider/SupportOfferings/componen
 import AssetCard from '../ServiceProvider/SupportOfferings/components/Cards/AssetCard';
 import { getProvincesList, getSitesByProvince } from '../../services/usersService';
 import { getTrainingSessions, getAdditionalServices, getAssets } from '../../services/SupportOfferingsServices/supportOfferingsService';
-import { getRequestSessionsList, requestorAssignMenteesToSession } from '../../services/SessionSupportServices/sessionRequestorService';
+import { getRequestSessionsList, requestorAssignMenteesToSession, getMyRequestsList } from '../../services/SessionSupportServices/sessionRequestorService';
 import type { ProvinceEntity } from '@app-types/Users';
 import { getSessionCategories, getDeliveryModes } from '../../services/mentoringService';
 import { DEFAULT_PATHWAY_OPTIONS, DEFAULT_FORMAT_OPTIONS } from '../../constants/REQUESTOR_CONSTANTS';
@@ -42,8 +38,8 @@ const SessionsSupportScreen: React.FC = () => {
     setIsAssignModalOpen(true);
   };
 
-  const handleConfirmAssignment = async (selectedIds: string[]) => {
-    if (!selectedSession) return;
+  const handleConfirmAssignment = async (selectedIds: string[]): Promise<boolean> => {
+    if (!selectedSession) return false;
     const sessionId = selectedSession.id || selectedSession._id;
     try {
       await requestorAssignMenteesToSession(sessionId, selectedIds);
@@ -51,21 +47,24 @@ const SessionsSupportScreen: React.FC = () => {
         'success',
         t(
           'lc.sessionsSupport.alerts.assignSuccess',
-          { count: selectedIds.length },
-          `${selectedIds.length} participant(s) assigned to session successfully.`
+          { count: selectedIds.length, defaultValue: `${selectedIds.length} participant(s) assigned to session successfully.` }
         )
       );
-    } catch (err) {
+      return true;
+    } catch (err: any) {
       console.error('Error assigning participants:', err);
-      showAlert('error', 'Failed to assign participants to session.');
+      const errMsg = err?.response?.data?.message || err?.message || 'Failed to assign participants to session.';
+      showAlert('error', errMsg);
+      return false;
     }
   };
 
   // Listing state, filters, and tabs reused from SupportOfferings logic
   const [activeTab, setActiveTab] = useState('sessions');
-  const [activeSubTab, setActiveSubTab] = useState('browse_sessions');
+  const [activeSubTab, setActiveSubTab] = useState<string>('browse_sessions');
+  const [refreshRequests, setRefreshRequests] = useState<number>(0);
 
-  // Capture newly created session from navigation params (passed back by CreateSession)
+  // Capture newly created session or request from navigation params
   useEffect(() => {
     const params = route?.params as any;
     if (params?.newSession) {
@@ -81,13 +80,21 @@ const SessionsSupportScreen: React.FC = () => {
       // Clear the param so re-visits don't re-add it
       navigation.setParams({ newSession: undefined } as any);
     }
+    if (params?.activeSubTab) {
+      setActiveTab('sessions');
+      setActiveSubTab(params.activeSubTab);
+      if (params.refreshRequests) {
+        setRefreshRequests(params.refreshRequests);
+      }
+      navigation.setParams({ activeSubTab: undefined, refreshRequests: undefined } as any);
+    }
   }, [route?.params]);
 
 
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [provincesList, setProvincesList] = useState<ProvinceEntity[]>([]);
   const [provinceOptions, setProvinceOptions] = useState(DEFAULT_PROVINCE_OPTIONS);
-  const [allSiteOptions, setAllSiteOptions] = useState();
+  const [allSiteOptions, setAllSiteOptions] = useState<any[]>([]);
   const [siteOptions, setSiteOptions] = useState(DEFAULT_SITE_OPTIONS);
   const [pathwayOptions, setPathwayOptions] = useState(DEFAULT_PATHWAY_OPTIONS);
   const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
@@ -275,7 +282,7 @@ const SessionsSupportScreen: React.FC = () => {
 
   // Fetch listing data
   useEffect(() => {
-    if (activeSubTab !== 'browse_sessions') {
+    if (activeSubTab !== 'browse_sessions' && activeSubTab !== 'my_requests' && activeSubTab !== 'my_sessions') {
       return;
     }
     let isMounted = true;
@@ -307,13 +314,31 @@ const SessionsSupportScreen: React.FC = () => {
           let result;
           if (activeSubTab === 'browse_sessions') {
             result = await getRequestSessionsList(params);
+            fetchedData = result?.result?.data || [];
+            totalCount = result?.result?.count ?? result?.total ?? result?.count ?? (result?.result?.total ?? fetchedData.length);
+            setCounts((prev) => ({ ...prev, sessions: totalCount }));
+          } else if (activeSubTab === 'my_requests') {
+            result = await getMyRequestsList(params);
+            const rawList = Array.isArray(result) ? result : (result?.result?.data || result?.result || []);
+            fetchedData = rawList.map((item: any) => {
+              const session = item.session || item.session_details || {};
+              return {
+                ...item,
+                title: item.title || session.title || 'Untitled Request',
+                status: item.status || 'REQUESTED',
+                start_date: item.start_date || session.start_date,
+                end_date: item.end_date || session.end_date,
+                seats_limit: item.seats_limit || session.seats_limit || item.max_participants || session.max_participants,
+                seats_remaining: item.seats_remaining ?? session.seats_remaining ?? item.seats_limit ?? session.seats_limit,
+                delivery_mode: item.delivery_mode || session.delivery_mode,
+              };
+            });
+            totalCount = result?.result?.count ?? result?.total ?? result?.count ?? (result?.result?.total ?? fetchedData.length);
           } else {
-            result = await getTrainingSessions(params);
+            result = await getRequestSessionsList(params);
+            fetchedData = result?.result?.data || [];
+            totalCount = result?.result?.count ?? result?.total ?? result?.count ?? (result?.result?.total ?? fetchedData.length);
           }
-
-          fetchedData = result?.result?.data || [];
-          totalCount = result?.result?.count ?? result?.total ?? result?.count ?? (result?.result?.total ?? fetchedData.length);
-          setCounts((prev) => ({ ...prev, sessions: totalCount }));
 
         } else if (activeTab === 'additional_services') {
           const res = await getAdditionalServices(params);
@@ -328,6 +353,13 @@ const SessionsSupportScreen: React.FC = () => {
         }
 
         if (isMounted) {
+          if (activeSubTab === 'my_sessions') {
+            if (page === 1) {
+              setMySessions(fetchedData);
+            } else {
+              setMySessions((prev) => [...prev, ...fetchedData]);
+            }
+          }
           if (page === 1) {
             setItems(fetchedData);
           } else {
@@ -354,7 +386,7 @@ const SessionsSupportScreen: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [activeTab, activeSubTab, filters.search, filters.status, filters.province, filters.site, filters.pathway, filters.format, page, limit]);
+  }, [activeTab, activeSubTab, filters.search, filters.status, filters.province, filters.site, filters.pathway, filters.format, page, limit, refreshRequests]);
 
   const handleSelectOption = (route: string) => {
     setIsDropdownOpen(false);
@@ -539,39 +571,38 @@ const SessionsSupportScreen: React.FC = () => {
                     key={session.id || session._id || idx}
                     item={session}
                     isFirst={idx === 0}
+                    onAssignParticipants={handleAssignSessionClick}
+                    onEditSession={(sessionId) => {
+                      (navigation as any).navigate('sessions-support-create-session', {
+                        type: FORM_MODE.EDIT,
+                        id: sessionId,
+                      });
+                    }}
                   />
                 ))}
-              </VStack>
-            ) : (
-              <Box {...styles.emptyStateContainer}>
-                <VStack {...styles.emptyStateVStack}>
-                  <Box {...styles.emptyStateIconContainer}>
-                    <LucideIcon name="Clock" size={30} color="$textMutedForeground" />
+                {isShowLoadMore && (
+                  <Box alignItems="center" mt="$4" width="100%">
+                    {!(_loading && page > 1) ? (
+                      <Button onPress={onLoadMoreItems}>
+                        <ButtonText>
+                          {t('supportProvider.supportOfferings.buttonTexts.loadMoreSessions', 'Load More Sessions')}
+                        </ButtonText>
+                      </Button>
+                    ) : (
+                      <Spinner />
+                    )}
                   </Box>
-                  <Text {...styles.emptyStateTitle}>
-                    {t('lc.sessionsSupport.emptyState.title')}
-                  </Text>
-                  <Text {...styles.emptyStateDescription}>
-                    {t('lc.sessionsSupport.emptyState.description')}
-                  </Text>
-                </VStack>
-              </Box>
-            )
-          ) : (
-            <Box {...styles.emptyStateContainer}>
-              <VStack {...styles.emptyStateVStack}>
-                <Box {...styles.emptyStateIconContainer}>
-                  <LucideIcon name="Clock" size={30} color="$textMutedForeground" />
-                </Box>
-                <Text {...styles.emptyStateTitle}>
-                  {t('lc.sessionsSupport.emptyState.title')}
-                </Text>
-                <Text {...styles.emptyStateDescription}>
-                  {t('lc.sessionsSupport.emptyState.description')}
-                </Text>
+                )}
               </VStack>
-            </Box>
-          )}
+            ) : null
+          ) : activeSubTab === 'my_requests' ? (
+            <MyRequests
+              items={items}
+              _loading={_loading}
+              isShowLoadMore={isShowLoadMore}
+              onLoadMoreItems={onLoadMoreItems}
+            />
+          ) : null}
         </VStack>
       </Container>
 
