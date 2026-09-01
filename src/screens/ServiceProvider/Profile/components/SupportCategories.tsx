@@ -43,12 +43,12 @@ interface SupportCategoriesProps {
   t: any;
 }
 
-export const isLinkageCategory = (cat?: string) => {
-  return cat === SUPPORT_CATEGORIES.ADDITIONAL_SERVICE;
-};
-
 export const isTrainingCategory = (cat?: string) => {
   return cat === SUPPORT_CATEGORIES.TRAINING;
+};
+
+export const isLinkageCategory = (cat?: string) => {
+  return cat === SUPPORT_CATEGORIES.ADDITIONAL_SERVICE;
 };
 
 export const isAssetCategory = (cat?: string) => {
