@@ -14,14 +14,14 @@ import { getProvincesList, getSitesByProvince } from '../../services/usersServic
 import { getTrainingSessions, getAdditionalServices, getAssets } from '../../services/SupportOfferingsServices/supportOfferingsService';
 import { getRequestSessionsList, requestorAssignMenteesToSession, getMyRequestsList } from '../../services/SessionSupportServices/sessionRequestorService';
 import type { ProvinceEntity } from '@app-types/Users';
-import { getSessionCategories, getDeliveryModes } from '../../services/mentoringService';
-import { DEFAULT_PATHWAY_OPTIONS, DEFAULT_FORMAT_OPTIONS } from '../../constants/REQUESTOR_CONSTANTS';
+import { getSessionCategories, getDeliveryModes, getSessionTypesByPillar } from '../../services/mentoringService';
+import { DEFAULT_PATHWAY_OPTIONS, DEFAULT_FORMAT_OPTIONS, DEFAULT_PILLAR_OPTIONS, DEFAULT_TYPE_OPTIONS, DEFAULT_STATUS_OPTIONS } from '../../constants/REQUESTOR_CONSTANTS';
 import { RequestorFilter } from './RequestorFilter';
 import styles from './styles';
 import supportOfferingsStyles from '../ServiceProvider/SupportOfferings/styles';
 import { RequestFooter } from './RequestorFooter';
-import AssignParticipantsModal from './components/modals/AssignParticipantsModal';
-import LcMySessionTab from './components/LcMySessionTab';
+import AssignParticipantsModal from './modals/AssignParticipantsModal';
+import LcMySessionTab from './MyTraining&Sessions/LcMySessionTab';
 
 const SessionsSupportScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -97,6 +97,9 @@ const SessionsSupportScreen: React.FC = () => {
   const [allSiteOptions, setAllSiteOptions] = useState<any[]>([]);
   const [siteOptions, setSiteOptions] = useState(DEFAULT_SITE_OPTIONS);
   const [pathwayOptions, setPathwayOptions] = useState(DEFAULT_PATHWAY_OPTIONS);
+  const [pillarOptions, setPillarOptions] = useState(DEFAULT_PILLAR_OPTIONS);
+  const [typeOptions, setTypeOptions] = useState(DEFAULT_TYPE_OPTIONS);
+  const [statusOptions, setStatusOptions] = useState(DEFAULT_STATUS_OPTIONS);
   const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
 
   const [items, setItems] = useState<any[]>([]);
@@ -188,6 +191,15 @@ const SessionsSupportScreen: React.FC = () => {
               })),
             ];
             setPathwayOptions(dynamicPathways);
+
+            const dynamicPillars = [
+              { label: 'All Pillars', value: 'all-pillars' },
+              ...categoriesData.map((c: any) => ({
+                label: c.label || c.name || c.value,
+                value: c.value,
+              })),
+            ];
+            setPillarOptions(dynamicPillars);
           }
 
           if (deliveryModesData && deliveryModesData.length > 0) {
@@ -269,15 +281,55 @@ const SessionsSupportScreen: React.FC = () => {
     };
   }, [filters.province, provincesList]);
 
+  // Fetch dynamic types based on selected pillar filter
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTypesData = async () => {
+      const selectedPillar = filters.pillar;
+
+      if (!selectedPillar || selectedPillar === 'all-pillars') {
+        if (isMounted) {
+          setTypeOptions(DEFAULT_TYPE_OPTIONS);
+        }
+        return;
+      }
+
+      try {
+        const typesData = await getSessionTypesByPillar(selectedPillar);
+        if (isMounted) {
+          const dynamicTypes = [
+            { label: 'All Types', value: 'all-types' },
+            ...typesData.map((t: any) => ({
+              label: t.label || t.name || t.value,
+              value: t.value || t._id || t.id,
+            })),
+          ];
+          setTypeOptions(dynamicTypes);
+        }
+      } catch (err) {
+        console.error('Error fetching session types by pillar:', err);
+        if (isMounted) {
+          setTypeOptions(DEFAULT_TYPE_OPTIONS);
+        }
+      }
+    };
+
+    fetchTypesData();
+    return () => {
+      isMounted = false;
+    };
+  }, [filters.pillar]);
+
   // Reset page when tab or filters change
   useEffect(() => {
     setPage(1);
-  }, [activeTab, filters.search, filters.status, filters.province, filters.site, filters.pathway, filters.format]);
+  }, [activeTab, filters.search, filters.status, filters.province, filters.site, filters.pathway, filters.pillar, filters.type, filters.format]);
 
   // Reset page and filters when active sub-tab changes
   useEffect(() => {
     setPage(1);
     setFilters({});
+    setItems([]);
   }, [activeSubTab]);
 
   // Fetch listing data
@@ -295,6 +347,8 @@ const SessionsSupportScreen: React.FC = () => {
           search: filters.search,
           status: filters.status,
           pathway: filters.pathway,
+          pillar: filters.pillar,
+          type: filters.type,
           format: filters.format,
           isSessionsSupport: true,
         };
@@ -522,8 +576,12 @@ const SessionsSupportScreen: React.FC = () => {
                 provinceOptions={provinceOptions}
                 siteOptions={siteOptions}
                 pathwayOptions={pathwayOptions}
+                pillarOptions={pillarOptions}
+                typeOptions={typeOptions}
+                statusOptions={statusOptions}
                 formatOptions={formatOptions}
                 shouldDisableSite={!filters.province || filters.province === 'all-provinces'}
+                shouldDisableType={!filters.pillar || filters.pillar === 'all-pillars'}
               />
               <Text {...styles.sessionsFoundText}>
                 {total} {t('lc.sessionsSupport.sessionsFound')}
@@ -578,21 +636,11 @@ const SessionsSupportScreen: React.FC = () => {
                         id: sessionId,
                       });
                     }}
+                    isShowLoadMore={idx === mySessions.length - 1 && isShowLoadMore}
+                    onLoadMoreItems={onLoadMoreItems}
+                    isLoadingMore={_loading && page > 1}
                   />
                 ))}
-                {isShowLoadMore && (
-                  <Box alignItems="center" mt="$4" width="100%">
-                    {!(_loading && page > 1) ? (
-                      <Button onPress={onLoadMoreItems}>
-                        <ButtonText>
-                          {t('supportProvider.supportOfferings.buttonTexts.loadMoreSessions', 'Load More Sessions')}
-                        </ButtonText>
-                      </Button>
-                    ) : (
-                      <Spinner />
-                    )}
-                  </Box>
-                )}
               </VStack>
             ) : null
           ) : activeSubTab === 'my_requests' ? (
@@ -601,6 +649,7 @@ const SessionsSupportScreen: React.FC = () => {
               _loading={_loading}
               isShowLoadMore={isShowLoadMore}
               onLoadMoreItems={onLoadMoreItems}
+              isLoadingMore={_loading && page > 1}
             />
           ) : null}
         </VStack>

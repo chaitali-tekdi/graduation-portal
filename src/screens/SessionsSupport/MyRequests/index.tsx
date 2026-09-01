@@ -10,6 +10,7 @@ interface MyRequestsProps {
   _loading: boolean;
   isShowLoadMore: boolean;
   onLoadMoreItems: () => void;
+  isLoadingMore?: boolean;
 }
 
 const getStatusBadgeStyles = (status: string) => {
@@ -43,9 +44,18 @@ export const MyRequests: React.FC<MyRequestsProps> = ({
   _loading,
   isShowLoadMore,
   onLoadMoreItems,
+  isLoadingMore,
 }) => {
   const { t } = useLanguage();
   const navigation = useNavigation();
+
+  if (_loading && items.length === 0) {
+    return (
+      <Box alignItems="center" justifyContent="center" py="$10" width="100%">
+        <Spinner size="large" />
+      </Box>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -139,6 +149,19 @@ export const MyRequests: React.FC<MyRequestsProps> = ({
           </Box>
         );
       })}
+      {isShowLoadMore && (
+        <Box alignItems="center" mt="$4" width="100%">
+          {!isLoadingMore ? (
+            <Button onPress={onLoadMoreItems}>
+              <ButtonText>
+                {t('supportProvider.supportOfferings.buttonTexts.loadMoreSessions')}
+              </ButtonText>
+            </Button>
+          ) : (
+            <Spinner />
+          )}
+        </Box>
+      )}
     </VStack>
   );
 };

@@ -6,10 +6,10 @@ import type { ParticipantSearchParams, ParticipantSearchResponse } from '@app-ty
 
 export const getRequestSessionsList = async (params: any): Promise<any> => {
   try {
-    const { page, limit, status, search, provinces, sites, pathway, format } = params;
+    const { page, limit, status, search, provinces, sites, pathway, pillar, type, format } = params;
     const queryParams = new URLSearchParams();
 
-    if (status && status !== 'all-statuses') {
+    if (status && status !== 'all-statuses' && status !== 'all-status') {
       queryParams.append('status', status.toUpperCase());
     }
 
@@ -35,6 +35,14 @@ export const getRequestSessionsList = async (params: any): Promise<any> => {
 
     if (pathway && pathway !== 'all-pathways') {
       queryParams.append('categories', pathway);
+    }
+
+    if (pillar && pillar !== 'all-pillars') {
+      queryParams.append('pillar', pillar);
+    }
+
+    if (type && type !== 'all-types') {
+      queryParams.append('type', type);
     }
 
     if (format && format !== 'all-formats') {
@@ -52,10 +60,10 @@ export const getRequestSessionsList = async (params: any): Promise<any> => {
 
 export const getMyRequestsList = async (params: any): Promise<any> => {
   try {
-    const { page, limit, status, search, provinces, sites, pathway, format } = params;
+    const { page, limit, status, search, provinces, sites, pathway, pillar, type, format } = params;
     const queryParams = new URLSearchParams();
 
-    if (status && status !== 'all-statuses') {
+    if (status && status !== 'all-statuses' && status !== 'all-status') {
       queryParams.append('status', status.toUpperCase());
     }
 
@@ -81,6 +89,14 @@ export const getMyRequestsList = async (params: any): Promise<any> => {
 
     if (pathway && pathway !== 'all-pathways') {
       queryParams.append('categories', pathway);
+    }
+
+    if (pillar && pillar !== 'all-pillars') {
+      queryParams.append('pillar', pillar);
+    }
+
+    if (type && type !== 'all-types') {
+      queryParams.append('type', type);
     }
 
     if (format && format !== 'all-formats') {

@@ -4,6 +4,21 @@ export const DEFAULT_PATHWAY_OPTIONS = [
   { label: 'All Pathways', value: 'all-pathways' }
 ];
 
+export const DEFAULT_PILLAR_OPTIONS = [
+  { label: 'All Pillars', value: 'all-pillars' }
+];
+
+export const DEFAULT_TYPE_OPTIONS = [
+  { label: 'All Types', value: 'all-types' }
+];
+
+export const DEFAULT_STATUS_OPTIONS = [
+  { label: 'All Statuses', value: 'all-statuses' },
+  { label: 'Upcoming', value: 'Upcoming' },
+  { label: 'In Progress', value: 'In progress' },
+  { label: 'Draft', value: 'Draft' }
+];
+
 export const DEFAULT_FORMAT_OPTIONS = [
   { label: 'All Formats', value: 'all-formats' },
   { label: 'Online', value: 'online' },
@@ -17,6 +32,24 @@ export const REQUESTOR_FILTERS = [
     type: 'select' as const,
     placeholder: 'All Pathways',
     data: DEFAULT_PATHWAY_OPTIONS,
+  },
+  {
+    attr: 'pillar',
+    type: 'select' as const,
+    placeholder: 'All Pillars',
+    data: DEFAULT_PILLAR_OPTIONS,
+  },
+  {
+    attr: 'type',
+    type: 'select' as const,
+    placeholder: 'All Types',
+    data: DEFAULT_TYPE_OPTIONS,
+  },
+  {
+    attr: 'status',
+    type: 'select' as const,
+    placeholder: 'All Statuses',
+    data: DEFAULT_STATUS_OPTIONS,
   },
   {
     attr: 'format',

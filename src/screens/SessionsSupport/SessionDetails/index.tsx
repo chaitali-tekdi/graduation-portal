@@ -8,7 +8,7 @@ import openExternalLink from '@utils/openExternalLink';
 import { getSessionDetails } from '../../../services/mentoringService';
 import { requestorAssignMenteesToSession } from '../../../services/SessionSupportServices/sessionRequestorService';
 import { getProvincesList } from '../../../services/usersService';
-import AssignParticipantsModal from '../components/modals/AssignParticipantsModal';
+import AssignParticipantsModal from '../modals/AssignParticipantsModal';
 import styles from '../styles';
 
 const SessionDetailsScreen: React.FC = () => {

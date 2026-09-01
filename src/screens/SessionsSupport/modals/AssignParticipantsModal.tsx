@@ -5,13 +5,14 @@ import { theme } from '@config/theme';
 import { VStack, HStack, Text, Button, ButtonText, Pressable, LucideIcon, Box, Input, InputField, InputSlot, } from '@ui';
 import { STATUS as PARTICIPANT_DISPLAY_STATUS } from '@constants/PARTICIPANTS_LIST';
 import { STATUS } from '@constants/app.constant';
-import { getStatusColors } from '../../../ParticipantsList/StatusBadge';
+import { getStatusColors } from '../../ParticipantsList/StatusBadge';
 import { getInitials } from '@utils/helper';
 import { useAuth } from '@contexts/AuthContext';
-import { getParticipants } from '../../../../services/SessionSupportServices/sessionRequestorService';
+import { getParticipants } from '../../../services/SessionSupportServices/sessionRequestorService';
 import { useLanguage } from '@contexts/LanguageContext';
-import styles from '../../styles';
+import styles from '../styles';
 import ConfirmAssignment from './ConfirmAssignment';
+import ParticipantStatusBadge from './ParticipantStatusBadge';
 
 interface AssignParticipantsModalProps {
   isOpen: boolean;
@@ -22,29 +23,6 @@ interface AssignParticipantsModalProps {
 
 const PAGE_SIZE = 5;
 const DEBOUNCE_MS = 500;
-
-const getParticipantStatusColors = (status: string) => {
-  const s = (status || '').toUpperCase();
-  if (s === 'IN_PROGRESS' || s === 'IN PROGRESS') {
-    return {
-      bg: '$observationTaskBg',
-      border: '$optionalTaskYellowBorder',
-      text: '$warningIconColor',
-    };
-  }
-  if (s === 'GRADUATED' || s === 'COMPLETED') {
-    return {
-      bg: '$success50',
-      border: '$success300',
-      text: '$success600',
-    };
-  }
-  return {
-    bg: '$gray100',
-    border: '$gray300',
-    text: '$gray700',
-  };
-};
 
 export default function AssignParticipantsModal({
   isOpen,
@@ -244,13 +222,6 @@ export default function AssignParticipantsModal({
             keyExtractor={(p) => p.userId}
             renderItem={({ item: p }) => {
               const isSelected = selectedIds.includes(p.userId);
-              const colors = getParticipantStatusColors(p.status || '');
-              const displayStatus =
-                PARTICIPANT_DISPLAY_STATUS[
-                p.status as keyof typeof PARTICIPANT_DISPLAY_STATUS
-                ] || p.status;
-              const progressPercentage =
-                p.idpProgress?.completionPercentage ?? 0;
 
               return (
                 <Pressable
@@ -296,16 +267,7 @@ export default function AssignParticipantsModal({
                     </VStack>
 
                     {/* Status Badge */}
-                    <Box
-                      {...styles.assignParticipantsBadge}
-                      bg={colors.bg}
-                      borderColor={colors.border}>
-                      <Text
-                        {...styles.assignParticipantsBadgeText}
-                        color={colors.text}>
-                        {displayStatus}
-                      </Text>
-                    </Box>
+                    <ParticipantStatusBadge status={p.status || ''} />
                   </HStack>
                 </Pressable>
               );

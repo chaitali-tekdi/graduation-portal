@@ -3,7 +3,7 @@ import Modal from '@components/ui/Modal';
 import { VStack, HStack, Text, Button, ButtonText, LucideIcon, Box } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import moment from 'moment';
-import styles from '../../styles';
+import styles from '../styles';
 
 interface ConfirmAssignmentProps {
   isOpen: boolean;
