@@ -432,19 +432,22 @@ export const acceptAndScheduleSupportRequest = async (
  */
 export const requestMoreInfoForSupportRequest = async (
   payload: RequestInfoPayload
-): Promise<{ success: boolean; message: string }> => {
-  try {
-    if (API_ENDPOINTS && (API_ENDPOINTS as any).SERVICE_PROVIDER_REQUEST_INFO) {
-      const response = await api.post((API_ENDPOINTS as any).SERVICE_PROVIDER_REQUEST_INFO, payload);
-      return response.data;
-    }
-  } catch (error) {
-    console.warn('Backend API unavailable, using simulated success for Request Info:', error);
-  }
+): Promise<{ success: boolean; message: string; result?: any }> => {
+  const reqId = String(payload.requestId);
+  const response = await api.request({
+    method: 'GET',
+    url: `${API_ENDPOINTS.REQUEST_SESSIONS_GET_DETAILS}?request_session_id=${encodeURIComponent(reqId)}`,
+    data: {
+      request_session_id: reqId,
+      message: payload.message || '',
+    },
+  });
 
+  const data = response.data;
   return {
-    success: true,
-    message: 'Request for additional information sent to Coach successfully.',
+    success: data?.responseCode === 'OK' || data?.success === true,
+    message: data?.message || 'Request for additional information sent to Coach successfully.',
+    result: data?.result,
   };
 };
 
