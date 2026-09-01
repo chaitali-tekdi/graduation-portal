@@ -195,7 +195,8 @@
     "unableToLoadObservation": "Could not load observation details.",
     "SingleUploadMessage": "Selecting a new file replaces the existing one.",
     "allowedFileTypes": "Allowed file types :",
-    "remainingUploads": "Remaining uploads :"
+    "remainingUploads": "Remaining uploads :",
+    "IdpUpdateSentForApproval": "Your request to update the intervention plan for {{name}} has been sent for approval."
   },
   "navigation": {
     "menu": "Menu",
@@ -2286,7 +2287,6 @@
     "updatePageTitle": "Update Intervention Plan",
     "pageSubtitle": "Select a development plan template for {{name}}",
     "backButton": "Back",
-    "IdpUpdateSentForApproval": "Your request to update the intervention plan for {{name}} has been sent for approval.",
     "IdpCreationSuccess": "Plan assigned successfully.",
     "IdpQueuedOffline": "Plan saved offline. It will be created once you're back online.",
     "categoryModal": {
