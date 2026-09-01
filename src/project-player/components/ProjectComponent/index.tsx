@@ -220,7 +220,7 @@ const ProjectComponent = React.memo(() => {
             if (config.onSubmitInterventionPlan) {
               config.onSubmitInterventionPlan(oldProjectData._id);
             }
-            showAlert('success', t('projectPlayer.template.IdpUpdateSentForApproval', { name: config.profileInfo?.name }));
+            showAlert('success', t('projectPlayer.IdpUpdateSentForApproval', { name: config.profileInfo?.name }));
           } else {
             showAlert('error', response.error || t('projectPlayer.error.submitFailed'));
           }
