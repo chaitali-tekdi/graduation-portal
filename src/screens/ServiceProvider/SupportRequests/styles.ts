@@ -845,13 +845,15 @@ export default {
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderColor: '$blue100',
-    py: '$3.5',
+    py: '$3',
     px: '$6',
     alignItems: 'center',
     justifyContent: 'space-between',
-    mb: '$4',
+    mt: '$3',
+    mb: '$0',
+    mx: '-$6',
     flexDirection: 'row',
-    width: '100%',
+    width: 'auto',
   } as const,
   footer: {
     space: 'sm',
@@ -947,16 +949,17 @@ export default {
   } as const,
   openWizardBtn: {
     borderWidth: 1,
-    borderColor: '$blue600',
+    borderColor: '$blue300',
     borderRadius: '$md',
     px: '$2',
-    bg: '$transparent',
+    height: 30,
+    bg: '$white',
     sx: { ':active': { bg: '$blue50' } },
   } as const,
   openWizardBtnText: {
     fontSize: '$xs',
     color: '$blue600',
-    fontWeight: '$semibold',
+    fontWeight: '$normal',
   } as const,
   sectionIcon: {
     size: 18,
@@ -969,4 +972,32 @@ export default {
     flexDirection: 'row',
     alignItems: 'center',
   } as const,
+};
+export const ACCEPT_AND_SCHEDULE_FORM_SECTION_STYLES = {
+  _container: {
+    position: 'relative',
+    marginTop: 20,
+    bg: '$gray50',
+    borderColor: '$borderColor',
+    borderWidth: 1,
+    borderRadius: '$lg',
+    p: '$5',
+    mb: '$4',
+  },
+  _header: {
+    position: 'absolute',
+    top: -55,
+    left: -12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  _icon: {
+    size: 18,
+    color: '#881337',
+  },
+  _title: {
+    fontSize: '$sm',
+    fontWeight: '$bold',
+    color: '$textDark900',
+  },
 };

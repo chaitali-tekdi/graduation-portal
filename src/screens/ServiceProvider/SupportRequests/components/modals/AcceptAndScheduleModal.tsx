@@ -212,11 +212,53 @@ export default function AcceptAndScheduleModal({
         </HStack>
       }
       headerDescription={
-        <Text {...modalStyles.acceptScheduleHeaderDescText}>
-          {t(`${BASE_PATH}.subtitles.preFilledFrom`, 'Pre-filled details from request by')}
-          <Text {...modalStyles.acceptScheduleCoachNameText}>{coachName}</Text>
-          {hubName}
-        </Text>
+        <VStack space="xs" width="$full">
+          <Text {...modalStyles.acceptScheduleHeaderDescText}>
+            {t(`${BASE_PATH}.subtitles.preFilledFrom`, 'Pre-filled details from request by ')}
+            <Text {...modalStyles.acceptScheduleCoachNameText}>{coachName}</Text>
+            {hubName}
+          </Text>
+
+          <Box {...modalStyles.openWizard}>
+            <HStack {...modalStyles.openWizardTextRow}>
+              <Text {...modalStyles.openWizardLabelText}>
+                {t(`${BASE_PATH}.banner.requested`, 'Requested')}:
+              </Text>
+
+              <Text {...modalStyles.openWizardValueText}>
+                {item?.title || ''}
+              </Text>
+
+              <Text {...modalStyles.openWizardBulletText}>•</Text>
+
+              <Text {...modalStyles.openWizardLabelText}>
+                {t(`${BASE_PATH}.banner.participants`, 'Participants')}:
+              </Text>
+
+              <Text {...modalStyles.openWizardValueText}>
+                {item?.participants || 0}
+              </Text>
+
+              {item?.province && item.province !== '-' && (
+                <>
+                  <Text {...modalStyles.openWizardBulletText}>•</Text>
+
+                  <Text {...modalStyles.openWizardLabelText}>
+                    {t(`${BASE_PATH}.banner.province`, 'Province')}:
+                  </Text>
+
+                  <Text {...modalStyles.openWizardValueText}>
+                    {item.province}
+                  </Text>
+                </>
+              )}
+            </HStack>
+
+            <Button variant="outline" action="primary" {...modalStyles.openWizardBtn} onPress={handleOpenFullWizard}>
+              <ButtonText {...modalStyles.openWizardBtnText}>{t(`${BASE_PATH}.buttonTexts.openFullWizard`, 'Open Full Wizard')}</ButtonText>
+            </Button>
+          </Box>
+        </VStack>
       }
       footerContent={
         <HStack {...modalStyles.footer}>
@@ -235,58 +277,16 @@ export default function AcceptAndScheduleModal({
         </HStack>
       }
       bodyProps={{ p: 0 }}>
-      <VStack {...modalStyles.modalBodyVStack}>
-        <Box {...modalStyles.openWizard}>
-          <HStack {...modalStyles.openWizardTextRow}>
-            <Text {...modalStyles.openWizardLabelText}>
-              {t(`${BASE_PATH}.banner.requested`, 'Requested')}:
-            </Text>
-
-            <Text {...modalStyles.openWizardValueText}>
-              {item?.title || ''}
-            </Text>
-
-            <Text {...modalStyles.openWizardBulletText}>•</Text>
-
-            <Text {...modalStyles.openWizardLabelText}>
-              {t(`${BASE_PATH}.banner.participants`, 'Participants')}:
-            </Text>
-
-            <Text {...modalStyles.openWizardValueText}>
-              {item?.participants || 0}
-            </Text>
-
-            {item?.province && item.province !== '-' && (
-              <>
-                <Text {...modalStyles.openWizardBulletText}>•</Text>
-
-                <Text {...modalStyles.openWizardLabelText}>
-                  {t(`${BASE_PATH}.banner.province`, 'Province')}:
-                </Text>
-
-                <Text {...modalStyles.openWizardValueText}>
-                  {item.province}
-                </Text>
-              </>
-            )}
-          </HStack>
-
-          <Button variant="outline" action="primary" {...modalStyles.openWizardBtn} onPress={handleOpenFullWizard}>
-            <ButtonText {...modalStyles.openWizardBtnText}>{t(`${BASE_PATH}.buttonTexts.openFullWizard`, 'Open Full Wizard')}</ButtonText>
-          </Button>
-        </Box>
-
-        <Box px="$6" pb="$6">
-          <SchemaFormRenderer
-            schema={ACCEPT_AND_SCHEDULE_FORM_SCHEMA}
-            values={values}
-            errors={errors}
-            optionsMap={optionsMap}
-            onFieldChange={handleFieldChange}
-            t={t}
-          />
-        </Box>
-      </VStack>
+      <Box px="$6" py="$2">
+        <SchemaFormRenderer
+          schema={ACCEPT_AND_SCHEDULE_FORM_SCHEMA}
+          values={values}
+          errors={errors}
+          optionsMap={optionsMap}
+          onFieldChange={handleFieldChange}
+          t={t}
+        />
+      </Box>
     </Modal>
   );
 }

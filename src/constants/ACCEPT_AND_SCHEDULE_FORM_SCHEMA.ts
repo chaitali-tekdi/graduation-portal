@@ -1,4 +1,5 @@
 import type { FormSection } from '@components/SchemaFormRenderer/type';
+import { ACCEPT_AND_SCHEDULE_FORM_SECTION_STYLES } from '../screens/ServiceProvider/SupportRequests/styles';
 
 const BASE_PATH = 'supportProvider.supportRequests';
 
@@ -9,36 +10,6 @@ export const DURATION_OPTIONS = [
   { label: `${BASE_PATH}.durationOptions.3hours`, value: '3_hours' },
   { label: `${BASE_PATH}.durationOptions.fullDay`, value: 'full_day' },
 ];
-
-
-export const ACCEPT_AND_SCHEDULE_FORM_SECTION_STYLES = {
-  _container: {
-    position: 'relative',
-    marginTop: 20,
-    bg: '$gray50',
-    borderColor: '$borderColor',
-    borderWidth: 1,
-    borderRadius: '$lg',
-    p: '$5',
-    mb: '$4',
-  },
-  _header: {
-    position: 'absolute',
-    top: -55,
-    left: -12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  _icon: {
-    size: 18,
-    color: '#881337',
-  },
-  _title: {
-    fontSize: '$md',
-    fontWeight: '$bold',
-    color: '$textDark900',
-  },
-};
 
 export const ACCEPT_AND_SCHEDULE_FORM_SCHEMA: FormSection[] = [
   {
