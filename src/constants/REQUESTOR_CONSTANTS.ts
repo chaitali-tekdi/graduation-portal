@@ -1,6 +1,6 @@
 import { DEFAULT_PROVINCE_OPTIONS, DEFAULT_SITE_OPTIONS } from './SUPPORT_PROVIDER_CARDS';
 
-export const DEFAULT_PATHWAY_OPTIONS = [
+export const PATHWAY_TAGS = [
   { label: 'All Pathways', value: 'all-pathways' }
 ];
 
@@ -31,7 +31,7 @@ export const REQUESTOR_FILTERS = [
     attr: 'pathway',
     type: 'select' as const,
     placeholder: 'All Pathways',
-    data: DEFAULT_PATHWAY_OPTIONS,
+    data: PATHWAY_TAGS,
   },
   {
     attr: 'pillar',

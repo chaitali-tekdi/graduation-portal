@@ -15,7 +15,8 @@ import { getTrainingSessions, getAdditionalServices, getAssets } from '../../ser
 import { getRequestSessionsList, requestorAssignMenteesToSession, getMyRequestsList } from '../../services/SessionSupportServices/sessionRequestorService';
 import type { ProvinceEntity } from '@app-types/Users';
 import { getSessionCategories, getDeliveryModes, getSessionTypesByPillar } from '../../services/mentoringService';
-import { DEFAULT_PATHWAY_OPTIONS, DEFAULT_FORMAT_OPTIONS, DEFAULT_PILLAR_OPTIONS, DEFAULT_TYPE_OPTIONS, DEFAULT_STATUS_OPTIONS } from '../../constants/REQUESTOR_CONSTANTS';
+import { getProjectCategoryList } from '../../services/projectService';
+import { PATHWAY_TAGS, DEFAULT_FORMAT_OPTIONS, DEFAULT_PILLAR_OPTIONS, DEFAULT_TYPE_OPTIONS, DEFAULT_STATUS_OPTIONS } from '../../constants/REQUESTOR_CONSTANTS';
 import { RequestorFilter } from './RequestorFilter';
 import styles from './styles';
 import supportOfferingsStyles from '../ServiceProvider/SupportOfferings/styles';
@@ -96,7 +97,7 @@ const SessionsSupportScreen: React.FC = () => {
   const [provinceOptions, setProvinceOptions] = useState(DEFAULT_PROVINCE_OPTIONS);
   const [allSiteOptions, setAllSiteOptions] = useState<any[]>([]);
   const [siteOptions, setSiteOptions] = useState(DEFAULT_SITE_OPTIONS);
-  const [pathwayOptions, setPathwayOptions] = useState(DEFAULT_PATHWAY_OPTIONS);
+  const [pathwayOptions, setPathwayOptions] = useState(PATHWAY_TAGS);
   const [pillarOptions, setPillarOptions] = useState(DEFAULT_PILLAR_OPTIONS);
   const [typeOptions, setTypeOptions] = useState(DEFAULT_TYPE_OPTIONS);
   const [statusOptions, setStatusOptions] = useState(DEFAULT_STATUS_OPTIONS);
@@ -161,10 +162,11 @@ const SessionsSupportScreen: React.FC = () => {
     let isMounted = true;
     const fetchFilterData = async () => {
       try {
-        const [provincesData, categoriesData, deliveryModesData] = await Promise.all([
+        const [provincesData, categoriesData, deliveryModesData, projectCategoriesData] = await Promise.all([
           getProvincesList().catch(() => []),
           getSessionCategories().catch(() => []),
           getDeliveryModes().catch(() => []),
+          getProjectCategoryList().catch(() => []),
         ]);
 
         if (isMounted) {
@@ -182,16 +184,24 @@ const SessionsSupportScreen: React.FC = () => {
             setProvinceOptions(dynamicProvinces);
           }
 
-          if (categoriesData && categoriesData.length > 0) {
+          if (projectCategoriesData && projectCategoriesData.length > 0) {
+            const uniquePathwaysMap = new Map<string, { label: string; value: string }>();
+            projectCategoriesData.forEach((c: any) => {
+              const label = String(c.name || c.label || c.title || c.value || '').trim();
+              const value = c.value || c._id || c.id || c.externalId || label;
+              if (label && !uniquePathwaysMap.has(label)) {
+                uniquePathwaysMap.set(label, { label, value });
+              }
+            });
+
             const dynamicPathways = [
               { label: 'All Pathways', value: 'all-pathways' },
-              ...categoriesData.map((c: any) => ({
-                label: c.label || c.name || c.value,
-                value: c.value,
-              })),
+              ...Array.from(uniquePathwaysMap.values()),
             ];
             setPathwayOptions(dynamicPathways);
+          }
 
+          if (categoriesData && categoriesData.length > 0) {
             const dynamicPillars = [
               { label: 'All Pillars', value: 'all-pillars' },
               ...categoriesData.map((c: any) => ({
