@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { VStack, HStack, Button, ButtonText, Modal, Text } from '@ui';
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
@@ -50,6 +50,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const initialValuesRef = useRef<Record<string, string>>({});
 
   const editSchema = useMemo(
     () =>
@@ -151,7 +152,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         keys.push('address', 'location');
       }
 
-      const targets = [
+      const profileTargets = [
         userProfile?.userDetails,
         userProfile?.userDetails?.meta,
         userProfile?.userDetails?.extra,
@@ -159,6 +160,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         userProfile?.meta,
         userProfile?.extra,
         userProfile?.custom_entity_text,
+      ];
+
+      const userTargets = [
         (user as any)?.userDetails,
         (user as any)?.userDetails?.meta,
         (user as any)?.userDetails?.extra,
@@ -168,7 +172,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         (user as any)?.custom_entity_text,
       ];
 
-      for (const target of targets) {
+      for (const target of profileTargets) {
+        if (!target) continue;
+        for (const key of keys) {
+          if (target[key] !== undefined && target[key] !== null && target[key] !== '') {
+            return target[key];
+          }
+        }
+      }
+
+      const isPhoneField = [
+        'phoneNumber', 'phone', 'alternativePhone', 'alternatePhone',
+        'countryCode', 'phoneCode', 'alternativePhoneCode', 'alternatePhoneCode'
+      ].includes(fieldName);
+
+      if (isPhoneField && userProfile) {
+        return null;
+      }
+
+      for (const target of userTargets) {
         if (!target) continue;
         for (const key of keys) {
           if (target[key] !== undefined && target[key] !== null && target[key] !== '') {
@@ -255,6 +277,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           const mapped = mapUserToFormValues(user, profile);
           //console.log('MAPPED VALUES =>', mapped);
           setValues(mapped);
+          initialValuesRef.current = mapped;
 
           const provId = getEntityId(
             profile?.province || (user as any)?.province,
@@ -276,6 +299,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     } else {
       setSelectedUserProfile(null);
       setValues({});
+      initialValuesRef.current = {};
       setFormSites([]);
       setErrors({});
     }
@@ -340,6 +364,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    const hasChanges = Object.keys(initialValuesRef.current).some(key => {
+      const initialVal = (initialValuesRef.current[key] || '').trim();
+      const currentVal = (values[key] || '').trim();
+      return initialVal !== currentVal;
+    });
+
+    if (!hasChanges) {
+      return;
+    }
+
     const validationErrors = validateSchema(
       CREATE_USER_FORM_SCHEMA,
       values,

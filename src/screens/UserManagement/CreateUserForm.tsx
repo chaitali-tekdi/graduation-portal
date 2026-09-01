@@ -369,6 +369,8 @@ export const mapFormValuesToPayload = (
     if (values.countryCode) {
       payload.phone_code = values.countryCode.replace('+', '');
     }
+  } else {
+    payload.phone = '';
   }
   if (values.alternativePhone && values.alternativePhone.trim()) {
     payload.alternative_phone = values.alternativePhone.trim();
