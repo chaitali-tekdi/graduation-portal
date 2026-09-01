@@ -218,7 +218,7 @@ const ProjectComponent = React.memo(() => {
           if (!response.error) {
             await clearPendingDraft();
             if (config.onSubmitInterventionPlan) {
-              config.onSubmitInterventionPlan(newProjectId);
+              config.onSubmitInterventionPlan(oldProjectData._id);
             }
             showAlert('success', t('projectPlayer.template.IdpUpdateSentForApproval', { name: config.profileInfo?.name }));
           } else {
