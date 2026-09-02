@@ -161,7 +161,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         userProfile?.extra,
         userProfile?.custom_entity_text,
       ];
-
       const userTargets = [
         (user as any)?.userDetails,
         (user as any)?.userDetails?.meta,
