@@ -151,7 +151,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         keys.push('address', 'location');
       }
 
-      const targets = [
+      const profileTargets = [
         userProfile?.userDetails,
         userProfile?.userDetails?.meta,
         userProfile?.userDetails?.extra,
@@ -159,6 +159,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         userProfile?.meta,
         userProfile?.extra,
         userProfile?.custom_entity_text,
+      ];
+      const userTargets = [
         (user as any)?.userDetails,
         (user as any)?.userDetails?.meta,
         (user as any)?.userDetails?.extra,
@@ -168,6 +170,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         (user as any)?.custom_entity_text,
       ];
 
+      // Phone fields can be explicitly cleared to null by the backend. For these, an
+      // explicitly-present key in the freshly-fetched profile is authoritative - even if its
+      // value is null/empty - so we don't fall back to the possibly-stale `user` list row.
+      const isPhoneField = ['phone', 'phoneNumber', 'countryCode', 'phone_code', 'phoneCode'].includes(fieldName);
+      if (isPhoneField) {
+        for (const target of profileTargets) {
+          if (!target) continue;
+          for (const key of keys) {
+            if (Object.prototype.hasOwnProperty.call(target, key)) {
+              return target[key];
+            }
+          }
+        }
+      }
+
+      const targets = [...profileTargets, ...userTargets];
       for (const target of targets) {
         if (!target) continue;
         for (const key of keys) {
