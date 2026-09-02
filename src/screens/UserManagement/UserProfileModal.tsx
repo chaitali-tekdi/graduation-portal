@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { VStack, HStack, Button, ButtonText, Modal, Text } from '@ui';
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
@@ -50,6 +50,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const initialValuesRef = useRef<Record<string, string>>({});
 
   const editSchema = useMemo(
     () =>
@@ -170,23 +171,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         (user as any)?.custom_entity_text,
       ];
 
-      // Phone fields can be explicitly cleared to null by the backend. For these, an
-      // explicitly-present key in the freshly-fetched profile is authoritative - even if its
-      // value is null/empty - so we don't fall back to the possibly-stale `user` list row.
-      const isPhoneField = ['phone', 'phoneNumber', 'countryCode', 'phone_code', 'phoneCode'].includes(fieldName);
-      if (isPhoneField) {
-        for (const target of profileTargets) {
-          if (!target) continue;
-          for (const key of keys) {
-            if (Object.prototype.hasOwnProperty.call(target, key)) {
-              return target[key];
-            }
+      for (const target of profileTargets) {
+        if (!target) continue;
+        for (const key of keys) {
+          if (target[key] !== undefined && target[key] !== null && target[key] !== '') {
+            return target[key];
           }
         }
       }
 
-      const targets = [...profileTargets, ...userTargets];
-      for (const target of targets) {
+      const isPhoneField = [
+        'phoneNumber', 'phone', 'alternativePhone', 'alternatePhone',
+        'countryCode', 'phoneCode', 'alternativePhoneCode', 'alternatePhoneCode'
+      ].includes(fieldName);
+
+      if (isPhoneField && userProfile) {
+        return null;
+      }
+
+      for (const target of userTargets) {
         if (!target) continue;
         for (const key of keys) {
           if (target[key] !== undefined && target[key] !== null && target[key] !== '') {
@@ -273,6 +276,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           const mapped = mapUserToFormValues(user, profile);
           //console.log('MAPPED VALUES =>', mapped);
           setValues(mapped);
+          initialValuesRef.current = mapped;
 
           const provId = getEntityId(
             profile?.province || (user as any)?.province,
@@ -294,6 +298,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     } else {
       setSelectedUserProfile(null);
       setValues({});
+      initialValuesRef.current = {};
       setFormSites([]);
       setErrors({});
     }
@@ -358,6 +363,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    const hasChanges = Object.keys(initialValuesRef.current).some(key => {
+      const initialVal = (initialValuesRef.current[key] || '').trim();
+      const currentVal = (values[key] || '').trim();
+      return initialVal !== currentVal;
+    });
+
+    if (!hasChanges) {
+      return;
+    }
+
     const validationErrors = validateSchema(
       CREATE_USER_FORM_SCHEMA,
       values,
