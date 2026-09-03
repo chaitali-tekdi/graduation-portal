@@ -3,7 +3,7 @@ import { VStack, HStack, Button, ButtonText, Modal, Badge, BadgeText, Text, Luci
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { FormField, FORM_FIELD_TYPES } from '@components/SchemaFormRenderer/type';
-import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
+import SchemaFormRenderer, { validateSchema, SchemaFormRendererRef } from '@components/SchemaFormRenderer';
 import { createUser, getSitesByProvince } from '../../services/usersService';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import type { AdminUserManagementData } from '@app-types/Users';
@@ -23,6 +23,7 @@ export const CreateUserForm = React.memo<CreateUserFormProps>(({
   onSuccess,
   t,
 }) => {
+  const formRef = useRef<SchemaFormRendererRef>(null);
   const { showAlert } = useAlert();
   const { roles, provinces, genders, organisations, positions, countryCodes } = useUserManagementFilters({});
   const initialValues = useMemo(() => {
@@ -102,7 +103,10 @@ export const CreateUserForm = React.memo<CreateUserFormProps>(({
   const handleSubmit = useCallback(async () => {
     const validationErrs = validateSchema(CREATE_USER_FORM_SCHEMA, values, optionsMap);
     if (Object.keys(validationErrs).length > 0) {
-      setErrors(validationErrs);
+      const firstKey = Object.keys(validationErrs)[0];
+      const firstErrorMsg = validationErrs[firstKey];
+      setErrors({ [firstKey]: firstErrorMsg });
+      formRef.current?.revealAndFocusField(firstKey, firstErrorMsg);
       return;
     }
 
@@ -159,6 +163,7 @@ export const CreateUserForm = React.memo<CreateUserFormProps>(({
     >
       <VStack space="md" width="100%" px="$1">
         <SchemaFormRenderer
+          ref={formRef}
           schema={CREATE_USER_FORM_SCHEMA}
           values={values}
           errors={errors}

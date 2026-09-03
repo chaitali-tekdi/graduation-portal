@@ -19,7 +19,7 @@
  *   />
  */
 
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import {
   VStack,
   HStack,
@@ -144,6 +144,10 @@ FastTextareaInput.displayName = 'SFR_FastTextareaInput';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type OptionsMap = Record<string, { value: string; label: string }[]>;
+
+export interface SchemaFormRendererRef {
+  revealAndFocusField: (name: string, message: string) => void;
+}
 
 export interface SchemaFormRendererProps {
   schema: FormSection[];
@@ -1428,7 +1432,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             >
               {triggerLabel}
             </Text>
-            {maxFileSize && 
+            {maxFileSize &&
               <Text
                 {...TYPOGRAPHY.caption}
                 color="$gray300"
@@ -2198,7 +2202,7 @@ function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
   return useCallback((...args: Parameters<T>) => ref.current(...args), []) as T;
 }
 
-const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
+const SchemaFormRenderer = forwardRef<SchemaFormRendererRef, SchemaFormRendererProps>(({
   schema,
   values = {},
   errors = {},
@@ -2229,7 +2233,7 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   saveDraftButtonProps,
   submitButtonProps,
   lodingButton,
-}) => {
+}, ref) => {
   // Caller-supplied `onFieldChange` can't be assumed referentially stable —
   // wrap it once so every child that receives it keeps the same identity
   // across renders (required for the memoization below to do anything).
@@ -2288,7 +2292,7 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   // focuses, and temporarily highlights it. Other invalid fields stay quiet —
   // Task 2 explicitly asks that the popup, not a wall of inline errors, be the
   // first thing the user sees after a failed validation.
-  const revealAndFocusField = (name: string, message: string) => {
+  const revealAndFocusField = useCallback((name: string, message: string) => {
     setInternalErrors(prev => ({ ...prev, [name]: message }));
 
     setHighlightedField(name);
@@ -2300,11 +2304,30 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
 
     setTimeout(() => {
       const node = fieldRefsRef.current[name];
-      if (node?.scrollIntoView)
-        node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (node?.focus) node.focus();
+      if (node) {
+        if (node.scrollIntoView) {
+          node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        const focusable = node.querySelector
+          ? node.querySelector('input, textarea, select, button, [tabindex]')
+          : null;
+        if (focusable && focusable.focus) {
+          focusable.focus();
+        } else if (node.focus) {
+          if (!node.hasAttribute || !node.hasAttribute('tabindex')) {
+            node.setAttribute?.('tabindex', '-1');
+          }
+          node.focus();
+        }
+      }
     }, 50);
-  };
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    revealAndFocusField: (name: string, message: string) => {
+      revealAndFocusField(name, message);
+    },
+  }), [revealAndFocusField]);
 
   // Applies a fresh validation pass without auto-revealing newly-invalid fields:
   // a field only ever gets an inline message once the user has opened it from the
@@ -2597,10 +2620,10 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
 
   return (
     <VStack space="md" width="100%">
-      <RenderNodes nodes={schema} ctx={baseCtx} />
+      <RenderNodes nodes={schema} ctx={stepCtx} />
     </VStack>
   );
-};
+});
 
 export default SchemaFormRenderer;
 
@@ -2861,7 +2884,7 @@ function formatFieldValueForDisplay(
   if (!isValuePresent(rawValue) && field?.defaultValue) {
     rawValue = field.defaultValue;
   }
-  
+
   const resolveLabel = (v: any): string => {
     if (field?.displayFormat) {
       const [type, format] = field?.displayFormat?.split("@")
@@ -2878,9 +2901,9 @@ function formatFieldValueForDisplay(
     return option?.label || String(v);
   };
 
-  if(field?.type === FORM_FIELD_TYPES.GROUP) {
-    let newValue:string[] = []
-    field?.fields?.forEach((item:FormField | undefined) => newValue.push(item?.name && values[item?.name] ? resolveLabel(values[item?.name]) : '-'))
+  if (field?.type === FORM_FIELD_TYPES.GROUP) {
+    let newValue: string[] = []
+    field?.fields?.forEach((item: FormField | undefined) => newValue.push(item?.name && values[item?.name] ? resolveLabel(values[item?.name]) : '-'))
     return newValue.join(" ")
   }
 
