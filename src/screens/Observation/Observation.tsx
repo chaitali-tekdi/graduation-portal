@@ -7,6 +7,7 @@ import dataService from '../../services/dataService';
 import { useAuth, useIsdminPanalAccess } from '@contexts/AuthContext';
 import { ParticipantData } from '@app-types/participant';
 import { buildObservationPrefillData } from '@constants/OBSERVATION_PREFILL';
+import moment from 'moment';
 
 const DEFAULT_COUNTRY_CODE = 27;
 
@@ -156,7 +157,7 @@ const Observation: React.FC = () => {
             alternatePhone,
             email: ud?.email ?? newData?.email,
             gender: ud?.gender?.label || newData?.userDetails?.gender?.label || '',
-            dob: newData?.userDetails?.dob?.label ? newData.userDetails.dob.label.split("_").reverse().join("/") : newData?.dob?.label ? newData.dob.label.split("_").reverse().join("/") : "-"
+            dob: ud?.dob?.label ? moment(ud.dob.label, 'YYYY_MM_DD').format('YYYY-MM-DD') : newData?.dob?.label ? moment(newData?.dob?.label, 'YYYY_MM_DD').format('YYYY-MM-DD') : "-"
           }, formatCountryCode);
           setUserData(preFillData);
         }
