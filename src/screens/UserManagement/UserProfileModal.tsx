@@ -390,37 +390,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setIsSubmitting(true);
     try {
       const payload = mapFormValuesToPayload(values, roles);
-
       await updateOrgAdminUser(user!.id, payload);
-
-      const isParticipant =
-        values.isParticipant === 'true' ||
-        (user as any)?.user_organizations?.[0]?.roles?.[0]?.role?.title?.toLowerCase() === 'user' ||
-        (user as any)?.role?.toLowerCase() === 'user' ||
-        (user as any)?.roleTitle?.toLowerCase() === 'user';
-
-      if (isParticipant) {
-        const participantUserId = user!.id;
-        const participantEntityId =
-          (user as any)?.extra?.entityId ||
-          (user as any)?.extra?.entity_id ||
-          (user as any)?.extra?.id ||
-          (user as any)?.extra?._id ||
-          (user as any)?.entityId ||
-          (user as any)?.entity_id ||
-          (user as any)?.id;
-
-        if (participantEntityId) {
-          await updateEntityDetails({
-            userId: String(participantUserId),
-            entityId: String(participantEntityId),
-            entityUpdates: {
-              name: values.name?.trim(),
-            },
-          });
-        }
-      }
-
       showAlert(
         'success',
         t('admin.users.edit.success', 'User updated successfully.'),
