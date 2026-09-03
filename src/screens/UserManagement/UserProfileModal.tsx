@@ -362,13 +362,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     });
   };
 
-  const handleSubmit = async () => {
-    const hasChanges = Object.keys(initialValuesRef.current).some(key => {
-      const initialVal = (initialValuesRef.current[key] || '').trim();
-      const currentVal = (values[key] || '').trim();
+  const hasChanges = useMemo(() => {
+    const initialKeys = Object.keys(initialValuesRef.current);
+    const currentKeys = Object.keys(values);
+    if (initialKeys.length === 0 && currentKeys.length === 0) return false;
+    const allKeys = Array.from(new Set([...initialKeys, ...currentKeys]));
+
+    return allKeys.some(key => {
+      const initialVal = (initialValuesRef.current[key] ?? '').toString().trim();
+      const currentVal = (values[key] ?? '').toString().trim();
       return initialVal !== currentVal;
     });
+  }, [values]);
 
+  const handleSubmit = async () => {
     if (!hasChanges) {
       return;
     }
@@ -510,7 +517,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               variant="solid"
               action="primary"
               onPress={handleSubmit}
-              isDisabled={isSubmitting}
+              isDisabled={isSubmitting || !hasChanges}
             >
               <ButtonText color="$white" {...TYPOGRAPHY.bodySmall}>
                 {isSubmitting
