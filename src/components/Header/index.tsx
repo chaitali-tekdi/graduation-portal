@@ -239,14 +239,14 @@ const Header: React.FC<{
         {/* Right: Notifications, Language & Theme */}
         <HStack {...stylesHeader.rightActionsContainer}>
           {/* Notifications */}
-          {showNotification && (
+          {/* {showNotification && (
             <Pressable position="relative">
               <Icon as={BellIcon} {...stylesHeader.notificationIcon} />
               <Badge {...stylesHeader.notificationBadge}>
                 <Text {...stylesHeader.notificationBadgeText}>3</Text>
               </Badge>
             </Pressable>
-          )}
+          )} */}
           {showLanguage && <LanguageSelector />}
           {showTheme && (
             <Icon

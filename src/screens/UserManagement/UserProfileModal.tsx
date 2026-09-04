@@ -3,7 +3,7 @@ import { VStack, HStack, Button, ButtonText, Modal, Text } from '@ui';
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { CREATE_USER_FORM_SCHEMA, INPUT_STYLE } from '@constants/CREATE_USER_FORM_SCHEMA';
-import SchemaFormRenderer, { validateSchema, } from '@components/SchemaFormRenderer';
+import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince, updateOrgAdminUser, } from '../../services/usersService';
 import { getUserProfile } from '../../services/authenticationService';
@@ -362,13 +362,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     });
   };
 
-  const handleSubmit = async () => {
-    const hasChanges = Object.keys(initialValuesRef.current).some(key => {
-      const initialVal = (initialValuesRef.current[key] || '').trim();
-      const currentVal = (values[key] || '').trim();
+  const hasChanges = useMemo(() => {
+    const initialKeys = Object.keys(initialValuesRef.current);
+    const currentKeys = Object.keys(values);
+    if (initialKeys.length === 0 && currentKeys.length === 0) return false;
+    const allKeys = Array.from(new Set([...initialKeys, ...currentKeys]));
+
+    return allKeys.some(key => {
+      const initialVal = (initialValuesRef.current[key] ?? '').toString().trim();
+      const currentVal = (values[key] ?? '').toString().trim();
       return initialVal !== currentVal;
     });
+  }, [values]);
 
+  const handleSubmit = async () => {
     if (!hasChanges) {
       return;
     }
@@ -380,10 +387,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     );
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      showAlert(
-        'error',
-        t('common.validationError', 'Please correct the errors in the form.'),
-      );
       return;
     }
 
@@ -480,7 +483,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               variant="solid"
               action="primary"
               onPress={handleSubmit}
-              isDisabled={isSubmitting}
+              isDisabled={isSubmitting || !hasChanges}
             >
               <ButtonText color="$white" {...TYPOGRAPHY.bodySmall}>
                 {isSubmitting
