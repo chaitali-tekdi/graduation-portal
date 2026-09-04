@@ -178,6 +178,43 @@ export const CREATE_USER_FORM_SCHEMA: FormSection[] = [
       {
         fields: [
           {
+            name: 'gender',
+            type: 'select',
+            required: true,
+            label: { key: 'gender', fallback: 'Gender' },
+            placeholder: { fallback: 'Select gender' },
+            optionsSource: 'genders',
+            validation: [
+              { rule: 'required', message: { key: 'errors.genderRequired', fallback: 'Gender is required' } },
+            ],
+          },
+          {
+            name: 'dob',
+            type: 'date',
+            required: true,
+            zIndex: 999,
+            label: { key: 'dob', fallback: 'DOB' },
+            placeholder: { fallback: 'DD/MM/YYYY' },
+            valueFormat: 'YYYY_MM_DD',
+            displayFormat: 'dateFormat@DD/MM/YYYY',
+            validation: [
+              { rule: 'required', message: { key: 'errors.dobRequired', fallback: 'Date of birth is required' } },
+              { rule: 'dateNotInFuture', message: { key: 'errors.dobFuture', fallback: 'Date of birth cannot be in the future' } },
+              {
+                rule: 'minAge',
+                value: 18,
+                message: {
+                  key: 'errors.dobMinAge',
+                  fallback: 'User must be at least 18 years old',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        fields: [
+          {
             type: 'group',
             name: 'phoneNumber',
             required: false,
@@ -285,44 +322,6 @@ export const CREATE_USER_FORM_SCHEMA: FormSection[] = [
     _title: TITLE_STYLE,
     _container: CONTAINER_STYLE,
     rows: [
-      {
-        fields: [
-          {
-            name: 'gender',
-            type: 'select',
-            required: true,
-            label: { key: 'gender', fallback: 'Gender' },
-            placeholder: { fallback: 'Select gender' },
-            optionsSource: 'genders',
-            validation: [
-              { rule: 'required', message: { key: 'errors.genderRequired', fallback: 'Gender is required' } },
-            ],
-          },
-          {
-            name: 'dob',
-            type: 'date',
-            required: true,
-            zIndex: 999,
-            label: { key: 'dob', fallback: 'DOB' },
-            placeholder: { fallback: 'DD/MM/YYYY' },
-            valueFormat: 'YYYY_MM_DD',
-            displayFormat: 'dateFormat@DD/MM/YYYY',
-            validation: [
-              { rule: 'required', message: { key: 'errors.dobRequired', fallback: 'Date of birth is required' } },
-              { rule: 'dateNotInFuture', message: { key: 'errors.dobFuture', fallback: 'Date of birth cannot be in the future' } },
-              {
-                rule: 'minAge',
-                value: 18,
-                message: {
-                  key: 'errors.dobMinAge',
-                  fallback: 'User must be at least 18 years old',
-                },
-              },
-            ],
-          },
-        ],
-      },
-
       // {
       //   visibleWhen: { flag: 'isSupervisorOrLC' },
       //   fields: [
