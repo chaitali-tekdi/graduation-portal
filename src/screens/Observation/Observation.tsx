@@ -156,7 +156,7 @@ const Observation: React.FC = () => {
             alternatePhoneCode,
             alternatePhone,
             email: ud?.email ?? newData?.email,
-            gender: ud?.gender?.label || newData?.userDetails?.gender?.label || '',
+            gender: ud?.gender?.label || newData?.gender?.label || newData?.userDetails?.gender?.label || '',
             dob: ud?.dob?.label ? moment(ud.dob.label, 'YYYY_MM_DD').format('YYYY-MM-DD') : newData?.dob?.label ? moment(newData?.dob?.label, 'YYYY_MM_DD').format('YYYY-MM-DD') : "-"
           }, formatCountryCode);
           setUserData(preFillData);
