@@ -73,8 +73,8 @@ export const listChangeRequests = async (
 
     const queryParams = new URLSearchParams({
       status,
-      pageNo: pageNo.toString(),
-      pageSize: pageSize.toString(),
+      page: pageNo.toString(),
+      limit: pageSize.toString(),
     });
 
     if (action) queryParams.append('action', action);
