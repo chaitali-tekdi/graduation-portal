@@ -37,7 +37,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   mode = 'edit',
   onEdit,
 }) => {
-  const formRef = useRef<SchemaFormRendererRef>(null);
   const { showAlert } = useAlert();
   const [profileLoading, setProfileLoading] = useState(false);
   const [selectedUserProfile, setSelectedUserProfile] = useState<any | null>(
@@ -387,10 +386,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       optionsMap,
     );
     if (Object.keys(validationErrors).length > 0) {
-      const firstKey = Object.keys(validationErrors)[0];
-      const firstErrorMsg = validationErrors[firstKey];
-      setErrors({ [firstKey]: firstErrorMsg });
-      formRef.current?.revealAndFocusField(firstKey, firstErrorMsg);
+      setErrors(validationErrors);
       return;
     }
 
@@ -483,7 +479,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         ) : (
           <VStack space="lg" alignItems="stretch">
             <SchemaFormRenderer
-              ref={formRef}
               schema={editSchema}
               values={values}
               errors={errors}

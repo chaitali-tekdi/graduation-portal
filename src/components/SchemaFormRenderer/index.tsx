@@ -2202,7 +2202,7 @@ function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
   return useCallback((...args: Parameters<T>) => ref.current(...args), []) as T;
 }
 
-const SchemaFormRenderer = forwardRef<SchemaFormRendererRef, SchemaFormRendererProps>(({
+const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
   schema,
   values = {},
   errors = {},
@@ -2233,7 +2233,7 @@ const SchemaFormRenderer = forwardRef<SchemaFormRendererRef, SchemaFormRendererP
   saveDraftButtonProps,
   submitButtonProps,
   lodingButton,
-}, ref) => {
+}) => {
   // Caller-supplied `onFieldChange` can't be assumed referentially stable —
   // wrap it once so every child that receives it keeps the same identity
   // across renders (required for the memoization below to do anything).
@@ -2323,12 +2323,6 @@ const SchemaFormRenderer = forwardRef<SchemaFormRendererRef, SchemaFormRendererP
     }, 50);
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    revealAndFocusField: (name: string, message: string) => {
-      revealAndFocusField(name, message);
-    },
-  }), [revealAndFocusField]);
-
   // Applies a fresh validation pass without auto-revealing newly-invalid fields:
   // a field only ever gets an inline message once the user has opened it from the
   // validation popup (`revealAndFocusField`). Already-revealed fields still track
@@ -2347,6 +2341,24 @@ const SchemaFormRenderer = forwardRef<SchemaFormRendererRef, SchemaFormRendererP
       return next;
     });
   };
+
+  const prevErrorsRef = useRef<Record<string, string>>(errors);
+
+  // Automatically scroll to and focus the first field with a validation error when validation is triggered
+  useEffect(() => {
+    const currentKeys = Object.keys(errors).filter(key => Boolean(errors[key]));
+    if (currentKeys.length > 0 && errors !== prevErrorsRef.current) {
+      const prevKeys = Object.keys(prevErrorsRef.current).filter(key => Boolean(prevErrorsRef.current[key]));
+      const isNewValidation = prevKeys.length === 0 || currentKeys.some(k => !prevErrorsRef.current[k]);
+      
+      if (isNewValidation) {
+        const firstField = currentKeys[0];
+        const message = errors[firstField];
+        revealAndFocusField(firstField, message);
+      }
+    }
+    prevErrorsRef.current = errors;
+  }, [errors, revealAndFocusField]);
 
   useEffect(() => {
     return () => {
@@ -2623,7 +2635,7 @@ const SchemaFormRenderer = forwardRef<SchemaFormRendererRef, SchemaFormRendererP
       <RenderNodes nodes={schema} ctx={stepCtx} />
     </VStack>
   );
-});
+};
 
 export default SchemaFormRenderer;
 

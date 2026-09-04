@@ -23,7 +23,6 @@ export const CreateUserForm = React.memo<CreateUserFormProps>(({
   onSuccess,
   t,
 }) => {
-  const formRef = useRef<SchemaFormRendererRef>(null);
   const { showAlert } = useAlert();
   const { roles, provinces, genders, organisations, positions, countryCodes } = useUserManagementFilters({});
   const initialValues = useMemo(() => {
@@ -103,10 +102,7 @@ export const CreateUserForm = React.memo<CreateUserFormProps>(({
   const handleSubmit = useCallback(async () => {
     const validationErrs = validateSchema(CREATE_USER_FORM_SCHEMA, values, optionsMap);
     if (Object.keys(validationErrs).length > 0) {
-      const firstKey = Object.keys(validationErrs)[0];
-      const firstErrorMsg = validationErrs[firstKey];
-      setErrors({ [firstKey]: firstErrorMsg });
-      formRef.current?.revealAndFocusField(firstKey, firstErrorMsg);
+      setErrors(validationErrs);
       return;
     }
 
@@ -163,7 +159,6 @@ export const CreateUserForm = React.memo<CreateUserFormProps>(({
     >
       <VStack space="md" width="100%" px="$1">
         <SchemaFormRenderer
-          ref={formRef}
           schema={CREATE_USER_FORM_SCHEMA}
           values={values}
           errors={errors}
