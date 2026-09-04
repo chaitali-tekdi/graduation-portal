@@ -3,7 +3,7 @@ import { VStack, HStack, Button, ButtonText, Modal, Badge, BadgeText, Text, Luci
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { FormField, FORM_FIELD_TYPES } from '@components/SchemaFormRenderer/type';
-import SchemaFormRenderer, { validateSchema, SchemaFormRendererRef } from '@components/SchemaFormRenderer';
+import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
 import { createUser, getSitesByProvince } from '../../services/usersService';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import type { AdminUserManagementData } from '@app-types/Users';

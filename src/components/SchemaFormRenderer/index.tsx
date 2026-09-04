@@ -145,10 +145,6 @@ FastTextareaInput.displayName = 'SFR_FastTextareaInput';
 
 export type OptionsMap = Record<string, { value: string; label: string }[]>;
 
-export interface SchemaFormRendererRef {
-  revealAndFocusField: (name: string, message: string) => void;
-}
-
 export interface SchemaFormRendererProps {
   schema: FormSection[];
   /**
@@ -2350,7 +2346,7 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
     if (currentKeys.length > 0 && errors !== prevErrorsRef.current) {
       const prevKeys = Object.keys(prevErrorsRef.current).filter(key => Boolean(prevErrorsRef.current[key]));
       const isNewValidation = prevKeys.length === 0 || currentKeys.some(k => !prevErrorsRef.current[k]);
-      
+
       if (isNewValidation) {
         const firstField = currentKeys[0];
         const message = errors[firstField];

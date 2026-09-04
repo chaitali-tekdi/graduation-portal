@@ -3,7 +3,7 @@ import { VStack, HStack, Button, ButtonText, Modal, Text } from '@ui';
 import { useAlert } from '@components/ui';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { CREATE_USER_FORM_SCHEMA, INPUT_STYLE } from '@constants/CREATE_USER_FORM_SCHEMA';
-import SchemaFormRenderer, { validateSchema, SchemaFormRendererRef } from '@components/SchemaFormRenderer';
+import SchemaFormRenderer, { validateSchema } from '@components/SchemaFormRenderer';
 import { useUserManagementFilters } from '@constants/USER_MANAGEMENT';
 import { getSitesByProvince, updateOrgAdminUser, } from '../../services/usersService';
 import { getUserProfile } from '../../services/authenticationService';
