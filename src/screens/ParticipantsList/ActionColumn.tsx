@@ -266,11 +266,8 @@ export const ActionColumn: React.FC<ActionColumnProps> = ({
       try {
         if (user?.role === 'LC') {
           const response = await requestChange({
-            province: user.province.value || '',
-            site: user.site.value || '',
             requestees: [String(participant.hierarchy[1])],
             entityId: userEntityId,
-            entityName: participant.name || '',
             action: 'PROGRAM_USER_DROPPING_OUT',
             changePayload: {
               status: STATUS.DROPOUT,
