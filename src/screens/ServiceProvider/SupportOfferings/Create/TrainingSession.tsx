@@ -232,7 +232,7 @@ const App = (): React.JSX.Element => {
             saveDraftButtonProps={{ _icon: { color: "$textForeground" } }}
             submitButtonProps={{ bg: "green", icon: "Check", _icon: { color: "$white" } }}
             submitButtonText={t("supportProvider.supportOfferings.buttonTexts.publishSupport")}
-            extraButton={
+            customButton={
               modeType === FORM_MODE.EDIT ? (
                 <Button variant="outlineghost" onPress={handleDiscard} isDisabled={!!lodingButton}>
                   <ButtonIcon as={LucideIcon} name="X" />

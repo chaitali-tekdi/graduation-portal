@@ -128,7 +128,7 @@ export const getSessionDetails = async (sessionId: string | number): Promise<any
  */
 export const deleteSession = async (sessionId: string | number): Promise<any> => {
   try {
-    const response = await api.delete(API_ENDPOINTS.MENTORING_DELETE_SESSION(sessionId));
+    const response = await api.delete(API_ENDPOINTS.MENTORING_UPDATE_SESSION(sessionId));
     return response.data;
   } catch (error: any) {
     throw error;
