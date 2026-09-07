@@ -102,6 +102,7 @@ const ReviewRequestsScreen = (): React.JSX.Element => {
     setIsLoading(true);
     try {
       const response = await listChangeRequests({
+        programId: process.env.GLOBAL_LC_PROGRAM_ID as string,
         status: activeTab,
         action: effectiveAction,
         province: effectiveProvince,
