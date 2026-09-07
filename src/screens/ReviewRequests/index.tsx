@@ -36,7 +36,7 @@ const TYPE_FILTER_DATA = [
   { labelKey: 'admin.reviewRequests.filters.pathwaySwitch', value: 'USER_PROJECT_TEMPLATE_CHANGE' },
   { labelKey: 'admin.reviewRequests.filters.dropoutRequest', value: 'PROGRAM_USER_DROPPING_OUT' },
 ];
-
+const showClearButton = false;
 const ReviewRequestsScreen = (): React.JSX.Element => {
   const { t } = useLanguage();
   const { showAlert } = useAlert();
@@ -223,7 +223,7 @@ const ReviewRequestsScreen = (): React.JSX.Element => {
         }
       />
 
-      <FilterButton data={filterOptions} onFilterChange={handleFilterChange} _container={styles.filterContainer} />
+      <FilterButton data={filterOptions} showClearButton={showClearButton} onFilterChange={handleFilterChange} _container={styles.filterContainer} />
 
       <Box {...styles.tableWrapper}>
         <DataTable
