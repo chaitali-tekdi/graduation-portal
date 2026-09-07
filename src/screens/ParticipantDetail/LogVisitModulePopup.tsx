@@ -119,13 +119,13 @@ function LogVisitModulePopupComponent({
     [],
   );
 
-const isDropoutRequestSentForApproval = useCallback(() => {
-  return Boolean(
-    participant?.pendingChangeRequest?.some(
-      (request: any) =>  request.action === 'PROGRAM_USER_DROPPING_OUT' && request.status === 'PENDING'
-    )
-  );
-}, [participant?.pendingChangeRequest]);
+  const isDropoutRequestSentForApproval = useMemo(() => {
+    return Boolean(
+      participant?.pendingChangeRequest?.some(
+        (request: any) => request.action === 'PROGRAM_USER_DROPPING_OUT' && request.status === 'PENDING'
+      )
+    );
+  }, [participant?.pendingChangeRequest]);
 
   const handleOpenLogVisit = useCallback((isOpenf:"expand" | "openForm" | "openList" = "expand") => {
     if(isOpenf === "expand") {
