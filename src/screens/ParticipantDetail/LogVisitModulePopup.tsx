@@ -119,6 +119,12 @@ function LogVisitModulePopupComponent({
     [],
   );
 
+  const isDropoutRequestSentForApproval = Boolean(
+    participant?.pendingChangeRequest?.some(
+      (request: any) => request.action === 'PROGRAM_USER_DROPPING_OUT' && request.status === 'PENDING'
+    )
+  );
+
   const handleOpenLogVisit = useCallback((isOpenf:"expand" | "openForm" | "openList" = "expand") => {
     if(isOpenf === "expand") {
       setExpanded(prev => !prev)
@@ -155,7 +161,7 @@ function LogVisitModulePopupComponent({
     <>
       <ExpandableFab {...(buttonText ? {buttonText,onPress:() => handleOpenLogVisit("openForm")} : {})}
         actions={[
-          ...(participant?.status !== STATUS.DROPOUT && participant?.status !== STATUS.NOT_ELIGIBLE && participant?.accountUserStatus !== USER_STATUS.INACTIVE
+          ...(participant?.status !== STATUS.DROPOUT && participant?.status !== STATUS.NOT_ELIGIBLE && participant?.accountUserStatus !== USER_STATUS.INACTIVE && !isDropoutRequestSentForApproval
             ? [
                 {
                   label: 'actions.logVisit',
