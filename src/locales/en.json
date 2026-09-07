@@ -2533,7 +2533,9 @@
       "subtitle": "Choose the type of support you want to create",
       "changeType": "Change type",
       "training": {
-        "title": "Create Training Session"
+        "title": "Create Training Session",
+        "discardMessage": "Are you sure you want to discard this session draft?",
+        "discard": "Discard Draft"
       },
       "additionalService": {
         "title": "Create Additional Service"

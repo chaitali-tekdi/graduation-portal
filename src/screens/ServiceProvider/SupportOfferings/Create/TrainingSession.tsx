@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Button, ButtonIcon, ButtonText, Card, Container, Loader, VStack, useAlert } from '@ui';
+import { Button, ButtonIcon, ButtonText, Card, Container, Loader, VStack, useAlert, Modal, HStack, Text } from '@ui';
 import styles from '../styles';
 import SPTitleHeader from '@components/Header/SPTitleHeader';
 import LucideIcon from '@components/ui/LucideIcon';
@@ -46,6 +46,7 @@ const App = (): React.JSX.Element => {
   const { showAlert } = useAlert();
   const { isCardAllowed, allowedSubOptions } = useProfileCompletion();
   const isAllowed = Boolean(isCardAllowed(SUPPORT_CATEGORIES.TRAINING));
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
 
   const { optionsMap } = useTrainingFormOptions({
     values,
@@ -234,7 +235,7 @@ const App = (): React.JSX.Element => {
             submitButtonText={t("supportProvider.supportOfferings.buttonTexts.publishSupport")}
             customButton={
               modeType === FORM_MODE.EDIT ? (
-                <Button variant="outlineghost" onPress={handleDiscard} isDisabled={!!lodingButton}>
+                <Button variant="outlineghost" onPress={() => setShowDiscardModal(true)} isDisabled={!!lodingButton}>
                   <ButtonIcon as={LucideIcon} name="X" />
                   <ButtonText>{t('supportProvider.createSupport.training.discard', 'Discard Draft')}</ButtonText>
                 </Button>
@@ -242,6 +243,26 @@ const App = (): React.JSX.Element => {
             }
           />
         </Card>
+      <Modal
+        isOpen={showDiscardModal}
+        onClose={() => setShowDiscardModal(false)}
+        headerContent={<Text fontSize="$lg" fontWeight="$bold" color="$text900"> {t('supportProvider.createSupport.training.discard' )} </Text>} >
+        <VStack bg="$white" borderRadius="$xl" gap="$4" width="$full">
+          <Text fontSize="$sm"  color="$text600"  lineHeight="$lg" > {t( 'supportProvider.createSupport.training.discardMessage')} </Text>
+            <HStack  justifyContent="flex-end"  alignItems="center"  gap="$3"  >
+            <Button  variant="outlineghost"  onPress={() => setShowDiscardModal(false)}  isDisabled={!!lodingButton}  >
+              <ButtonText>  {t('common.cancel')}  </ButtonText>
+            </Button>
+
+            <Button  variant="solid"  bg="$primary500"  onPress={handleDiscard}  isDisabled={!!lodingButton}  >
+              <ButtonText color="$white">
+                {t(  'supportProvider.createSupport.training.discard' )}
+              </ButtonText>
+            </Button>
+          </HStack>
+        </VStack>
+      </Modal>
+        
       </Container>
     </VStack>
   );
