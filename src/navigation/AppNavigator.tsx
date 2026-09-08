@@ -47,6 +47,8 @@ const ReviewRequestsScreen = lazyScreen(() => import('../screens/ReviewRequests'
 const AdminDashboard = lazyScreen(() => import('../screens/AdminDashboard'));
 const ProfilePermissions = lazyScreen(() => import('../screens/ProfilePermissions'));
 const ForgotPasswordScreen = lazyScreen(() => import('../screens/Auth/ForgotPasswordScreen'));
+const ParticipantJourneyScreen = lazyScreen(() => import('../screens/ParticipantJourney'));
+const IdpProgressScreen = lazyScreen(() => import('../screens/ParticipantJourney/IdpProgress'));
 
 const spinnerHeight = (isWebPlatform ? '$100vh' : '$full') as any;
 
@@ -183,6 +185,11 @@ const getAccessPages = (
         { name: 'template', path: '/participants/:id/template/:projectId?', component: TemplateScreen },
         { name: 'participants', component: ParticipantsList },
         { name: 'project', path: '/project', component: ProjectPlayer },
+      ];
+    case 'participant':
+      return [
+        { name: 'participant-portal', path: '/', component: ParticipantJourneyScreen },
+        { name: 'idp-progress', path: '/idp-progress', component: IdpProgressScreen },
       ];
     default:
       return []; // Always return an array even if empty
