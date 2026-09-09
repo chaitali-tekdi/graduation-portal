@@ -3,6 +3,7 @@ import { MenuItemData } from '@components/ui/Menu';
 import {
   LC_USER_GUIDE_MENU_ITEM,
   REPORT_FEEDBACK_MENU_ITEM,
+  DOWNLOAD_APK_MENU_ITEM,
 } from '@constants/ADMIN_SIDEBAR_MENU';
 
 /**
@@ -84,8 +85,18 @@ export const LC_MENU_OPTIONS: MenuItemData[] = [
     iconName: REPORT_FEEDBACK_MENU_ITEM.icon,
     iconSizeValue: 16,
     iconColor: theme.tokens.colors.textForegroundColor,
-    showDividerAfter: true,
+    showDividerAfter: false,
     href: REPORT_FEEDBACK_MENU_ITEM.href,
+  },
+  {
+    key: DOWNLOAD_APK_MENU_ITEM.key,
+    label: DOWNLOAD_APK_MENU_ITEM.label,
+    textValue: DOWNLOAD_APK_MENU_ITEM.key,
+    iconName: DOWNLOAD_APK_MENU_ITEM.icon,
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    showDividerAfter: true,
+    href: DOWNLOAD_APK_MENU_ITEM.href,
   },
   // {
   //   key: 'serviceProviders',

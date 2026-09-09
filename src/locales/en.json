@@ -21,6 +21,7 @@
     "logout": "Logout",
     "userGuide": "User Guide",
     "reportFeedback": "Report / Feedback",
+    "downloadApk": "Download APK",
     "loading": "Loading...",
     "save": "Save",
     "saving": "Saving...",
@@ -2245,7 +2246,8 @@
       "participants": "Participants",
       "sessions-support": "Sessions & Support",
       "project": "Project",
-      "home": "Home"
+      "home": "Home",
+      "download-apk": "Download APK"
     },
     "menu": {
       "home": "Home",
@@ -2253,6 +2255,13 @@
       "sessionsSupport": "Sessions & Support",
       "myProfile": "My Profile",
       "serviceProviders": "Service Providers"
+    },
+    "downloadApk": {
+      "appName": "Download APK Application",
+      "completionStatus": "100% Complete",
+      "description": "Download the GBL Coach mobile application to log field visits, manage participant cases, and track graduation progress on your Android device.",
+      "downloadButton": "Download APK",
+      "urlNotConfigured": "Download URL is not configured. Please contact your administrator."
     },
     "sessionsSupport": {
       "subtitle": "Browse sessions, additional services, and assets available in your province and site",
@@ -2763,5 +2772,12 @@
         "successMsg": "Resource deleted successfully!"
       }
     }
+  },
+  "downloadApk": {
+    "appName": "Download APK Application",
+    "completionStatus": "100% Complete",
+    "description": "Download the GBL Coach mobile application to log field visits, manage participant cases, and track graduation progress on your Android device.",
+    "downloadButton": "Download APK",
+    "urlNotConfigured": "Download URL is not configured. Please contact your administrator."
   }
 }

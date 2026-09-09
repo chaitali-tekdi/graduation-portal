@@ -93,7 +93,8 @@ import {
   Copy,
   CircleCheckBig,
   Video,
-  Wrench
+  Wrench,
+  Smartphone
 } from 'lucide-react-native';
 import { theme } from '@config/theme';
 
@@ -206,7 +207,8 @@ const ICONS: Record<string, React.ComponentType<any>> = {
   Copy,
   CircleCheckBig,
   Video,
-  Wrench
+  Wrench,
+  Smartphone
 };
 
 /**
