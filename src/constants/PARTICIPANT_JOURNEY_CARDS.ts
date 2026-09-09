@@ -21,7 +21,7 @@ export const PARTICIPANT_JOURNEY_CARDS = [
     hoverBg: '$purple50',
     title: 'participantJourney.cards.sessions',
     description: 'participantJourney.cards.sessionsDescription',
-    isComingSoon: true,
+    navigationUrl: 'my-sessions',
   },
   {
     id: 'graduation',
@@ -33,7 +33,7 @@ export const PARTICIPANT_JOURNEY_CARDS = [
     hoverBg: '$success50',
     title: 'participantJourney.cards.graduation',
     description: 'participantJourney.cards.graduationDescription',
-    isComingSoon: true,
+    navigationUrl: 'my-graduation',
   },
   {
     id: 'coach-details',

@@ -282,9 +282,11 @@ export const participantProfileStyles = {
   },
   footerContainer: {
     justifyContent: 'flex-end' as const,
-    width: '$full' as const,
-    pt: '$3' as const,
-    borderTopWidth: 1,
+    width: 'calc(100% + 48px)' as const,
+    marginHorizontal: '-$6' as const,
+    paddingHorizontal: '$6' as const,
+    paddingTop: '$4' as const,
+    borderTopWidth: 1 as const,
     borderTopColor: '$borderLight200' as const,
   },
   closeButton: {

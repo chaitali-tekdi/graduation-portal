@@ -49,6 +49,8 @@ const ProfilePermissions = lazyScreen(() => import('../screens/ProfilePermission
 const ForgotPasswordScreen = lazyScreen(() => import('../screens/Auth/ForgotPasswordScreen'));
 const ParticipantJourneyScreen = lazyScreen(() => import('../screens/ParticipantJourney'));
 const IdpProgressScreen = lazyScreen(() => import('../screens/ParticipantJourney/IdpProgress'));
+const MySessionsScreen = lazyScreen(() => import('../screens/ParticipantJourney/MySessions'));
+const MyGraduation = lazyScreen(() => import('../screens/ParticipantJourney/MyGraduation'));
 
 const spinnerHeight = (isWebPlatform ? '$100vh' : '$full') as any;
 
@@ -112,7 +114,7 @@ const getAccessPages = (
           path: '/csv-templates',
           component: CsvImportTemplates,
         },
-       {
+        {
           name: 'ProfilePermissions',
           path: '/profile-permissions',
           component: ProfilePermissions,
@@ -190,6 +192,8 @@ const getAccessPages = (
       return [
         { name: 'participant-portal', path: '/', component: ParticipantJourneyScreen },
         { name: 'idp-progress', path: '/idp-progress', component: IdpProgressScreen },
+        { name: 'my-sessions', path: '/my-sessions', component: MySessionsScreen },
+        { name: 'my-graduation', path: '/my-graduation', component: MyGraduation },
       ];
     default:
       return []; // Always return an array even if empty

@@ -15,13 +15,8 @@ import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import type { MenuItemData } from '@components/ui/Menu';
 import Menu from '@components/ui/Menu';
 import LucideIcon from '@components/ui/LucideIcon';
-import { stylesHeader } from './Styles';
+import { stylesHeader, participantAvatarWebStyle } from './Styles';
 import openExternalLink from '@utils/openExternalLink';
-
-const participantAvatarWebStyle = {
-  backgroundImage:
-    'linear-gradient(to right bottom, rgb(139, 40, 66) 0%, oklab(0.999994 0.0000455678 0.0000200868 / 0.9) 100%)',
-};
 
 interface ParticipantHeaderProps {
   title?: string;

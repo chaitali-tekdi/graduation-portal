@@ -4,12 +4,12 @@ import { Container, LucideIcon, Loader } from '@ui';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
-import InterventionPlan from '../ParticipantDetail/InterventionPlan';
-import dataService from '../../services/dataService';
-import { ProjectData } from '../../project-player/types';
+import InterventionPlan from '../../ParticipantDetail/InterventionPlan';
+import dataService from '../../../services/dataService';
+import { ProjectData } from '../../../project-player/types';
 import { MODE } from '@constants/PROJECTDATA';
 import { theme } from '@config/theme';
-import { participantJourneyStyles } from './Styles';
+import { idpProgressStyles } from './Styles';
 import { isWeb } from '@utils/platform';
 
 const IdpProgressScreen: React.FC = () => {
@@ -40,7 +40,7 @@ const IdpProgressScreen: React.FC = () => {
 
         if (pData) {
           const projectId =
-            (pData?.status === 'NOT_ONBOARDED' && pData?.onBoardedProjectId)
+            pData?.status === 'NOT_ONBOARDED' && pData?.onBoardedProjectId
               ? pData.onBoardedProjectId
               : pData?.idpProjectId || pData?.onBoardedProjectId || '';
 
@@ -73,12 +73,12 @@ const IdpProgressScreen: React.FC = () => {
   };
 
   return (
-    <Box {...participantJourneyStyles.page}>
-      <Container {...participantJourneyStyles.container}>
-        <VStack {...participantJourneyStyles.content}>
-          <HStack {...participantJourneyStyles.idpHeaderTitleRow}>
+    <Box {...idpProgressStyles.page}>
+      <Box {...idpProgressStyles.topHeaderBar}>
+        <Container {...idpProgressStyles.headerContainer}>
+          <HStack {...idpProgressStyles.headerTitleRow}>
             <Pressable
-              {...participantJourneyStyles.idpBackPressable}
+              {...idpProgressStyles.backPressable}
               {...(isWeb && {
                 onHoverIn: () => setIsBackHovered(true),
                 onHoverOut: () => setIsBackHovered(false),
@@ -88,8 +88,8 @@ const IdpProgressScreen: React.FC = () => {
               accessibilityLabel={t('common.back')}
             >
               <Box
-                {...participantJourneyStyles.idpBackIconBox}
-                {...(isBackHovered ? participantJourneyStyles.idpBackIconBoxHover : {})}
+                {...idpProgressStyles.backIconBox}
+                {...(isBackHovered ? idpProgressStyles.backIconBoxHover : {})}
               >
                 <LucideIcon
                   name="ArrowLeft"
@@ -99,29 +99,35 @@ const IdpProgressScreen: React.FC = () => {
                 />
               </Box>
             </Pressable>
-            <Heading {...participantJourneyStyles.idpTitle}>
+            <Heading {...idpProgressStyles.title}>
               {t('participantJourney.cards.idpProgress')}
             </Heading>
           </HStack>
+        </Container>
+      </Box>
 
-          <Text {...participantJourneyStyles.idpSubtitle}>
-            {t('participantJourney.idpProgressSubtitle')}
-          </Text>
+      <Box {...idpProgressStyles.contentArea}>
+        <Container {...idpProgressStyles.container}>
+          <VStack {...idpProgressStyles.content}>
+            <Text {...idpProgressStyles.subtitle}>
+              {t('participantJourney.idpProgressSubtitle')}
+            </Text>
 
-          <Box {...participantJourneyStyles.idpContent}>
-            {isLoading ? (
-              <Loader />
-            ) : (
-              <InterventionPlan
-                mode={MODE.readOnlyMode?.mode}
-                projectData={projectData}
-                projectUnavailableOffline={projectUnavailableOffline}
-                participantProfile={participantData}
-              />
-            )}
-          </Box>
-        </VStack>
-      </Container>
+            <Box {...idpProgressStyles.idpContent}>
+              {isLoading ? (
+                <Loader />
+              ) : (
+                <InterventionPlan
+                  mode={MODE.readOnlyMode?.mode}
+                  projectData={projectData}
+                  projectUnavailableOffline={projectUnavailableOffline}
+                  participantProfile={participantData}
+                />
+              )}
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
     </Box>
   );
 };
