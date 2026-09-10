@@ -12,7 +12,6 @@ import { LucideIcon } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useAlert } from '@components/ui/Alert';
 import { openDownload } from '@utils/helper';
-import { theme } from '@config/theme';
 import { styles } from './Styles';
 
 // @ts-ignore - process.env is injected by webpack DefinePlugin on web
@@ -38,21 +37,9 @@ const DownloadApkScreen: React.FC = () => {
             <LucideIcon
               name="Smartphone"
               size={64}
-              color={theme.tokens.colors.primary500 as string}
+              color="$primary500"
             />
           </Box>
-
-          {/* Completion badge */}
-          <HStack {...styles.badge} space="xs" alignItems="center">
-            <LucideIcon
-              name="CircleCheck"
-              size={14}
-              color={theme.tokens.colors.success600 as string}
-            />
-            <Text {...styles.badgeText}>
-              {t('downloadApk.completionStatus')}
-            </Text>
-          </HStack>
 
           {/* App name */}
           <Heading {...styles.appName}>
@@ -70,7 +57,7 @@ const DownloadApkScreen: React.FC = () => {
             onPress={handleDownload}
             isDisabled={!hasValidUrl}
           >
-            <LucideIcon name="Download" size={20} color="#ffffff" strokeWidth={2.5} />
+            <LucideIcon name="Download" size={20} color="$white" strokeWidth={2.5} />
             <ButtonText marginLeft="$2" fontWeight="bold">{t('downloadApk.downloadButton')}</ButtonText>
           </Button>
 
@@ -81,7 +68,7 @@ const DownloadApkScreen: React.FC = () => {
                 <LucideIcon
                   name="AlertCircle"
                   size={14}
-                  color={theme.tokens.colors.error600 as string}
+                  color="$error600"
                 />
                 <Text {...styles.warningText}>
                   {t('downloadApk.urlNotConfigured')}

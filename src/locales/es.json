@@ -146,7 +146,6 @@
     "supervisors": "Supervisores",
     "activeSupervisors": "Supervisores activos"
   },
-
   "welcome": {
     "welcomeBack": "Bienvenido de nuevo",
     "chooseOptionBelowToGetStarted": "Elige una opción a continuación para comenzar",
@@ -183,12 +182,5 @@
     "dropout": "Abandono",
     "confirmDropout": "Confirmar Abandono",
     "dropoutMessage": "¿Estás seguro de que deseas marcar a {{name}} como abandonado? Esta acción puede revertirse más tarde."
-  },
-  "downloadApk": {
-    "appName": "Descargar Aplicación APK",
-    "completionStatus": "100% Completado",
-    "description": "Descargue la aplicación móvil GBL Coach para registrar visitas de campo, gestionar casos de participantes y realizar un seguimiento del progreso desde su dispositivo Android.",
-    "downloadButton": "Descargar APK",
-    "urlNotConfigured": "La URL de descarga no está configurada. Comuníquese con su administrador."
   }
 }

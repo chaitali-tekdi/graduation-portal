@@ -47,13 +47,13 @@ export const styles = {
     fontWeight: '$bold' as const,
     textAlign: 'center' as const,
     color: '$textPrimary' as const,
-    marginBottom: '$1' as const,
+    marginBottom: '$2' as const,
   },
   description: {
     fontSize: '$sm' as const,
     textAlign: 'center' as const,
     color: '$textSecondary' as const,
-    marginBottom: '$4' as const,
+    marginBottom: '$5' as const,
     maxWidth: 340,
   },
   downloadButton: {

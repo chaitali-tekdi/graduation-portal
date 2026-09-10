@@ -23,13 +23,6 @@ export const REPORT_FEEDBACK_MENU_ITEM: SidebarMenuItem = {
   href: process.env.REPORT_FEEDBACK_FORM_URL || 'https://forms.gle/12ZsUZs9wn2hHtfh9',
 };
 
-export const DOWNLOAD_APK_MENU_ITEM: SidebarMenuItem = {
-  key: 'download-apk',
-  label: 'common.downloadApk',
-  icon: 'Smartphone',
-  href: 'download-apk',
-};
-
 export const MAIN_MENU_ITEMS: SidebarMenuItem[] = [
   // Dashboard is hidden from menu but still accessible via /admin-dashboard URL
   // {
