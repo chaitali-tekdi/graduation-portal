@@ -94,7 +94,8 @@ import {
   CircleCheckBig,
   Video,
   Wrench,
-  Smartphone
+  Smartphone,
+  CheckCircle2
 } from 'lucide-react-native';
 import { theme } from '@config/theme';
 
@@ -132,6 +133,7 @@ const ICONS: Record<string, React.ComponentType<any>> = {
   ChartColumn,
   Check,
   CheckCircle,
+  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,

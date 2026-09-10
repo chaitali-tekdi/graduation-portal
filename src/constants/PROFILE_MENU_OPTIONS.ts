@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { theme } from '@config/theme';
 import { MenuItemData } from '@components/ui/Menu';
 import {
@@ -87,16 +88,20 @@ export const LC_MENU_OPTIONS: MenuItemData[] = [
     showDividerAfter: false,
     href: REPORT_FEEDBACK_MENU_ITEM.href,
   },
-  {
-    key: 'download-apk',
-    label: 'common.downloadApk',
-    textValue: 'download-apk',
-    iconName: 'Smartphone',
-    iconSizeValue: 16,
-    iconColor: theme.tokens.colors.textForegroundColor,
-    showDividerAfter: true,
-    route: 'download-apk',
-  },
+  ...(Platform.OS === 'web'
+    ? [
+        {
+          key: 'download-apk',
+          label: 'common.install',
+          textValue: 'install',
+          iconName: 'Download',
+          iconSizeValue: 16,
+          iconColor: theme.tokens.colors.textForegroundColor,
+          showDividerAfter: true,
+          route: 'download-apk',
+        },
+      ]
+    : []),
   // {
   //   key: 'serviceProviders',
   //   label: 'lc.menu.serviceProviders',
