@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
 import { Container, LucideIcon } from '@ui';
 import { useAuth } from '@contexts/AuthContext';
@@ -6,6 +6,7 @@ import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
 import { STATUS } from '@constants/app.constant';
 import { PARTICIPANT_JOURNEY_CARDS } from '@constants/PARTICIPANT_JOURNEY_CARDS';
+import dataService from '../../services/dataService';
 import { participantJourneyStyles } from './Styles';
 import { isWeb } from '@utils/platform';
 
@@ -24,15 +25,37 @@ const ParticipantJourneyPortal: React.FC = () => {
   const { t } = useLanguage();
   const navigation = useNavigation();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState<string | undefined>(user?.status);
 
   const coachName = user?.coachName;
   const coachContact = user?.coachContact;
 
-  const participantStatus = user?.status;
+  useEffect(() => {
+    const participantId = (user as any)?.externalId || (user as any)?.userId || user?.id || '';
+    const authUserId = user?.id || '';
+
+    if (user?.status) {
+      setCurrentStatus(user.status);
+    }
+
+    if (participantId && authUserId) {
+      dataService.getParticipantDetails(participantId, authUserId)
+        .then(result => {
+          if (result?.data?.status) {
+            setCurrentStatus(result.data.status);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
   const DISABLEABLE_CARD_IDS = ['idp-progress', 'sessions', 'graduation'];
+  const normalizedStatus = (currentStatus || '').toString().trim().toUpperCase().replace(/\s+/g, '_');
   const shouldDisableCards =
-    participantStatus === STATUS.NOT_ONBOARDED ||
-    participantStatus === STATUS.ONBOARDED;
+    normalizedStatus === STATUS.NOT_ONBOARDED ||
+    normalizedStatus === STATUS.ONBOARDED ||
+    normalizedStatus === 'NOT_ONBOARDED' ||
+    normalizedStatus === 'ONBOARDED';
 
   const handleCardPress = (card: any) => {
     if (card.variant === 'link' && card.navigationUrl) {

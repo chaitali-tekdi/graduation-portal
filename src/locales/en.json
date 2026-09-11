@@ -2771,6 +2771,7 @@
     "title": "Participant Portal",
     "welcomeBack": "Welcome back!",
     "welcomeBackNamed": "Welcome back, {{name}}!",
+    "backToSessions": "Back to Sessions",
     "idpProgressSubtitle": "Track your progress across the four core pillars of the graduation programme.",
     "sessionsSubtitle": "View your upcoming sessions and review your attendance history.",
     "noSessions": "No sessions found.",
@@ -2784,6 +2785,11 @@
       "scheduled": "Scheduled",
       "attended": "Attended",
       "missed": "Missed"
+    },
+    "sessionFilters": {
+      "all": "All",
+      "trainingsAndSessions": "Trainings & Sessions",
+      "additionalServices": "Additional Services"
     },
     "menu": {
       "home": "Home",

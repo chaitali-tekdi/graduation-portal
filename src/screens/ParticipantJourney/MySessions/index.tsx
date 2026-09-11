@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
 import { Container, LucideIcon, Loader } from '@ui';
+import Select from '@components/ui/Inputs/Select';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
 import dataService from '../../../services/dataService';
 import { ProjectData, Task } from '../../../project-player/types/project.types';
 import { TASK_STATUS } from '@constants/app.constant';
+import { MY_SESSIONS_FILTER_OPTIONS } from '@constants/PARTICIPANT_JOURNEY_SESSION_FILTERS';
 import { theme } from '@config/theme';
 import { mySessionsStyles } from './Styles';
 import { isWeb } from '@utils/platform';
@@ -23,6 +25,7 @@ interface SessionItem {
   location: string;
   tags: string[];
   status: 'scheduled' | 'attended' | 'missed';
+  itemType: 'trainings' | 'additional_services';
 }
 
 const extractSessionTasks = (tasks: Task[] = []): Task[] => {
@@ -58,6 +61,7 @@ const MySessionsScreen: React.FC = () => {
   const { t } = useLanguage();
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<SessionTab>('scheduled');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [isBackHovered, setIsBackHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
@@ -106,6 +110,17 @@ const MySessionsScreen: React.FC = () => {
                   status = 'missed';
                 }
 
+                const taskType = (task as any)?.type || '';
+                const isAdditionalService =
+                  taskType === 'additional-service' ||
+                  taskType === 'additional_service' ||
+                  meta.type === 'additional-service' ||
+                  meta.type === 'additional_service' ||
+                  meta.category === 'additional-service' ||
+                  meta.category === 'additional_service' ||
+                  meta.category === 'protection' ||
+                  (Array.isArray(meta.tags) && (meta.tags.includes('Additional Services') || meta.tags.includes('additional_services')));
+
                 return {
                   id: task._id || '',
                   title: task.name || task.label || '',
@@ -120,6 +135,7 @@ const MySessionsScreen: React.FC = () => {
                       ? [meta.category]
                       : [],
                   status,
+                  itemType: isAdditionalService ? 'additional_services' : 'trainings',
                 };
               });
 
@@ -142,9 +158,27 @@ const MySessionsScreen: React.FC = () => {
     navigation.navigate('participant-portal');
   };
 
+  const filterOptions = useMemo(() => {
+    return MY_SESSIONS_FILTER_OPTIONS.map(opt => ({
+      label: t(opt.labelKey),
+      value: opt.value,
+    }));
+  }, [t]);
+
   const filteredSessions = useMemo(() => {
-    return sessions.filter(session => session.status === activeTab);
-  }, [sessions, activeTab]);
+    return sessions.filter(session => {
+      const matchesTab = session.status === activeTab;
+      if (!matchesTab) return false;
+
+      if (selectedFilter === 'trainings') {
+        return session.itemType === 'trainings';
+      }
+      if (selectedFilter === 'additional_services') {
+        return session.itemType === 'additional_services';
+      }
+      return true;
+    });
+  }, [sessions, activeTab, selectedFilter]);
 
   const renderBadge = (status: 'scheduled' | 'attended' | 'missed') => {
     switch (status) {
@@ -220,57 +254,68 @@ const MySessionsScreen: React.FC = () => {
               {t('participantJourney.sessionsSubtitle')}
             </Text>
 
-            <HStack {...mySessionsStyles.tabsContainer}>
-              <Pressable
-                {...mySessionsStyles.tabItem}
-                {...(activeTab === 'scheduled'
-                  ? mySessionsStyles.tabItemActive
-                  : mySessionsStyles.tabItemInactive)}
-                onPress={() => setActiveTab('scheduled')}
-              >
-                <Text
-                  {...mySessionsStyles.tabText}
+            <HStack {...mySessionsStyles.tabRowWrapper}>
+              <HStack {...mySessionsStyles.tabsContainer}>
+                <Pressable
+                  {...mySessionsStyles.tabItem}
                   {...(activeTab === 'scheduled'
-                    ? mySessionsStyles.tabTextActive
-                    : mySessionsStyles.tabTextInactive)}
+                    ? mySessionsStyles.tabItemActive
+                    : mySessionsStyles.tabItemInactive)}
+                  onPress={() => setActiveTab('scheduled')}
                 >
-                  {t('participantJourney.tabs.scheduled')}
-                </Text>
-              </Pressable>
+                  <Text
+                    {...mySessionsStyles.tabText}
+                    {...(activeTab === 'scheduled'
+                      ? mySessionsStyles.tabTextActive
+                      : mySessionsStyles.tabTextInactive)}
+                  >
+                    {t('participantJourney.tabs.scheduled')}
+                  </Text>
+                </Pressable>
 
-              <Pressable
-                {...mySessionsStyles.tabItem}
-                {...(activeTab === 'attended'
-                  ? mySessionsStyles.tabItemActive
-                  : mySessionsStyles.tabItemInactive)}
-                onPress={() => setActiveTab('attended')}
-              >
-                <Text
-                  {...mySessionsStyles.tabText}
+                <Pressable
+                  {...mySessionsStyles.tabItem}
                   {...(activeTab === 'attended'
-                    ? mySessionsStyles.tabTextActive
-                    : mySessionsStyles.tabTextInactive)}
+                    ? mySessionsStyles.tabItemActive
+                    : mySessionsStyles.tabItemInactive)}
+                  onPress={() => setActiveTab('attended')}
                 >
-                  {t('participantJourney.tabs.attended')}
-                </Text>
-              </Pressable>
+                  <Text
+                    {...mySessionsStyles.tabText}
+                    {...(activeTab === 'attended'
+                      ? mySessionsStyles.tabTextActive
+                      : mySessionsStyles.tabTextInactive)}
+                  >
+                    {t('participantJourney.tabs.attended')}
+                  </Text>
+                </Pressable>
 
-              <Pressable
-                {...mySessionsStyles.tabItem}
-                {...(activeTab === 'missed'
-                  ? mySessionsStyles.tabItemActive
-                  : mySessionsStyles.tabItemInactive)}
-                onPress={() => setActiveTab('missed')}
-              >
-                <Text
-                  {...mySessionsStyles.tabText}
+                <Pressable
+                  {...mySessionsStyles.tabItem}
                   {...(activeTab === 'missed'
-                    ? mySessionsStyles.tabTextActive
-                    : mySessionsStyles.tabTextInactive)}
+                    ? mySessionsStyles.tabItemActive
+                    : mySessionsStyles.tabItemInactive)}
+                  onPress={() => setActiveTab('missed')}
                 >
-                  {t('participantJourney.tabs.missed')}
-                </Text>
-              </Pressable>
+                  <Text
+                    {...mySessionsStyles.tabText}
+                    {...(activeTab === 'missed'
+                      ? mySessionsStyles.tabTextActive
+                      : mySessionsStyles.tabTextInactive)}
+                  >
+                    {t('participantJourney.tabs.missed')}
+                  </Text>
+                </Pressable>
+              </HStack>
+
+              <Box {...mySessionsStyles.filterSelectBox}>
+                <Select
+                  options={filterOptions}
+                  value={selectedFilter}
+                  onChange={(val: string) => setSelectedFilter(val)}
+                  size="sm"
+                />
+              </Box>
             </HStack>
 
             {isLoading ? (

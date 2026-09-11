@@ -61,13 +61,24 @@ export const mySessionsStyles = {
     fontWeight: '$normal' as const,
     mb: '$6' as const,
   },
+  tabRowWrapper: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    flexWrap: 'wrap' as const,
+    gap: '$4' as const,
+    width: '$full' as const,
+    mb: '$6' as const,
+  },
+  filterSelectBox: {
+    minWidth: 220 as const,
+  },
   tabsContainer: {
     flexDirection: 'row' as const,
     bg: '$backgroundLightGray100' as const,
     p: '$1' as const,
     borderRadius: '$full' as const,
     alignSelf: 'flex-start' as const,
-    mb: '$6' as const,
   },
   tabItem: {
     px: '$6' as const,
@@ -104,9 +115,13 @@ export const mySessionsStyles = {
     gap: '$4' as const,
     width: '$full' as const,
   },
-  cardBox: {
+  cardPressable: {
     width: '$full' as const,
     '$md-width': 'calc(50% - 8px)' as const,
+    borderRadius: '$xl' as const,
+  },
+  cardBox: {
+    width: '$full' as const,
     bg: '$white' as const,
     borderWidth: 1 as const,
     borderColor: '$inputBorder' as const,
@@ -234,5 +249,21 @@ export const mySessionsStyles = {
   emptyStateText: {
     color: '$textDark600' as const,
     fontSize: '$md' as const,
+  },
+  sessionDetailCard: {
+    width: '$full' as const,
+    bg: '$white' as const,
+    borderWidth: 1 as const,
+    borderColor: '$inputBorder' as const,
+    borderRadius: '$xl' as const,
+    p: '$5' as const,
+  },
+  detailIconBox: {
+    w: 36 as const,
+    h: 36 as const,
+    borderRadius: '$md' as const,
+    bg: '$orange50' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
 } as const;
