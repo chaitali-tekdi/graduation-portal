@@ -125,7 +125,7 @@ export const participantJourneyStyles = {
   },
   coachLabel: {
     color: '$textMuted' as const,
-    fontSize: '$sm' as const,
+    fontSize: '$xs' as const,
     fontWeight: '$semibold' as const,
     lineHeight: '$md' as const,
     letterSpacing: 0.8 as const,

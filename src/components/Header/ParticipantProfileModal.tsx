@@ -5,6 +5,7 @@ import LucideIcon from '@components/ui/LucideIcon';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { theme } from '@config/theme';
+import moment from 'moment';
 import { getUserProfile } from '../../services/authenticationService';
 import { stylesHeader, participantAvatarWebStyle } from './Styles';
 import { participantProfileModalStyles } from './ParticipantProfileModal.Styles';
@@ -43,11 +44,61 @@ const ParticipantProfileModal: React.FC<ParticipantProfileModalProps> = ({ isOpe
 
   const currentUser = profileData || user;
 
-  const formattedDob = currentUser?.dob ? new Date(currentUser.dob).toLocaleDateString() : '-';
-  const address = currentUser?.location || '-';
-  const province = currentUser?.province?.label || (typeof currentUser?.province === 'string' ? currentUser.province : '-');
-  const site = currentUser?.site?.label || (typeof currentUser?.site === 'string' ? currentUser.site : '-');
-  const emergencyContact = currentUser?.emergencyContact || '-';
+  const safeRenderString = (val: any): string => {
+    if (val === null || val === undefined) return '-';
+    if (typeof val === 'string' || typeof val === 'number') {
+      const s = String(val).trim();
+      return s || '-';
+    }
+    if (typeof val === 'object') {
+      if (typeof val.label === 'string' && val.label.trim()) return val.label.trim();
+      if (typeof val.value === 'string' && val.value.trim()) return val.value.trim();
+      if (typeof val.name === 'string' && val.name.trim()) return val.name.trim();
+      return '-';
+    }
+    return '-';
+  };
+
+  let formattedDob = '-';
+  const rawDobVal = currentUser?.dob;
+  if (rawDobVal) {
+    const rawDob = safeRenderString(rawDobVal);
+    if (rawDob !== '-') {
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(rawDob)) {
+        formattedDob = rawDob;
+      } else {
+        const normalizedDob = rawDob.replace(/_/g, '-');
+        const parsed = moment(normalizedDob);
+        formattedDob = parsed.isValid() ? parsed.format('DD/MM/YYYY') : rawDob;
+      }
+    }
+  }
+
+  const name = safeRenderString(currentUser?.name);
+  const userIdStr = safeRenderString(currentUser?.id || currentUser?.userId);
+  const formatPhoneCode = (code: string) => {
+    if (!code || code === '-') return '';
+    const trimmed = String(code).trim();
+    if (!trimmed || trimmed === '-') return '';
+    return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
+  };
+
+  const phoneCodeStr = safeRenderString(currentUser?.phone_code);
+  const phoneStr = safeRenderString(currentUser?.phone);
+  const formattedPhoneCode = formatPhoneCode(phoneCodeStr);
+  const fullPhone = phoneStr !== '-'
+    ? `${formattedPhoneCode}${formattedPhoneCode ? ' ' : ''}${phoneStr}`.trim()
+    : '-';
+  const email = safeRenderString(currentUser?.email);
+  const address = safeRenderString(currentUser?.location);
+  const province = safeRenderString(currentUser?.province);
+  const site = safeRenderString(currentUser?.site);
+  const altPhoneCodeStr = safeRenderString(currentUser?.alternative_phone_code || currentUser?.phone_code);
+  const altPhoneStr = safeRenderString(currentUser?.alternative_phone || currentUser?.alternativePhone || currentUser?.emergencyContact);
+  const formattedAltPhoneCode = formatPhoneCode(altPhoneCodeStr);
+  const emergencyContact = altPhoneStr !== '-'
+    ? `${formattedAltPhoneCode}${formattedAltPhoneCode ? ' ' : ''}${altPhoneStr}`.trim()
+    : '-';
 
   return (
     <Modal
@@ -70,7 +121,7 @@ const ParticipantProfileModal: React.FC<ParticipantProfileModalProps> = ({ isOpe
         </HStack>
       }
     >
-      <VStack space="md" pt="$2">
+      <VStack space="md">
         {/* Header Avatar and Name/ID */}
         <HStack {...participantProfileModalStyles.headerSection}>
           <Avatar
@@ -84,10 +135,10 @@ const ParticipantProfileModal: React.FC<ParticipantProfileModalProps> = ({ isOpe
           </Avatar>
           <VStack {...participantProfileModalStyles.headerInfo}>
             <Text {...participantProfileModalStyles.nameText}>
-              {currentUser?.name || '-'}
+              {name}
             </Text>
             <Text {...participantProfileModalStyles.idText}>
-              {currentUser?.id || currentUser?.userId || '-'}
+              {userIdStr}
             </Text>
           </VStack>
         </HStack>
@@ -102,7 +153,7 @@ const ParticipantProfileModal: React.FC<ParticipantProfileModalProps> = ({ isOpe
           </HStack>
           <Box {...participantProfileModalStyles.valueField}>
             <Text {...participantProfileModalStyles.fieldValue}>
-              {`${currentUser?.phone_code || ''} ${currentUser?.phone || ''}`.trim() || '-'}
+              {fullPhone}
             </Text>
           </Box>
         </VStack>
@@ -116,7 +167,7 @@ const ParticipantProfileModal: React.FC<ParticipantProfileModalProps> = ({ isOpe
           </HStack>
           <Box {...participantProfileModalStyles.valueField}>
             <Text {...participantProfileModalStyles.fieldValue}>
-              {currentUser?.email || '-'}
+              {email}
             </Text>
           </Box>
         </VStack>

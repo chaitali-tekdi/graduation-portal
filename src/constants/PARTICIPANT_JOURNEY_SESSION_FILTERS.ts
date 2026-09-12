@@ -8,6 +8,28 @@ export interface SessionFilterOption {
   value: string;
 }
 
+export type SessionTabKey = 'scheduled' | 'attended' | 'missed';
+
+export interface SessionTabOption {
+  key: SessionTabKey;
+  labelKey: string;
+}
+
+export const MY_SESSIONS_TABS: SessionTabOption[] = [
+  {
+    key: 'scheduled',
+    labelKey: 'participantJourney.tabs.scheduled',
+  },
+  {
+    key: 'attended',
+    labelKey: 'participantJourney.tabs.attended',
+  },
+  {
+    key: 'missed',
+    labelKey: 'participantJourney.tabs.missed',
+  },
+];
+
 export const MY_SESSIONS_FILTER_OPTIONS: SessionFilterOption[] = [
   {
     labelKey: 'participantJourney.sessionFilters.all',
@@ -22,3 +44,4 @@ export const MY_SESSIONS_FILTER_OPTIONS: SessionFilterOption[] = [
     value: 'additional_services',
   },
 ];
+

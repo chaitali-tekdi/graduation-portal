@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { STATUS } from '@constants/app.constant';
 import { PARTICIPANT_JOURNEY_CARDS } from '@constants/PARTICIPANT_JOURNEY_CARDS';
 import dataService from '../../services/dataService';
+import { getUserProfile } from '../../services/authenticationService';
 import { participantJourneyStyles } from './Styles';
 import { isWeb } from '@utils/platform';
 
@@ -20,34 +21,81 @@ const IconBadge: React.FC<{
   </Box>
 );
 
+const formatCoachContact = (contact?: string, phoneCode?: string) => {
+  if (!contact) return '';
+  let str = String(contact).trim();
+  let code = phoneCode ? String(phoneCode).trim() : '';
+  if (code) {
+    if (!code.startsWith('+')) code = `+${code}`;
+    if (!str.startsWith('+')) {
+      if (str.startsWith(code.replace('+', ''))) {
+        str = `+${str}`;
+      } else {
+        str = `${code} ${str}`;
+      }
+    }
+    return str;
+  }
+  if (!str.startsWith('+') && /^\d{1,4}[\s-]?\d+/.test(str)) {
+    return `+${str}`;
+  }
+  return str;
+};
+
 const ParticipantJourneyPortal: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<string | undefined>(user?.status);
+  const [coachDetails, setCoachDetails] = useState<{ name?: string; contact?: string }>({
+    name: user?.coachName,
+    contact: formatCoachContact(user?.coachContact),
+  });
 
-  const coachName = user?.coachName;
-  const coachContact = user?.coachContact;
+  const coachName = coachDetails.name || user?.coachName || '';
+  const coachContact = coachDetails.contact || formatCoachContact(user?.coachContact) || '';
+
+  const fetchedRef = React.useRef<string>('');
 
   useEffect(() => {
     const participantId = (user as any)?.externalId || (user as any)?.userId || user?.id || '';
     const authUserId = user?.id || '';
+    const fetchKey = `${participantId}_${authUserId}`;
 
     if (user?.status) {
       setCurrentStatus(user.status);
     }
 
-    if (participantId && authUserId) {
+    if (participantId && authUserId && fetchedRef.current !== fetchKey) {
+      fetchedRef.current = fetchKey;
       dataService.getParticipantDetails(participantId, authUserId)
-        .then(result => {
-          if (result?.data?.status) {
-            setCurrentStatus(result.data.status);
+        .then(async result => {
+          const pData = result?.data;
+          if (pData?.status) {
+            setCurrentStatus(pData.status);
+          }
+          const coachId = pData?.hierarchy?.['0'] || pData?.hierarchy?.[0];
+          if (coachId) {
+            try {
+              const coachProfile = await getUserProfile(String(coachId));
+              if (coachProfile) {
+                const name = coachProfile.name || `${coachProfile.firstName || ''} ${coachProfile.lastName || ''}`.trim() || '';
+                const phoneCode = coachProfile.phone_code ? String(coachProfile.phone_code).trim() : '';
+                let contact = coachProfile.phone || coachProfile.contact || coachProfile.alternative_phone || '';
+                contact = formatCoachContact(contact, phoneCode);
+                setCoachDetails({ name, contact });
+              }
+            } catch {
+              // Fail silently
+            }
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          fetchedRef.current = '';
+        });
     }
-  }, [user]);
+  }, [user?.id, (user as any)?.externalId, (user as any)?.userId]);
 
   const DISABLEABLE_CARD_IDS = ['idp-progress', 'sessions', 'graduation'];
   const normalizedStatus = (currentStatus || '').toString().trim().toUpperCase().replace(/\s+/g, '_');

@@ -49,7 +49,8 @@ export const participantProfileModalStyles = {
     fontWeight: '$normal' as const,
   },
   footerContainer: {
-    justifyContent: 'flex-end' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     width: 'calc(100% + 48px)' as const,
     marginHorizontal: '-$6' as const,
     paddingHorizontal: '$6' as const,
@@ -58,11 +59,13 @@ export const participantProfileModalStyles = {
     borderTopColor: '$borderLight200' as const,
   },
   closeButton: {
+    width: '$full' as const,
     variant: 'outline' as const,
     size: 'sm' as const,
     borderColor: '$inputBorder' as const,
     borderRadius: '$md' as const,
-    px: '$5' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   closeButtonText: {
     color: '$textDark900' as const,

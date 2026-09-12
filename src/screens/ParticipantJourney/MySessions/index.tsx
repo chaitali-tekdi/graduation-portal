@@ -1,49 +1,47 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
 import { Container, LucideIcon, Loader } from '@ui';
 import Select from '@components/ui/Inputs/Select';
-import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
-import { useNavigation } from '@react-navigation/native';
-import dataService from '../../../services/dataService';
-import { ProjectData, Task } from '../../../project-player/types/project.types';
-import { TASK_STATUS } from '@constants/app.constant';
-import { MY_SESSIONS_FILTER_OPTIONS } from '@constants/PARTICIPANT_JOURNEY_SESSION_FILTERS';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { getMenteeSessions } from '../../../services/participantJourneyService';
+import { getProvincesList } from '../../../services/usersService';
+import {
+  MY_SESSIONS_FILTER_OPTIONS,
+  MY_SESSIONS_TABS,
+  SessionTabKey,
+} from '@constants/PARTICIPANT_JOURNEY_SESSION_FILTERS';
 import { theme } from '@config/theme';
 import { mySessionsStyles } from './Styles';
 import { isWeb } from '@utils/platform';
+import {
+  formatSessionStartDateTimeParts,
+  calculateSessionDuration,
+  getDeliveryMode,
+  resolveProvinceNames,
+} from '@utils/participantJourneyUtils';
 
-type SessionTab = 'scheduled' | 'attended' | 'missed';
-
-interface SessionItem {
+export interface SessionItem {
   id: string;
   title: string;
   provider: string;
   date: string;
+  datePart?: string;
+  timePart?: string;
   duration: string;
   mode: string;
-  location: string;
-  tags: string[];
+  province: string;
   status: 'scheduled' | 'attended' | 'missed';
   itemType: 'trainings' | 'additional_services';
+  seatsLimit?: any;
+  seatsRemaining?: any;
+  enrolledText?: string;
+  spotsRemainingText?: string;
+  about?: string;
+  learningObjectives?: string[];
+  tags?: string[];
+  rawData?: any;
 }
-
-const extractSessionTasks = (tasks: Task[] = []): Task[] => {
-  const result: Task[] = [];
-  const traverse = (items: Task[]) => {
-    for (const item of items) {
-      if (item.children && item.children.length > 0) {
-        traverse(item.children);
-      } else if (item.tasks && item.tasks.length > 0) {
-        traverse(item.tasks);
-      } else {
-        result.push(item);
-      }
-    }
-  };
-  traverse(tasks);
-  return result;
-};
 
 const getModeIcon = (mode: string) => {
   const lower = (mode || '').toLowerCase();
@@ -53,105 +51,162 @@ const getModeIcon = (mode: string) => {
   if (lower.includes('hybrid')) {
     return 'Building';
   }
-  return 'Users';
+  return 'Building';
 };
 
 const MySessionsScreen: React.FC = () => {
-  const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState<SessionTab>('scheduled');
+  const [activeTab, setActiveTab] = useState<SessionTabKey>('scheduled');
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [isBackHovered, setIsBackHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
+  const [provinceMap, setProvinceMap] = useState<Record<string, string>>({});
+  const provinceMapRef = React.useRef<Record<string, string>>({});
 
-  useEffect(() => {
-    const fetchSessionData = async () => {
-      const participantId = (user as any)?.externalId || (user as any)?.userId || user?.id || '';
-      const authUserId = user?.id || '';
-
-      if (!participantId || !authUserId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const detailResult = await dataService.getParticipantDetails(participantId, authUserId);
-        const pData = detailResult?.data || null;
-
-        if (pData) {
-          const projectId =
-            (pData?.status === 'NOT_ONBOARDED' && pData?.onBoardedProjectId)
-              ? pData.onBoardedProjectId
-              : pData?.idpProjectId || pData?.onBoardedProjectId || '';
-
-          if (projectId) {
-            const response = await dataService.getProject<ProjectData>(
-              pData?.id || participantId,
-              projectId,
-              authUserId,
-            );
-
-            if (response?.data?.tasks) {
-              const leafTasks = extractSessionTasks(response.data.tasks);
-              const mappedSessions: SessionItem[] = leafTasks.map(task => {
-                const meta = task.metaInformation || {};
-                const taskStatusStr = (task.status as string) || '';
-                let status: 'scheduled' | 'attended' | 'missed' = 'scheduled';
-                if (
-                  taskStatusStr === TASK_STATUS.COMPLETED ||
-                  taskStatusStr === 'completed' ||
-                  taskStatusStr === 'attended' ||
-                  meta.status === 'attended'
-                ) {
-                  status = 'attended';
-                } else if (taskStatusStr === 'missed' || meta.status === 'missed') {
-                  status = 'missed';
-                }
-
-                const taskType = (task as any)?.type || '';
-                const isAdditionalService =
-                  taskType === 'additional-service' ||
-                  taskType === 'additional_service' ||
-                  meta.type === 'additional-service' ||
-                  meta.type === 'additional_service' ||
-                  meta.category === 'additional-service' ||
-                  meta.category === 'additional_service' ||
-                  meta.category === 'protection' ||
-                  (Array.isArray(meta.tags) && (meta.tags.includes('Additional Services') || meta.tags.includes('additional_services')));
-
-                return {
-                  id: task._id || '',
-                  title: task.name || task.label || '',
-                  provider: task.serviceProvider || meta.provider || meta.organization || meta.serviceProvider || '',
-                  date: meta.date || meta.formattedDate || meta.scheduledDate || '',
-                  duration: meta.duration || '',
-                  mode: meta.mode || meta.deliveryMode || '',
-                  location: meta.location || meta.venue || '',
-                  tags: Array.isArray(meta.tags)
-                    ? meta.tags
-                    : meta.category
-                      ? [meta.category]
-                      : [],
-                  status,
-                  itemType: isAdditionalService ? 'additional_services' : 'trainings',
-                };
-              });
-
-              setSessions(mappedSessions);
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      const fetchSessionData = async () => {
+        setIsLoading(true);
+        try {
+          let currentProvinceMap = provinceMapRef.current;
+          if (Object.keys(currentProvinceMap).length === 0) {
+            try {
+              const list = await getProvincesList();
+              if (Array.isArray(list)) {
+                const map: Record<string, string> = {};
+                list.forEach((p: any) => {
+                  if (p._id && p.name) map[p._id] = p.name;
+                  if (p.id && p.name) map[p.id] = p.name;
+                  if (p.externalId && p.name) map[p.externalId] = p.name;
+                });
+                provinceMapRef.current = map;
+                currentProvinceMap = map;
+                if (isMounted) setProvinceMap(map);
+              }
+            } catch {
+              // Fail gracefully
             }
           }
-        }
-      } catch (err) {
-        console.error('Failed to fetch sessions data:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    fetchSessionData();
-  }, [user]);
+          const params = selectedFilter && selectedFilter !== 'all'
+            ? { support_offering_type: selectedFilter }
+            : undefined;
+          const menteeRes = await getMenteeSessions(params);
+          if (!isMounted) return;
+          const menteeRaw = menteeRes?.result?.data || menteeRes?.result || menteeRes?.data || menteeRes || [];
+          const menteeSessions = Array.isArray(menteeRaw) ? menteeRaw : [];
+
+          const mappedSessions: SessionItem[] = menteeSessions.map((item: any, index: number) => {
+            const itemId = String(item._id || item.id || item.sessionId || index);
+
+            const rawStatus = (item.status || '').toLowerCase();
+            let status: 'scheduled' | 'attended' | 'missed' = 'scheduled';
+            if (rawStatus === 'completed' || rawStatus === 'attended') {
+              status = 'attended';
+            } else if (rawStatus === 'missed') {
+              status = 'missed';
+            } else if (rawStatus === 'scheduled' || rawStatus === 'upcoming' || rawStatus === 'published') {
+              status = 'scheduled';
+            }
+
+            const provider = item.mentor_name || item.mentorName || item.provider || item.serviceProvider || item.organization || '';
+            const { date: datePart, time: timePart } = formatSessionStartDateTimeParts(item);
+            const dateDisplay = datePart && timePart ? `${datePart}, ${timePart}` : (datePart || timePart || '');
+
+            const durationStr = calculateSessionDuration(item);
+            const modeStr = getDeliveryMode(item);
+
+            const rawProvince = item.meta?.provinces || item.meta?.province || item.province || item.provinces || item.location || item.venue || '';
+            const provinceStr = resolveProvinceNames(rawProvince, currentProvinceMap);
+
+            // Capacity
+            const seatsLimit = item.seats_limit ?? item.seatsLimit ?? item.capacity ?? item.maxCapacity;
+            const seatsRemaining = item.seats_remaining ?? item.seatsRemaining;
+
+            let enrolledText = '';
+            if (seatsLimit !== undefined && seatsLimit !== null && seatsLimit !== '') {
+              if (seatsRemaining !== undefined && seatsRemaining !== null && seatsRemaining !== '') {
+                const enrolled = item.enrolled_count ?? item.enrolledCount ?? (Number(seatsLimit) - Number(seatsRemaining));
+                enrolledText = `${enrolled} / ${seatsLimit} enrolled`;
+              } else {
+                enrolledText = `${seatsLimit} enrolled`;
+              }
+            }
+
+            let spotsRemainingText = '';
+            if (seatsRemaining !== undefined && seatsRemaining !== null && seatsRemaining !== '') {
+              spotsRemainingText = `${seatsRemaining} spots remaining`;
+            }
+
+            // About
+            const aboutText = item.description || item.about || item.meta?.description || '';
+
+            // Learning Objectives
+            const rawObjectives = item.learning_objectives ?? item.learningObjectives ?? item.meta?.learning_objectives;
+            let learningObjectives: string[] = [];
+            if (Array.isArray(rawObjectives)) {
+              learningObjectives = rawObjectives.map((o: any) => (typeof o === 'string' ? o : o.title || o.name || String(o))).filter(Boolean);
+            } else if (typeof rawObjectives === 'string' && rawObjectives.trim()) {
+              learningObjectives = rawObjectives.split('\n').map((s: string) => s.trim()).filter(Boolean);
+            }
+
+            // Tags
+            const tags = Array.isArray(item.tags) ? item.tags : [];
+
+            const itemTypeStr = (item.type || item.itemType || item.category || '').toLowerCase();
+            const meta = item.meta || item.metaInformation || {};
+            const isAdditionalService =
+              itemTypeStr === 'additional-service' ||
+              itemTypeStr === 'additional_service' ||
+              meta.type === 'additional-service' ||
+              meta.type === 'additional_service' ||
+              meta.category === 'additional-service' ||
+              meta.category === 'additional_service' ||
+              meta.category === 'protection' ||
+              (Array.isArray(item.tags) && (item.tags.includes('Additional Services') || item.tags.includes('additional_services')));
+
+            return {
+              id: itemId,
+              title: item.title || item.name || item.label || '',
+              provider,
+              date: dateDisplay,
+              datePart,
+              timePart,
+              duration: durationStr,
+              mode: modeStr,
+              province: provinceStr,
+              status,
+              itemType: isAdditionalService ? 'additional_services' : 'trainings',
+              seatsLimit,
+              seatsRemaining,
+              enrolledText,
+              spotsRemainingText,
+              about: aboutText,
+              learningObjectives,
+              tags,
+              rawData: item,
+            };
+          });
+
+          setSessions(mappedSessions);
+        } catch (err) {
+          console.error('Failed to fetch sessions data:', err);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
+      };
+
+      fetchSessionData();
+      return () => {
+        isMounted = false;
+      };
+    }, [selectedFilter])
+  );
 
   const handleBackToHome = () => {
     // @ts-ignore
@@ -179,39 +234,6 @@ const MySessionsScreen: React.FC = () => {
       return true;
     });
   }, [sessions, activeTab, selectedFilter]);
-
-  const renderBadge = (status: 'scheduled' | 'attended' | 'missed') => {
-    switch (status) {
-      case 'attended':
-        return (
-          <Box {...mySessionsStyles.statusBadgeAttended}>
-            <LucideIcon name="CheckCircle2" size={12} color={theme.tokens.colors.success600} strokeWidth={2} />
-            <Text {...mySessionsStyles.statusTextAttended}>
-              {t('participantJourney.tabs.attended')}
-            </Text>
-          </Box>
-        );
-      case 'missed':
-        return (
-          <Box {...mySessionsStyles.statusBadgeMissed}>
-            <LucideIcon name="AlertCircle" size={12} color={theme.tokens.colors.error600} strokeWidth={2} />
-            <Text {...mySessionsStyles.statusTextMissed}>
-              {t('participantJourney.tabs.missed')}
-            </Text>
-          </Box>
-        );
-      case 'scheduled':
-      default:
-        return (
-          <Box {...mySessionsStyles.statusBadgeScheduled}>
-            <LucideIcon name="Clock" size={12} color={theme.tokens.colors.blue600} strokeWidth={2} />
-            <Text {...mySessionsStyles.statusTextScheduled}>
-              {t('participantJourney.tabs.scheduled')}
-            </Text>
-          </Box>
-        );
-    }
-  };
 
   return (
     <Box {...mySessionsStyles.page}>
@@ -256,56 +278,28 @@ const MySessionsScreen: React.FC = () => {
 
             <HStack {...mySessionsStyles.tabRowWrapper}>
               <HStack {...mySessionsStyles.tabsContainer}>
-                <Pressable
-                  {...mySessionsStyles.tabItem}
-                  {...(activeTab === 'scheduled'
-                    ? mySessionsStyles.tabItemActive
-                    : mySessionsStyles.tabItemInactive)}
-                  onPress={() => setActiveTab('scheduled')}
-                >
-                  <Text
-                    {...mySessionsStyles.tabText}
-                    {...(activeTab === 'scheduled'
-                      ? mySessionsStyles.tabTextActive
-                      : mySessionsStyles.tabTextInactive)}
-                  >
-                    {t('participantJourney.tabs.scheduled')}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  {...mySessionsStyles.tabItem}
-                  {...(activeTab === 'attended'
-                    ? mySessionsStyles.tabItemActive
-                    : mySessionsStyles.tabItemInactive)}
-                  onPress={() => setActiveTab('attended')}
-                >
-                  <Text
-                    {...mySessionsStyles.tabText}
-                    {...(activeTab === 'attended'
-                      ? mySessionsStyles.tabTextActive
-                      : mySessionsStyles.tabTextInactive)}
-                  >
-                    {t('participantJourney.tabs.attended')}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  {...mySessionsStyles.tabItem}
-                  {...(activeTab === 'missed'
-                    ? mySessionsStyles.tabItemActive
-                    : mySessionsStyles.tabItemInactive)}
-                  onPress={() => setActiveTab('missed')}
-                >
-                  <Text
-                    {...mySessionsStyles.tabText}
-                    {...(activeTab === 'missed'
-                      ? mySessionsStyles.tabTextActive
-                      : mySessionsStyles.tabTextInactive)}
-                  >
-                    {t('participantJourney.tabs.missed')}
-                  </Text>
-                </Pressable>
+                {MY_SESSIONS_TABS.map(tab => {
+                  const isActive = activeTab === tab.key;
+                  return (
+                    <Pressable
+                      key={tab.key}
+                      {...mySessionsStyles.tabItem}
+                      {...(isActive
+                        ? mySessionsStyles.tabItemActive
+                        : mySessionsStyles.tabItemInactive)}
+                      onPress={() => setActiveTab(tab.key)}
+                    >
+                      <Text
+                        {...mySessionsStyles.tabText}
+                        {...(isActive
+                          ? mySessionsStyles.tabTextActive
+                          : mySessionsStyles.tabTextInactive)}
+                      >
+                        {t(tab.labelKey)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </HStack>
 
               <Box {...mySessionsStyles.filterSelectBox}>
@@ -332,84 +326,102 @@ const MySessionsScreen: React.FC = () => {
                   const modeIconName = getModeIcon(session.mode);
 
                   return (
-                    <Box key={session.id} {...mySessionsStyles.cardBox}>
-                      <HStack {...mySessionsStyles.cardHeader}>
-                        <Heading {...mySessionsStyles.cardTitle}>
-                          {session.title}
-                        </Heading>
-                        {renderBadge(session.status)}
-                      </HStack>
-
-                      {session.provider ? (
-                        <Text {...mySessionsStyles.cardSubtitle}>
-                          {session.provider}
-                        </Text>
-                      ) : null}
-
-                      {session.date || session.duration || session.mode ? (
-                        <HStack {...mySessionsStyles.metaRow}>
-                          <LucideIcon
-                            name="Calendar"
-                            size={14}
-                            color={theme.tokens.colors.textMutedForeground}
-                            strokeWidth={1.5}
-                          />
-                          {session.date ? (
-                            <Text {...mySessionsStyles.metaText}>
-                              {session.date}
-                            </Text>
-                          ) : null}
-                          {session.date && (session.duration || session.mode) ? (
-                            <Text {...mySessionsStyles.metaText}>•</Text>
-                          ) : null}
-                          {session.duration ? (
-                            <Text {...mySessionsStyles.metaText}>
-                              {session.duration}
-                            </Text>
-                          ) : null}
-                          {session.duration && session.mode ? (
-                            <Text {...mySessionsStyles.metaText}>•</Text>
-                          ) : null}
-                          {session.mode ? (
-                            <>
-                              <LucideIcon
-                                name={modeIconName}
-                                size={14}
-                                color={theme.tokens.colors.textMutedForeground}
-                                strokeWidth={1.5}
-                              />
-                              <Text {...mySessionsStyles.metaText}>
-                                {session.mode}
-                              </Text>
-                            </>
-                          ) : null}
+                    <Pressable
+                      key={session.id}
+                      {...mySessionsStyles.cardPressable}
+                      onPress={() => {
+                        // @ts-ignore
+                        navigation.navigate('session-details', { sessionId: session.id });
+                      }}
+                      accessibilityRole="button"
+                    >
+                      <Box {...mySessionsStyles.cardBox}>
+                        <HStack {...mySessionsStyles.cardHeader}>
+                          <Heading {...mySessionsStyles.cardTitle}>
+                            {session.title}
+                          </Heading>
                         </HStack>
-                      ) : null}
 
-                      {session.location ? (
-                        <HStack {...mySessionsStyles.locationRow}>
-                          <LucideIcon
-                            name="MapPin"
-                            size={14}
-                            color={theme.tokens.colors.textMutedForeground}
-                            strokeWidth={1.5}
-                          />
-                          <Text {...mySessionsStyles.locationText}>
-                            {session.location}
+                        {session.provider ? (
+                          <Text {...mySessionsStyles.cardSubtitle}>
+                            {session.provider}
                           </Text>
-                        </HStack>
-                      ) : null}
+                        ) : null}
 
-                      {session.tags && session.tags.length > 0 ? (
-                        <HStack {...mySessionsStyles.tagsRow}>
-                          {session.tags.map((tag, idx) => (
-                            <Box key={idx} {...mySessionsStyles.tagChip}>
-                              <Text {...mySessionsStyles.tagText}>{tag}</Text>
-                            </Box>
-                          ))}
-                        </HStack>
-                      ) : null}
-                    </Box>
+                        {session.datePart || session.date || session.duration || session.mode ? (
+                          <HStack {...mySessionsStyles.metaRow}>
+                            {session.datePart || session.date ? (
+                              <HStack alignItems="flex-start" space="xs">
+                                <LucideIcon
+                                  name="Calendar"
+                                  size={14}
+                                  color={theme.tokens.colors.textMutedForeground}
+                                  strokeWidth={1.5}
+                                  style={{ marginTop: 1 }}
+                                />
+                                <HStack flexWrap="wrap" flexShrink={1} alignItems="center" space="xs">
+                                  <Text {...mySessionsStyles.metaText}>
+                                    {session.datePart || session.date}{session.timePart ? ',' : ''}
+                                  </Text>
+                                  {session.timePart ? (
+                                    <Text {...mySessionsStyles.metaText}>
+                                      {session.timePart}
+                                    </Text>
+                                  ) : null}
+                                </HStack>
+                              </HStack>
+                            ) : null}
+
+                            {session.duration ? (
+                              <HStack alignItems="center" space="xs" flexShrink={0}>
+                                <LucideIcon
+                                  name="Clock"
+                                  size={14}
+                                  color={theme.tokens.colors.textMutedForeground}
+                                  strokeWidth={1.5}
+                                />
+                                <Text {...mySessionsStyles.metaText}>
+                                  {session.duration}
+                                </Text>
+                              </HStack>
+                            ) : null}
+
+                            {session.mode ? (
+                              <HStack alignItems="center" space="xs" flexShrink={0}>
+                                <LucideIcon
+                                  name={modeIconName}
+                                  size={14}
+                                  color={theme.tokens.colors.textMutedForeground}
+                                  strokeWidth={1.5}
+                                />
+                                <Text {...mySessionsStyles.metaText}>
+                                  {session.mode}
+                                </Text>
+                              </HStack>
+                            ) : null}
+                          </HStack>
+                        ) : null}
+
+                        {session.province ? (
+                          <HStack {...mySessionsStyles.locationRow}>
+                            <LucideIcon
+                              name="MapPin"
+                              size={14}
+                              color={theme.tokens.colors.textMutedForeground}
+                              strokeWidth={1.5}
+                            />
+                            <Text
+                              {...mySessionsStyles.locationText}
+                              flexShrink={1}
+                              isTruncated
+                              numberOfLines={1}
+                            >
+                              {session.province}
+                            </Text>
+                          </HStack>
+                        ) : null}
+                      </Box>
+                    </Pressable>
                   );
                 })}
               </Box>
