@@ -4,7 +4,7 @@ import { Container, LucideIcon } from '@ui';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
-import { STATUS } from '@constants/app.constant';
+import { STATUS, USER_STATUS } from '@constants/app.constant';
 import { PARTICIPANT_JOURNEY_CARDS } from '@constants/PARTICIPANT_JOURNEY_CARDS';
 import dataService from '../../services/dataService';
 import { getUserProfile } from '../../services/authenticationService';
@@ -48,6 +48,7 @@ const ParticipantJourneyPortal: React.FC = () => {
   const navigation = useNavigation();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<string | undefined>(user?.status);
+  const [accountUserStatus, setAccountUserStatus] = useState<string | undefined>((user as any)?.accountUserStatus);
   const [coachDetails, setCoachDetails] = useState<{ name?: string; contact?: string }>({
     name: user?.coachName,
     contact: formatCoachContact(user?.coachContact),
@@ -66,6 +67,9 @@ const ParticipantJourneyPortal: React.FC = () => {
     if (user?.status) {
       setCurrentStatus(user.status);
     }
+    if ((user as any)?.accountUserStatus) {
+      setAccountUserStatus((user as any).accountUserStatus);
+    }
 
     if (participantId && authUserId && fetchedRef.current !== fetchKey) {
       fetchedRef.current = fetchKey;
@@ -74,6 +78,9 @@ const ParticipantJourneyPortal: React.FC = () => {
           const pData = result?.data;
           if (pData?.status) {
             setCurrentStatus(pData.status);
+          }
+          if (pData?.accountUserStatus) {
+            setAccountUserStatus(pData.accountUserStatus);
           }
           const coachId = pData?.hierarchy?.['0'] || pData?.hierarchy?.[0];
           if (coachId) {
@@ -99,11 +106,17 @@ const ParticipantJourneyPortal: React.FC = () => {
 
   const DISABLEABLE_CARD_IDS = ['idp-progress', 'sessions', 'graduation'];
   const normalizedStatus = (currentStatus || '').toString().trim().toUpperCase().replace(/\s+/g, '_');
+  const normalizedAccountStatus = (accountUserStatus || '').toString().trim().toUpperCase().replace(/\s+/g, '_');
   const shouldDisableCards =
     normalizedStatus === STATUS.NOT_ONBOARDED ||
     normalizedStatus === STATUS.ONBOARDED ||
+    normalizedStatus === STATUS.DROPOUT ||
     normalizedStatus === 'NOT_ONBOARDED' ||
-    normalizedStatus === 'ONBOARDED';
+    normalizedStatus === 'ONBOARDED' ||
+    normalizedStatus === 'DROPOUT' ||
+    normalizedStatus === 'DROPPED_OUT' ||
+    normalizedStatus === USER_STATUS.INACTIVE ||
+    normalizedAccountStatus === USER_STATUS.INACTIVE;
 
   const handleCardPress = (card: any) => {
     if (card.variant === 'link' && card.navigationUrl) {

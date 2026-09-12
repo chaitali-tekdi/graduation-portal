@@ -52,7 +52,7 @@ export const participantJourneyStyles = {
   },
   cardBox: {
     flex: 1 as const,
-    minHeight: 180 as const,
+    '$md-minHeight': 180 as const,
     bg: '$white' as const,
     borderWidth: 1 as const,
     borderColor: '$inputBorder' as const,
@@ -61,7 +61,7 @@ export const participantJourneyStyles = {
   },
   coachCardBox: {
     flex: 1 as const,
-    minHeight: 180 as const,
+    '$md-minHeight': 180 as const,
     bg: '$white' as const,
     borderWidth: 1 as const,
     borderColor: '$inputBorder' as const,

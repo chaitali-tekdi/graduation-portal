@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
 import { Container, LucideIcon, Loader } from '@ui';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
-import InterventionPlan from '../../ParticipantDetail/InterventionPlan';
+import ProjectAsTaskComponent from '../../../project-player/components/ProjectComponent/ProjectAsTaskComponent';
+import { ProjectProvider } from '../../../project-player/context/ProjectContext';
 import dataService from '../../../services/dataService';
 import { ProjectData } from '../../../project-player/types';
 import { MODE } from '@constants/PROJECTDATA';
 import { theme } from '@config/theme';
 import { idpProgressStyles } from './Styles';
 import { isWeb } from '@utils/platform';
+import { sortTasksWithChildren } from '@utils/helper';
 
 const IdpProgressScreen: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
   const [isBackHovered, setIsBackHovered] = useState(false);
-  const [participantData, setParticipantData] = useState<any>(null);
   const [projectData, setProjectData] = useState<ProjectData | undefined>();
-  const [projectUnavailableOffline, setProjectUnavailableOffline] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +36,6 @@ const IdpProgressScreen: React.FC = () => {
       try {
         const detailResult = await dataService.getParticipantDetails(participantId, authUserId);
         const pData = detailResult?.data || null;
-        setParticipantData(pData);
 
         if (pData) {
           const projectId =
@@ -52,8 +51,6 @@ const IdpProgressScreen: React.FC = () => {
             );
             if (response?.data) {
               setProjectData(response.data);
-            } else if (response?.isOffline && !response?.offlineDataAvailable) {
-              setProjectUnavailableOffline(true);
             }
           }
         }
@@ -66,6 +63,14 @@ const IdpProgressScreen: React.FC = () => {
 
     fetchProjectData();
   }, [user]);
+
+  const pillars = useMemo(() => {
+    if (!projectData) return [];
+    const rawPillars = projectData.children?.length
+      ? [...projectData.children]
+      : projectData.tasks?.filter((task: any) => task.children?.length || task.tasks?.length) ?? [];
+    return sortTasksWithChildren(rawPillars);
+  }, [projectData]);
 
   const handleBackToHome = () => {
     // @ts-ignore
@@ -116,13 +121,20 @@ const IdpProgressScreen: React.FC = () => {
             <Box {...idpProgressStyles.idpContent}>
               {isLoading ? (
                 <Loader />
+              ) : !projectData || pillars.length === 0 ? (
+                <Text>{t('projectPlayer.failToLoad')}</Text>
               ) : (
-                <InterventionPlan
-                  mode={MODE.readOnlyMode?.mode}
-                  projectData={projectData}
-                  projectUnavailableOffline={projectUnavailableOffline}
-                  participantProfile={participantData}
-                />
+                <ProjectProvider config={MODE.readOnlyMode} initialData={projectData} oldProjectData={null}>
+                  <VStack space="md">
+                    {pillars.map((pillar: any, index: number) => (
+                      <ProjectAsTaskComponent
+                        key={pillar._id}
+                        task={pillar}
+                        parentIndex={index}
+                      />
+                    ))}
+                  </VStack>
+                </ProjectProvider>
               )}
             </Box>
           </VStack>
