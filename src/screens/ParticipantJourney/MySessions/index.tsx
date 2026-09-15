@@ -256,7 +256,7 @@ const MySessionsScreen: React.FC = () => {
               >
                 <LucideIcon
                   name="ArrowLeft"
-                  size={16}
+                  size={18}
                   color={isBackHovered ? theme.tokens.colors.primary500 : '$textDark900'}
                   strokeWidth={1.5}
                 />

@@ -2777,8 +2777,8 @@
     "noSessions": "No sessions found.",
     "pageTitle": {
       "participant-portal": "Participant Portal",
-      "idp-progress": "My IDP Progress",
-      "my-sessions": "My Sessions",
+      "idp-progress": "My Progress",
+      "my-sessions": "My Sessions & Services",
       "my-graduation": "My Graduation"
     },
     "tabs": {
@@ -2805,9 +2805,9 @@
       "graduationReadiness": "Graduation Readiness:"
     },
     "cards": {
-      "idpProgress": "My IDP Progress",
+      "idpProgress": "My Progress",
       "idpProgressDescription": "View your tasks and progress",
-      "sessions": "My Sessions",
+      "sessions": "My Sessions & Services",
       "sessionsDescription": "View scheduled and missed sessions",
       "graduation": "My Graduation",
       "graduationDescription": "View graduation criteria",
