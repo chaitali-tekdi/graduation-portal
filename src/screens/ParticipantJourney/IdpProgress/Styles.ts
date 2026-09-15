@@ -60,10 +60,27 @@ export const idpProgressStyles = {
     fontSize: '$md' as const,
     fontWeight: '$normal' as const,
     mt: '$0' as const,
-    mb: '$6' as const,
+    mb: '$2' as const,
   },
   idpContent: {
     flex: 1 as const,
     width: '$full' as const,
   },
 } as const;
+
+export const overallProgressCardStyles = {
+  cardBox: {
+    bg: '$blue50' as const,
+    borderWidth: 1 as const,
+    borderColor: '$blue200' as const,
+    borderRadius: '$2xl' as const,
+    p: '$4' as const,
+    my: '$2' as const,
+    shadowColor: '$shadowColor' as const,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08 as const,
+    shadowRadius: 8 as const,
+    elevation: 2 as const,
+  },
+} as const;
+

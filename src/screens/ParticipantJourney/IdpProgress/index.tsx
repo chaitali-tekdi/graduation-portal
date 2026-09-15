@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
-import { Container, LucideIcon, Loader } from '@ui';
+import { Container, LucideIcon, Loader, Progress, ProgressFilledTrack } from '@ui';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
-import ProjectAsTaskComponent from '../../../project-player/components/ProjectComponent/ProjectAsTaskComponent';
-import { ProjectProvider } from '../../../project-player/context/ProjectContext';
+import InterventionPlan from '../../ParticipantDetail/InterventionPlan';
 import dataService from '../../../services/dataService';
 import { ProjectData } from '../../../project-player/types';
 import { MODE } from '@constants/PROJECTDATA';
+import { STATUS, TASK_STATUS } from '@constants/app.constant';
 import { theme } from '@config/theme';
-import { idpProgressStyles } from './Styles';
+import { idpProgressStyles, overallProgressCardStyles } from './Styles';
+import { participantHeaderStyles } from '../../ParticipantDetail/ParticipantHeader/Styles';
 import { isWeb } from '@utils/platform';
-import { sortTasksWithChildren } from '@utils/helper';
 
 const IdpProgressScreen: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
   const [isBackHovered, setIsBackHovered] = useState(false);
+  const [participantProfile, setParticipantProfile] = useState<any>(null);
   const [projectData, setProjectData] = useState<ProjectData | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [overallProgress, setOverallProgress] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -38,6 +40,7 @@ const IdpProgressScreen: React.FC = () => {
         const pData = detailResult?.data || null;
 
         if (pData) {
+          setParticipantProfile(pData);
           const projectId =
             pData?.status === 'NOT_ONBOARDED' && pData?.onBoardedProjectId
               ? pData.onBoardedProjectId
@@ -64,13 +67,33 @@ const IdpProgressScreen: React.FC = () => {
     fetchProjectData();
   }, [user]);
 
-  const pillars = useMemo(() => {
-    if (!projectData) return [];
-    const rawPillars = projectData.children?.length
-      ? [...projectData.children]
-      : projectData.tasks?.filter((task: any) => task.children?.length || task.tasks?.length) ?? [];
-    return sortTasksWithChildren(rawPillars);
+  const { totalChildTasks, completedChildTasks, calculatedProgress } = useMemo(() => {
+    if (!projectData) return { totalChildTasks: 0, completedChildTasks: 0, calculatedProgress: 0 };
+    const topLevelTasks = projectData.children?.length
+      ? projectData.children
+      : projectData.tasks || [];
+    let total = 0;
+    let completed = 0;
+
+    topLevelTasks.forEach((task: any) => {
+      const childTasks = task.children || task.tasks || [];
+      if (!childTasks.length) return;
+
+      const validChildren = childTasks.filter(
+        (childTask: any) => !childTask.isDeleted,
+      );
+
+      total += validChildren.length;
+      completed += validChildren.filter(
+        (childTask: any) => childTask.status === TASK_STATUS.COMPLETED,
+      ).length;
+    });
+
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return { totalChildTasks: total, completedChildTasks: completed, calculatedProgress: progress };
   }, [projectData]);
+
+  const progressValue = overallProgress !== undefined ? overallProgress : calculatedProgress;
 
   const handleBackToHome = () => {
     // @ts-ignore
@@ -118,23 +141,59 @@ const IdpProgressScreen: React.FC = () => {
               {t('participantJourney.idpProgressSubtitle')}
             </Text>
 
+            {!isLoading && projectData && (
+              <Box {...overallProgressCardStyles.cardBox}>
+                <VStack space="xs">
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color="$textDark900"
+                    >
+                      {t('participants.overallProgress', 'Overall Progress')}
+                    </Text>
+                    <Text
+                      fontSize="$xl"
+                      fontWeight="$bold"
+                      color="$progressBarFillColor"
+                    >
+                      {progressValue}%
+                    </Text>
+                  </HStack>
+
+                  {totalChildTasks > 0 && (
+                    <Text
+                      fontSize="$sm"
+                      color="$textMutedForeground"
+                    >
+                      {completedChildTasks} of {totalChildTasks} {t('participantJourney.activitiesCompleted', 'activities completed')}
+                    </Text>
+                  )}
+
+                  <Box {...participantHeaderStyles.progressBarContainer} mt="$2">
+                    <Progress
+                      value={progressValue}
+                      {...participantHeaderStyles.progressBarBackground}
+                    >
+                      <ProgressFilledTrack {...participantHeaderStyles.progressBarFill} />
+                    </Progress>
+                  </Box>
+                </VStack>
+              </Box>
+            )}
+
             <Box {...idpProgressStyles.idpContent}>
               {isLoading ? (
                 <Loader />
-              ) : !projectData || pillars.length === 0 ? (
+              ) : !projectData ? (
                 <Text>{t('projectPlayer.failToLoad')}</Text>
               ) : (
-                <ProjectProvider config={MODE.readOnlyMode} initialData={projectData} oldProjectData={null}>
-                  <VStack space="md">
-                    {pillars.map((pillar: any, index: number) => (
-                      <ProjectAsTaskComponent
-                        key={pillar._id}
-                        task={pillar}
-                        parentIndex={index}
-                      />
-                    ))}
-                  </VStack>
-                </ProjectProvider>
+                <InterventionPlan
+                  mode={MODE.readOnlyMode?.mode}
+                  projectData={projectData}
+                  participantProfile={participantProfile || { status: STATUS.IN_PROGRESS }}
+                  onProgressChange={setOverallProgress}
+                />
               )}
             </Box>
           </VStack>
@@ -145,3 +204,4 @@ const IdpProgressScreen: React.FC = () => {
 };
 
 export default IdpProgressScreen;
+

@@ -58,6 +58,12 @@ export const participantJourneyStyles = {
     borderColor: '$inputBorder' as const,
     borderRadius: '$xl' as const,
     p: '$5' as const,
+    shadowColor: '$shadowColor' as const,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05 as const,
+    shadowRadius: 3 as const,
+    elevation: 1 as const,
+    '$web-boxShadow': 'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.06) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px -1px' as const,
   },
   coachCardBox: {
     flex: 1 as const,

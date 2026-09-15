@@ -111,12 +111,15 @@ const ParticipantJourneyPortal: React.FC = () => {
     normalizedStatus === STATUS.NOT_ONBOARDED ||
     normalizedStatus === STATUS.ONBOARDED ||
     normalizedStatus === STATUS.DROPOUT ||
+    normalizedStatus === STATUS.NOT_ELIGIBLE ||
     normalizedStatus === 'NOT_ONBOARDED' ||
     normalizedStatus === 'ONBOARDED' ||
     normalizedStatus === 'DROPOUT' ||
     normalizedStatus === 'DROPPED_OUT' ||
+    normalizedStatus === 'NOT_ELIGIBLE' ||
     normalizedStatus === USER_STATUS.INACTIVE ||
     normalizedAccountStatus === USER_STATUS.INACTIVE;
+
 
   const handleCardPress = (card: any) => {
     if (card.variant === 'link' && card.navigationUrl) {
