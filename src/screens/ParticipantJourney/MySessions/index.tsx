@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
-import { Container, LucideIcon, Loader } from '@ui';
+import { Container, LucideIcon, Loader, useAlert } from '@ui';
 import Select from '@components/ui/Inputs/Select';
+import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getMenteeSessions } from '../../../services/participantJourneyService';
 import { getProvincesList } from '../../../services/usersService';
+import dataService from '../../../services/dataService';
 import {
   MY_SESSIONS_FILTER_OPTIONS,
   MY_SESSIONS_TABS,
@@ -14,11 +16,13 @@ import {
 import { theme } from '@config/theme';
 import { mySessionsStyles } from './Styles';
 import { isWeb } from '@utils/platform';
+
 import {
   formatSessionStartDateTimeParts,
   calculateSessionDuration,
   getDeliveryMode,
   resolveProvinceNames,
+  getParticipantStatusMessage,
 } from '@utils/participantJourneyUtils';
 
 export interface SessionItem {
@@ -55,8 +59,10 @@ const getModeIcon = (mode: string) => {
 };
 
 const MySessionsScreen: React.FC = () => {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
+  const { showAlert } = useAlert();
   const [activeTab, setActiveTab] = useState<SessionTabKey>('scheduled');
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [isBackHovered, setIsBackHovered] = useState(false);
@@ -64,10 +70,25 @@ const MySessionsScreen: React.FC = () => {
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [provinceMap, setProvinceMap] = useState<Record<string, string>>({});
   const provinceMapRef = React.useRef<Record<string, string>>({});
+  const [currentStatus, setCurrentStatus] = useState<string | undefined>(user?.status);
+  const [accountUserStatus, setAccountUserStatus] = useState<string | undefined>((user as any)?.accountUserStatus);
 
   useFocusEffect(
     useCallback(() => {
       let isMounted = true;
+
+      const participantId = (user as any)?.externalId || (user as any)?.userId || user?.id || '';
+      const authUserId = user?.id || '';
+      if (participantId && authUserId) {
+        dataService.getParticipantDetails(participantId, authUserId)
+          .then(res => {
+            if (!isMounted) return;
+            if (res?.data?.status) setCurrentStatus(res.data.status);
+            if (res?.data?.accountUserStatus) setAccountUserStatus(res.data.accountUserStatus);
+          })
+          .catch(() => { });
+      }
+
       const fetchSessionData = async () => {
         setIsLoading(true);
         try {
@@ -192,8 +213,12 @@ const MySessionsScreen: React.FC = () => {
           });
 
           setSessions(mappedSessions);
-        } catch (err) {
+        } catch (err: any) {
           console.error('Failed to fetch sessions data:', err);
+          const msg = err?.response?.data?.message || err?.message;
+          if (msg) {
+            showAlert('error', msg);
+          }
         } finally {
           if (isMounted) {
             setIsLoading(false);
@@ -235,6 +260,8 @@ const MySessionsScreen: React.FC = () => {
     });
   }, [sessions, activeTab, selectedFilter]);
 
+  const statusMessage = getParticipantStatusMessage(currentStatus, accountUserStatus);
+
   return (
     <Box {...mySessionsStyles.page}>
       <Box {...mySessionsStyles.topHeaderBar}>
@@ -272,6 +299,12 @@ const MySessionsScreen: React.FC = () => {
       <Box {...mySessionsStyles.contentArea}>
         <Container {...mySessionsStyles.container}>
           <VStack {...mySessionsStyles.content}>
+            {statusMessage && (
+              <Text color="$warning700" fontSize="$sm" fontWeight="$medium" mb="$2">
+                {statusMessage}
+              </Text>
+            )}
+
             <Text {...mySessionsStyles.subtitle}>
               {t('participantJourney.sessionsSubtitle')}
             </Text>

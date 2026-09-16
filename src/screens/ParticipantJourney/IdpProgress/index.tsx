@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
-import { Container, LucideIcon, Loader, Progress, ProgressFilledTrack } from '@ui';
+import { Container, LucideIcon, Loader, Progress, ProgressFilledTrack, useAlert } from '@ui';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
@@ -13,11 +13,13 @@ import { theme } from '@config/theme';
 import { idpProgressStyles, overallProgressCardStyles } from './Styles';
 import { participantHeaderStyles } from '../../ParticipantDetail/ParticipantHeader/Styles';
 import { isWeb } from '@utils/platform';
+import { getParticipantStatusMessage } from '@utils/participantJourneyUtils';
 
 const IdpProgressScreen: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
+  const { showAlert } = useAlert();
   const [isBackHovered, setIsBackHovered] = useState(false);
   const [participantProfile, setParticipantProfile] = useState<any>(null);
   const [projectData, setProjectData] = useState<ProjectData | undefined>();
@@ -57,8 +59,12 @@ const IdpProgressScreen: React.FC = () => {
             }
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch IDP project data:', err);
+        const msg = err?.response?.data?.message || err?.message;
+        if (msg) {
+          showAlert('error', msg);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -100,6 +106,11 @@ const IdpProgressScreen: React.FC = () => {
     navigation.navigate('participant-portal');
   };
 
+  const statusMessage = getParticipantStatusMessage(
+    participantProfile?.status || user?.status,
+    participantProfile?.accountUserStatus || (user as any)?.accountUserStatus,
+  );
+
   return (
     <Box {...idpProgressStyles.page}>
       <Box {...idpProgressStyles.topHeaderBar}>
@@ -137,6 +148,12 @@ const IdpProgressScreen: React.FC = () => {
       <Box {...idpProgressStyles.contentArea}>
         <Container {...idpProgressStyles.container}>
           <VStack {...idpProgressStyles.content}>
+            {statusMessage && (
+              <Text color="$warning700" fontSize="$sm" fontWeight="$medium" mb="$2">
+                {statusMessage}
+              </Text>
+            )}
+
             <Text {...idpProgressStyles.subtitle}>
               {t('participantJourney.idpProgressSubtitle')}
             </Text>

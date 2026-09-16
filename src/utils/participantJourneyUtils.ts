@@ -123,3 +123,19 @@ export const resolveProvinceNames = (rawProvinceData: any, provinceMap: Record<s
 
   return resolvedNames.join(', ');
 };
+
+export const getParticipantStatusMessage = (status?: string, accountStatus?: string): string | null => {
+  const normStatus = (status || '').toString().trim().toUpperCase().replace(/\s+/g, '_');
+  const normAccount = (accountStatus || '').toString().trim().toUpperCase().replace(/\s+/g, '_');
+
+  if (normAccount === 'INACTIVE' || normStatus === 'INACTIVE' || normStatus === 'DEACTIVATED') {
+    return 'This participant is Deactivated.';
+  }
+  if (normStatus === 'NOT_ELIGIBLE') {
+    return 'This participant is Not Eligible.';
+  }
+  if (normStatus === 'DROPOUT' || normStatus === 'DROPPED_OUT') {
+    return 'This participant is Dropout.';
+  }
+  return null;
+};

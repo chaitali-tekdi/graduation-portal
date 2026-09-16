@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
-import { Container, LucideIcon } from '@ui';
+import { Container, LucideIcon, useAlert } from '@ui';
+import { theme } from '@config/theme';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +11,7 @@ import dataService from '../../services/dataService';
 import { getUserProfile } from '../../services/authenticationService';
 import { participantJourneyStyles } from './Styles';
 import { isWeb } from '@utils/platform';
+import { getParticipantStatusMessage } from '@utils/participantJourneyUtils';
 
 const IconBadge: React.FC<{
   name: string;
@@ -46,6 +48,7 @@ const ParticipantJourneyPortal: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigation = useNavigation();
+  const { showAlert } = useAlert();
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<string | undefined>(user?.status);
   const [accountUserStatus, setAccountUserStatus] = useState<string | undefined>((user as any)?.accountUserStatus);
@@ -98,8 +101,12 @@ const ParticipantJourneyPortal: React.FC = () => {
             }
           }
         })
-        .catch(() => {
+        .catch(err => {
           fetchedRef.current = '';
+          const msg = err?.response?.data?.message || err?.message;
+          if (msg) {
+            showAlert('error', msg);
+          }
         });
     }
   }, [user?.id, (user as any)?.externalId, (user as any)?.userId]);
@@ -112,14 +119,10 @@ const ParticipantJourneyPortal: React.FC = () => {
     normalizedStatus === STATUS.ONBOARDED ||
     normalizedStatus === STATUS.DROPOUT ||
     normalizedStatus === STATUS.NOT_ELIGIBLE ||
-    normalizedStatus === 'NOT_ONBOARDED' ||
-    normalizedStatus === 'ONBOARDED' ||
-    normalizedStatus === 'DROPOUT' ||
-    normalizedStatus === 'DROPPED_OUT' ||
-    normalizedStatus === 'NOT_ELIGIBLE' ||
     normalizedStatus === USER_STATUS.INACTIVE ||
     normalizedAccountStatus === USER_STATUS.INACTIVE;
 
+  const statusMessage = getParticipantStatusMessage(currentStatus, accountUserStatus);
 
   const handleCardPress = (card: any) => {
     if (card.variant === 'link' && card.navigationUrl) {
@@ -179,6 +182,11 @@ const ParticipantJourneyPortal: React.FC = () => {
                 ? t('participantJourney.welcomeBackNamed', { name: user.name })
                 : t('participantJourney.welcomeBack')}
             </Text>
+            {statusMessage && (
+              <Text color="$warning700" fontSize="$sm" fontWeight="$medium" mt="$1">
+                {statusMessage}
+              </Text>
+            )}
           </VStack>
 
           <Box {...participantJourneyStyles.cardsGrid}>

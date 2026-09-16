@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, VStack, HStack, Text, Heading, Pressable } from '@gluestack-ui/themed';
-import { Container, LucideIcon, Loader } from '@ui';
+import { Container, LucideIcon, Loader, useAlert } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { isWeb } from '@utils/platform';
@@ -32,6 +32,7 @@ const SessionDetailsScreen: React.FC = () => {
   const { t } = useLanguage();
   const navigation = useNavigation();
   const route = useRoute();
+  const { showAlert } = useAlert();
   const [isBackHovered, setIsBackHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionDisplay, setSessionDisplay] = useState<SessionDisplayData | null>(null);
@@ -50,10 +51,8 @@ const SessionDetailsScreen: React.FC = () => {
 
       setIsLoading(true);
       try {
-        const [provincesList, detailsRes] = await Promise.all([
-          getProvincesList().catch(() => []),
-          getSessionDetails(sessionId).catch(() => null),
-        ]);
+        const provincesList = await getProvincesList().catch(() => []);
+        const detailsRes = await getSessionDetails(sessionId);
 
         if (!isMounted) return;
 
@@ -122,8 +121,12 @@ const SessionDetailsScreen: React.FC = () => {
           learningObjectives,
           tags,
         });
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load session details:', err);
+        const msg = err?.response?.data?.message || err?.message;
+        if (msg) {
+          showAlert('error', msg);
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
