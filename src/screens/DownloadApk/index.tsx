@@ -19,8 +19,6 @@ import { styles } from './Styles';
 
 // @ts-ignore - process.env is injected by webpack DefinePlugin on web
 const APK_DOWNLOAD_URL = process.env.APK_DOWNLOAD_URL || '';
-// @ts-ignore
-const APK_VERSION = process.env.APK_VERSION || '';
 
 interface DownloadApkModalProps {
   isOpen?: boolean;
@@ -63,7 +61,7 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
     return null;
   }
 
-  const getApkNameFromUrl = (url: string, version: string): string => {
+  const getApkNameFromUrl = (url: string): string => {
     if (url && url.trim()) {
       try {
         const cleanUrl = url.split('?')[0].split('#')[0];
@@ -78,10 +76,10 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
         // Fallback
       }
     }
-    return version.trim();
+    return '';
   };
 
-  const dynamicName = getApkNameFromUrl(APK_DOWNLOAD_URL, APK_VERSION);
+  const dynamicName = getApkNameFromUrl(APK_DOWNLOAD_URL);
   const readyStatusText = dynamicName
     ? `100% Ready · ${dynamicName}`
     : '100% Ready';
