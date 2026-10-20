@@ -66,14 +66,13 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
   participant: participantProp,
   pathway,
   graduationDate,
-  graduationProgress: graduationProgressProp,
   onViewProfile,
   areAllTasksCompleted = false,
   onStatusUpdate,
   updatedProgress,
   projectData,
-  solutions,
-  isHideSecondButton
+  isHideSecondButton,
+  endLineConfigData
 }) => {
   const navigation = useNavigation();
   const { t } = useLanguage();
@@ -273,9 +272,6 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
     setIsCertificateModalOpen(true);
   };
 
-  const effectiveProgress =
-    updatedProgress ?? graduationProgressProp ?? graduationProgress;
-
   useEffect(() => {
     let isMounted = true;
     isOnboardingComplete(projectData?.tasks, user?.id ?? '', participantProp?.userId ?? '')
@@ -286,22 +282,22 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
     return () => { isMounted = false; };
   }, [projectData, user?.id, participantProp?.userId]);
 
-
   useEffect(() => {
-    if (solutions?.length && solutions?.length > 0) {
-      const endlineSolution = solutions?.find((solution: any) => solution.keywords.includes(ENDLINE_KEYWORD));
+    const effectiveProgress = graduationProgress ?? updatedProgress
+    if (endLineConfigData?.solution) {
       setShouldShowCompletionButton(
         status === STATUS.IN_PROGRESS &&
         participantProp?.accountUserStatus !== USER_STATUS.INACTIVE &&
         !!participantProp?.idpProjectId &&
         effectiveProgress >= GRADUATION_READINESS_PROGRESS_THRESHOLD
         // && participantProp?.idpProgress?.projectStatus !== PROJECT_STATUS.SUBMITTED,
-        && !((endlineSolution?.entity?.submissionsCount === 1 && endlineSolution?.entity?.status === ENTITY_STATUS.COMPLETED) || endlineSolution?.entity?.submissionsCount > 1)
+        // && (!(endLineConfigData?.solution?.entity?.submissionsCount === 1 && endLineConfigData?.solution?.entity?.status === ENTITY_STATUS.COMPLETED) || endLineConfigData?.solution?.entity?.submissionsCount === 2)
+        && (!endLineConfigData?.solution?.entity?.submissionsCount || (endLineConfigData?.solution?.entity?.submissionsCount > 0 && endLineConfigData?.solution?.entity?.submissionsCount <= 2))
       );
     }
     // participantProp?.idpProgress?.projectStatus,
     // @ts-ignore
-  }, [effectiveProgress, participantProp?.idpProjectId, status, solutions?.length]);
+  }, [graduationProgress, updatedProgress , participantProp?.idpProjectId, status, endLineConfigData?.solution]);
 
   const renderStatusBadge = () => {
     if (participantProp?.pendingChangeRequest?.some(req => req.status === "PENDING" && req.action === "PROGRAM_USER_DROPPING_OUT")) { 
@@ -594,13 +590,12 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
     return renderViewProfileButton();
   };
   const renderCompleteProjectButton = () => {
-    const certificateSolution = solutions?.find((solution: any) => solution.keywords.includes(ENDLINE_KEYWORD));
-    return shouldShowCompletionButton && certificateSolution ? (
+    return shouldShowCompletionButton && endLineConfigData?.solution ? (
       <Button
         mt="$3"
         variant="solid"
         size="sm"
-        onPress={() => handleCompleteProject(certificateSolution)}
+        onPress={() => handleCompleteProject(endLineConfigData?.solution)}
         isDisabled={isCompletingProject || canAccessAdmin}
       >
         {isCompletingProject ? (
@@ -609,7 +604,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
           <ButtonIcon as={LucideIcon} name="Check" />
         )}
         <ButtonText>
-          {t('participantDetail.header.complete')} {certificateSolution?.name}
+          {t('participantDetail.header.complete')} {endLineConfigData?.solution?.name}
         </ButtonText>
       </Button>
     ) : null;
@@ -700,7 +695,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
             participantName={participantProp?.name}
             accountUserStatus={participantProp?.accountUserStatus}
             status={status as ParticipantStatus}
-            graduationProgress={graduationProgressProp ?? graduationProgress}
+            graduationProgress={graduationProgress}
             updatedProgress={updatedProgress}
             graduationDate={graduationDate}
           />

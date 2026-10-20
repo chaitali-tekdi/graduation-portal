@@ -258,6 +258,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   offlineKeyPrefix = '',
   participantId = '',
   initialAddedToPlanTasks = {},
+  allowEditTaskIds = [],
+  showAddCustomTask,
 }) => {
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
@@ -277,6 +279,16 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   }
 
   const isEditMode = config.mode === MODE.editMode.mode;
+
+  // A task is fully editable — including server-sync behavior — when the
+  // project is in edit mode, OR when it's in read-only mode but its id was
+  // explicitly allowed via allowEditTaskIds.
+  const isTaskEditable = useCallback(
+    (taskId?: string) =>
+      isEditMode ||
+      (config.mode === MODE.readOnlyMode.mode && !!taskId && allowEditTaskIds.includes(taskId)),
+    [isEditMode, config.mode, allowEditTaskIds],
+  );
 
   useEffect(() => {
     projectDataRef.current = projectData;
@@ -348,7 +360,9 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         return;
       }
 
-      if ((updatedTaskObj as any).isCustomTask && !isEditMode) {
+      const taskIsEditable = isTaskEditable(taskId);
+
+      if ((updatedTaskObj as any).isCustomTask && !taskIsEditable) {
         fireOnTaskUpdate();
         return;
       }
@@ -356,7 +370,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       const pillarName = (updates as { pillarName?: string }).pillarName;
 
       const isCustomOrChild =
-        ((updatedTaskObj as any).isCustomTask || (updatedTaskObj as any).parentId) && isEditMode;
+        ((updatedTaskObj as any).isCustomTask || (updatedTaskObj as any).parentId) && taskIsEditable;
 
       const payloadTask = isCustomOrChild
         ? {
@@ -413,7 +427,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         throw new Error(result.error || 'Failed to update task');
       }
     },
-    [onTaskUpdate, isEditMode, offlineKeyPrefix, participantId],
+    [onTaskUpdate, isTaskEditable, offlineKeyPrefix, participantId],
   );
 
   /**
@@ -575,7 +589,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       const needsApi = !!(
         currentProjectId &&
         parentId &&
-        isEditMode
+        isTaskEditable(taskId)
       );
       const updatedProject = removeTaskFromProject(prev, taskId);
 
@@ -635,7 +649,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
       setProjectData(updatedProject);
     },
-    [isEditMode, participantId, offlineKeyPrefix, onTaskUpdate],
+    [isTaskEditable, participantId, offlineKeyPrefix, onTaskUpdate],
   );
 
   const saveLocal = useCallback(() => {
@@ -674,6 +688,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       error,
       mode: config.mode,
       config,
+      allowEditTaskIds,
+      showAddCustomTask,
       updateTask,
       updateTasks,
       updateProjectInfo,
@@ -692,6 +708,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       isLoading,
       error,
       config,
+      allowEditTaskIds,
+      showAddCustomTask,
       updateTask,
       updateTasks,
       updateProjectInfo,
@@ -777,6 +795,8 @@ export const useProjectContext = (): ProjectContextValue => {
     error:                     stable.error,
     mode:                      stable.mode,
     config:                    stable.config,
+    allowEditTaskIds:          stable.allowEditTaskIds,
+    showAddCustomTask:         stable.showAddCustomTask,
     updateTask:                stable.updateTask,
     updateTasks:               stable.updateTasks,
     updateProjectInfo:         stable.updateProjectInfo,

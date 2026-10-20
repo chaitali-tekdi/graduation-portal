@@ -522,6 +522,25 @@ export function shouldFetchOnline(
   return false;
 }
 
+export function getCustomTaskIds(tasks: any[]): string[] {
+  const customTaskIds: string[] = [];
+
+  const traverse = (taskList: any[]) => {
+    taskList.forEach((task) => {
+      if (task.isCustomTask === true) {
+        customTaskIds.push(task._id);
+      }
+
+      if (Array.isArray(task.children) && task.children.length > 0) {
+        traverse(task.children);
+      }
+    });
+  };
+
+  traverse(tasks);
+
+  return customTaskIds;
+}
 /**
  * Format a date string to "DD Mon YYYY" format.
  * e.g. "2024-08-05" → "05 Aug 2024"
