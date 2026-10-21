@@ -134,12 +134,6 @@ const CreateSessionScreen = (): React.JSX.Element => {
       setValues(formValues);
       setLodingButton(isDraft ? 'saveDraft' : 'submit');
       const payload: any = valueMapping({ ...formValues, isDraft , recommended_for: 'user'}, false, optionsMap);
-      // Body id was ignored by /sessions/update, so edit created a duplicate; edit now hits /sessions/update/:id like SP
-      // if (sessionId && modeType === FORM_MODE.EDIT) {
-      //   payload.id = sessionId;
-      //   payload._id = sessionId;
-      // }
-      // const result = await createSession(payload);
       const result = sessionId && modeType === FORM_MODE.EDIT
         ? await updateSessionWithResources(sessionId, payload, originalResourcesRef.current)
         : await createSession(payload);
@@ -152,7 +146,7 @@ const CreateSessionScreen = (): React.JSX.Element => {
 
       // Build a session object from the form values to immediately show in My Sessions
       const newSession = {
-        id: sessionId || result?.result?.id || result?.result?._id || result?.data?._id || result?.data?.id || result?._id || result?.id || `local-${Date.now()}`,
+        id: result?.result?.id,
         title: formValues.title || formValues.idp_training_task_label || '',
         status: isDraft ? 'DRAFT' : 'UPCOMING',
         start_date: formValues.start_date,
