@@ -47,6 +47,7 @@ export const TASK_STATUS = {
   COMPLETED: 'completed',
 } as const;
 
+export const CUSTOM_IDP_TASK = "custom"
 export const PLAYER_MODE = {
   EDIT: 'edit',
   PREVIEW: 'preview',
