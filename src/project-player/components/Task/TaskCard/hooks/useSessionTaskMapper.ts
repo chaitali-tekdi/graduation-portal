@@ -3,10 +3,9 @@ import { useRoute } from '@react-navigation/native';
 import { v4 as uuidv4 } from 'uuid';
 import { useProjectContext } from '../../../../context/ProjectContext';
 import { fetchMenteeSessionIds } from './useTaskSessionStatus';
-import { TASK_STATUS } from '../../../../../constants/app.constant';
+import { TASK_STATUS, CUSTOM_IDP_TASK } from '../../../../../constants/app.constant';
 import type { Task } from '../../../../types/project.types';
 
-const CUSTOM_IDP_TASK = 'custom';
 
 // Session category -> candidate pillars (projectTemplateDetails.externalId). A project only has one of
 // the two livelihood pillars (Entrepreneurship or Employment IDP), so the first candidate present wins.

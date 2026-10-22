@@ -18,21 +18,28 @@ import { attendedSessionsStyles as styles } from './Styles';
 
 const PAGE_LIMIT = 10;
 
+type FilterType = 'ATTENDED' | 'MISSED' | 'SCHEDULED';
+
 interface AttendedSessionsProps {
   participant?: ParticipantData;
 }
 
 const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
   const { t } = useLanguage();
-  const [filterType, setFilterType] = useState<'ATTENDED' | 'MISSED'>('ATTENDED');
+  const [filterType, setFilterType] = useState<FilterType>('ATTENDED');
 
   const filterOptions = [
     { label: t('participantDetail.attendedSessions.attended'), value: 'ATTENDED' },
     { label: t('participantDetail.attendedSessions.missed'), value: 'MISSED' },
+    { label: t('participantDetail.attendedSessions.scheduled'), value: 'SCHEDULED' },
   ];
 
   const participantName = participant?.name ?? '';
   const isAttended = filterType === 'ATTENDED';
+  const isScheduled = filterType === 'SCHEDULED';
+  // No scope returns the upcoming (scheduled) sessions
+  const scope = isAttended ? 'attended' : isScheduled ? undefined : 'missed';
+  const statusKey = isAttended ? 'attended' : isScheduled ? 'scheduled' : 'missed';
   const [sessions, setSessions] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -43,14 +50,14 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
     setPage(1);
     setSessions([]);
     setTotalCount(0);
-  }, [participant?.userId, isAttended]);
+  }, [participant?.userId, filterType]);
 
   useEffect(() => {
     const menteeId = participant?.userId;
     if (!menteeId) return;
     let cancelled = false;
     setLoading(true);
-    getMenteeSessions(menteeId, isAttended ? 'attended' : 'missed', page, PAGE_LIMIT)
+    getMenteeSessions(menteeId, scope, page, PAGE_LIMIT)
       .then(({ data, count }) => {
         if (cancelled) return;
         setSessions(prev => (page === 1 ? data : [...prev, ...data]));
@@ -61,7 +68,7 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
     return () => {
       cancelled = true;
     };
-  }, [participant?.userId, isAttended, page]);
+  }, [participant?.userId, filterType, page]);
 
   const hasMore = sessions.length < totalCount;
 
@@ -73,9 +80,13 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
       {/* Header with Title and Filter */}
       <HStack {...styles.headerHStack}>
         <Text {...styles.headerTitleText}>
-          {isAttended
-            ? t('participantDetail.attendedSessions.sectionTitle')
-            : t('participantDetail.attendedSessions.missedSectionTitle')}{' '}
+          {t(
+            isAttended
+              ? 'participantDetail.attendedSessions.sectionTitle'
+              : isScheduled
+                ? 'participantDetail.attendedSessions.scheduledSectionTitle'
+                : 'participantDetail.attendedSessions.missedSectionTitle'
+          )}{' '}
           ({totalCount || sessions.length})
         </Text>
         <HStack {...styles.toggleHStack}>
@@ -84,7 +95,7 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
             return (
               <Pressable
                 key={opt.value}
-                onPress={() => setFilterType(opt.value as 'ATTENDED' | 'MISSED')}
+                onPress={() => setFilterType(opt.value as FilterType)}
                 {...styles.toggleButton(active)}>
                 <Text {...styles.toggleButtonText(active)}>{opt.label}</Text>
               </Pressable>
@@ -106,12 +117,16 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
             <Text {...styles.emptyStateTitle}>
               {isAttended
                 ? t('participantDetail.attendedSessions.noAttendedTitle', 'No attended sessions')
-                : t('participantDetail.attendedSessions.noMissedTitle', 'No missed sessions')}
+                : isScheduled
+                  ? t('participantDetail.attendedSessions.noScheduledTitle', 'No scheduled sessions')
+                  : t('participantDetail.attendedSessions.noMissedTitle', 'No missed sessions')}
             </Text>
             <Text {...styles.emptyStateDescription}>
               {isAttended
                 ? t('participantDetail.attendedSessions.noAttended', { name: participantName })
-                : t('participantDetail.attendedSessions.noMissed', { name: participantName })}
+                : isScheduled
+                  ? t('participantDetail.attendedSessions.noScheduled', { name: participantName })
+                  : t('participantDetail.attendedSessions.noMissed', { name: participantName })}
             </Text>
           </VStack>
         </Box>
@@ -124,9 +139,7 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
                   <Text {...styles.cardTitleText}>{session.title}</Text>
                   <Box {...styles.statusBadge(isAttended)}>
                     <Text {...styles.statusBadgeText(isAttended)}>
-                      {isAttended
-                        ? t('participantDetail.attendedSessions.attended')
-                        : t('participantDetail.attendedSessions.missed')}
+                      {t(`participantDetail.attendedSessions.${statusKey}`)}
                     </Text>
                   </Box>
                 </HStack>
