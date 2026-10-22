@@ -7,10 +7,12 @@ export interface MenteeSessionIds {
   attended: Set<string>;
   missed: Set<string>;
   upcoming: Set<string>;
+  /** Raw upcoming (scheduled) session rows - idp_tasks, categories, mentor_id etc. */
+  upcomingSessions: any[];
 }
 
 const SESSION_FETCH_LIMIT = 100;
-const CACHE_TTL_MS = 15000;
+const CACHE_TTL_MS = 326846234234238499;
 
 // Every session-type task card on the screen needs the same two lists, so share one in-flight
 // request per participant instead of firing two API calls per card.
@@ -31,6 +33,7 @@ export const fetchMenteeSessionIds = (menteeId: string): Promise<MenteeSessionId
     attended: toIdSet(attended),
     missed: toIdSet(missed),
     upcoming: toIdSet(upcoming),
+    upcomingSessions: upcoming.data,
   }));
 
   cache.set(menteeId, { at: Date.now(), promise });
@@ -66,8 +69,41 @@ export function useTaskSessionStatus(
 
   if (!enabled || !ids || sessionId === undefined || sessionId === null) return null;
   const key = String(sessionId);
+  if (__DEV__ && !ids.attended.has(key) && !ids.missed.has(key) && !ids.upcoming.has(key)) {
+    console.log('[TaskSessionStatus] session not in any list', { menteeId, key, attended: [...ids.attended], missed: [...ids.missed], upcoming: [...ids.upcoming] });
+  }
   if (ids.attended.has(key)) return 'attended';
   if (ids.missed.has(key)) return 'missed';
   if (ids.upcoming.has(key)) return 'scheduled';
   return null;
+}
+
+/**
+ * True when the task's mapped session is still scheduled and the logged in user is its coach
+ * (session.mentor_id === user id).
+ */
+export function useIsCoachSession(
+  menteeId: string | undefined,
+  sessionId: string | number | undefined,
+  userId: string | number | undefined,
+  enabled: boolean,
+): boolean {
+  const [ids, setIds] = useState<MenteeSessionIds | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !menteeId || !userId || sessionId === undefined || sessionId === null) return;
+    let cancelled = false;
+    fetchMenteeSessionIds(String(menteeId))
+      .then((res) => !cancelled && setIds(res))
+      .catch(() => !cancelled && setIds(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, menteeId, sessionId, userId]);
+
+  if (!enabled || !ids || !userId || sessionId === undefined || sessionId === null) return false;
+  const session = ids.upcomingSessions.find(
+    (s: any) => String(s?.id ?? s?.session_id ?? s?.sessionId) === String(sessionId),
+  );
+  return !!session && String(session.mentor_id) === String(userId);
 }

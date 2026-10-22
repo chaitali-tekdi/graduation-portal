@@ -20,15 +20,17 @@ interface CustomTaskManagerProps {
   children: (customActions: React.ReactNode) => React.ReactNode;
 }
 
-function renderCustomTaskActions({ isCustomTask, onEdit, onDelete }: { isCustomTask: boolean; onEdit: () => void; onDelete: () => void; }): React.ReactElement | null {
+function renderCustomTaskActions({ isCustomTask, onEdit, onDelete }: { isCustomTask: boolean; onEdit?: () => void; onDelete: () => void; }): React.ReactElement | null {
   if (!isCustomTask) return null;
   return (
     <HStack {...taskCardStyles.customActionsContainer}>
-      <Pressable onPress={onEdit}>
-        <Box {...taskCardStyles.editActionBox} sx={{ ':hover': { bg: taskCardStyles.editActionBox.hoverBg } }}>
-          <LucideIcon name="Pencil" size={16} color={theme.tokens.colors.primary500} />
-        </Box>
-      </Pressable>
+      {onEdit && (
+        <Pressable onPress={onEdit}>
+          <Box {...taskCardStyles.editActionBox} sx={{ ':hover': { bg: taskCardStyles.editActionBox.hoverBg } }}>
+            <LucideIcon name="Pencil" size={16} color={theme.tokens.colors.primary500} />
+          </Box>
+        </Pressable>
+      )}
       <Pressable onPress={onDelete}>
         <Box {...taskCardStyles.deleteActionBox} sx={{ ':hover': { bg: taskCardStyles.deleteActionBox.hoverBg } }}>
           <LucideIcon name="Trash2" size={16} color={theme.tokens.colors.primary500} />
@@ -56,14 +58,16 @@ const CustomTaskManager = memo<CustomTaskManagerProps>(
       confirmDeleteLoading,
     } = useCustomTaskActions(task);
 
+    // Custom tasks created from a session mirror that session, so they can only be deleted.
+    const isSessionTask = task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null;
     const customActions = useMemo(
       () =>
         renderCustomTaskActions({
           isCustomTask: true,
-          onEdit: openEditModal,
+          onEdit: isSessionTask ? undefined : openEditModal,
           onDelete: openDeleteModal,
         }),
-      [openEditModal, openDeleteModal],
+      [isSessionTask, openEditModal, openDeleteModal],
     );
 
     return (

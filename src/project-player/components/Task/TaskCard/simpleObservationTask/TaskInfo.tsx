@@ -60,6 +60,7 @@ export interface TaskInfoProps {
   doneText: string; toDoText: string; evidenceRequiredText: string;
   completeFormText: string; uploadEvidenceText: string; fileText: string; filesText: string;
   sessionBadgeText?: string;
+  coachBadgeText?: string;
   sessionStatus?: 'attended' | 'scheduled' | 'missed' | null;
 }
 
@@ -69,7 +70,7 @@ const TaskInfo = memo<TaskInfoProps>(({
   isManualToggleDisabled, isStatusUpdating,
   handleTaskClick, handleTitlePress, handleOpenPreviewModal,
   doneText, toDoText, evidenceRequiredText, completeFormText, uploadEvidenceText,
-  fileText, filesText, sessionBadgeText, sessionStatus,
+  fileText, filesText, sessionBadgeText, sessionStatus, coachBadgeText,
 }) => {
   const { user } = useAuth();
   // Participant Journey (participant viewing their own IDP): no file UI on tasks.
@@ -96,6 +97,13 @@ const TaskInfo = memo<TaskInfoProps>(({
     <Box {...taskCardStyles.statusBadge} {...taskCardStyles.statusBadgeDone}
       borderColor={sessionColors.borderColor} minWidth={50} justifyContent="center">
       <Text {...taskCardStyles.statusBadgeDoneText} color={sessionColors.textColor}>{sessionBadgeText}</Text>
+    </Box>
+  ) : null;
+
+  const coachBadge = coachBadgeText ? (
+    <Box {...taskCardStyles.statusBadge} {...taskCardStyles.statusBadgeDone}
+      borderColor={taskCardStyles.sessionBadge.scheduled.borderColor} justifyContent="center">
+      <Text {...taskCardStyles.statusBadgeDoneText} color={taskCardStyles.sessionBadge.scheduled.textColor}>{coachBadgeText}</Text>
     </Box>
   ) : null;
 
@@ -126,7 +134,7 @@ const TaskInfo = memo<TaskInfoProps>(({
       {isPreview ? (
         <HStack space="sm" alignItems="center" flexWrap="wrap">
           <Text {...titleTypography} color="$textPrimary" {...textStyle} style={isWeb ? (taskCardStyles.webTextWrap as any) : undefined}>{task?.name}</Text>
-          {taskBadge}{evidenceRequiredBadge}{sessionBadge}
+          {taskBadge}{evidenceRequiredBadge}{sessionBadge}{coachBadge}
         </HStack>
       ) : isReadOnly ? (
         <>
@@ -134,7 +142,7 @@ const TaskInfo = memo<TaskInfoProps>(({
             <Text {...titleTypography} color="$textPrimary" {...textStyle} fontWeight={(titleTypography as any).fontWeight} style={isWeb ? (taskCardStyles.webTextWrap as any) : undefined}>{task.name}</Text>
           </ContentWrapper>
           <HStack space="sm" alignItems="center" flexWrap="wrap">
-            {statusBadge}{sessionBadge}{taskBadge}{evidenceRequiredBadge}
+            {statusBadge}{sessionBadge}{coachBadge}{taskBadge}{evidenceRequiredBadge}
             {isReadOnly && isEvidenceRequired && (
               <Box {...taskAccordionStyles.actionRequiredBadge}>
                 <Text {...taskAccordionStyles.actionRequiredText}>{evidenceRequiredText}</Text>
@@ -158,7 +166,7 @@ const TaskInfo = memo<TaskInfoProps>(({
             </Pressable>
           </ContentWrapper>
           <HStack space="sm" alignItems="center" flexWrap="wrap">
-            {statusBadge}{sessionBadge}{taskBadge}{evidenceRequiredBadge}
+            {statusBadge}{sessionBadge}{coachBadge}{taskBadge}{evidenceRequiredBadge}
             {isInterventionPlanEditMode && task.attachments && task.attachments.length > 0 && (
               <Button variant={"outlineghost" as any} px="$2" height="$6" onPress={handleOpenPreviewModal}>
                 <ButtonIcon as={LucideIcon} name="Paperclip" size={taskCardStyles.fileCountIcon.size} />

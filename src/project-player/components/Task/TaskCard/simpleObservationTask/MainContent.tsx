@@ -66,6 +66,7 @@ export interface MainContentProps {
   // Session / training tasks
   isSessionTask?: boolean;
   sessionStatus?: 'attended' | 'scheduled' | 'missed' | null;
+  isCoachSession?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ const MainContent = memo<MainContentProps>(({
   showCheckbox, onCheckboxChange,
   showActionButton, actionIconName, handleAcceptTask, handleRejectTask,
   handleTaskClick, handleTitlePress, handleOpenPreviewModal,
-  t, extraActions, isSyncTaskId, isSessionTask = false, sessionStatus = null,
+  t, extraActions, isSyncTaskId, isSessionTask = false, sessionStatus = null, isCoachSession = false,
 }) => {
   // showAsCard === isChildOfProject by definition
   const showAsCard = isChildOfProject;
@@ -139,6 +140,7 @@ const MainContent = memo<MainContentProps>(({
       completeFormText={t('projectPlayer.completeFormToMarkDone')}
       uploadEvidenceText={t('projectPlayer.uploadEvidenceToMarkDone')}
       sessionStatus={sessionStatus}
+      coachBadgeText={isCoachSession ? t('projectPlayer.coachSession') : undefined}
       sessionBadgeText={sessionStatus ? t(`projectPlayer.${sessionStatus}`) : undefined}
       fileText={t('projectPlayer.file')}
       filesText={t('projectPlayer.files')}
