@@ -30,7 +30,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTaskPermissions } from '../hooks/useTaskPermissions';
 import { useTaskStatus } from '../hooks/useTaskStatus';
-import { useTaskSessionStatus } from '../hooks/useTaskSessionStatus';
+import { useTaskSessionStatus, useIsCoachSession } from '../hooks/useTaskSessionStatus';
 import { SUPPORT_OFFERING_TYPE_VALUES } from '@constants/SUPPORT_PROVIDER_CARDS';
 import {
   getActionIconName,
@@ -91,14 +91,25 @@ const SimpleObservationTask: React.FC<SimpleObservationTaskProps> = ({
 
   // Session / training tasks are `simple` tasks mapped to a support offering.
   const supportOfferingType: string | undefined = task.metaInformation?.support_offering_type;
-  const isSessionTask =
-    !isObservationTask &&
-    !!supportOfferingType &&
-    (Object.values(SUPPORT_OFFERING_TYPE_VALUES) as string[]).includes(supportOfferingType);
+  // const isSessionTask =
+  //   !isObservationTask &&
+  //   (task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null ||
+  //     (!!supportOfferingType &&
+  //       (Object.values(SUPPORT_OFFERING_TYPE_VALUES) as string[]).includes(supportOfferingType)));
+  
+  const isSessionTask = !isObservationTask &&
+    (task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null )
+  const menteeId = config?.profileInfo?.userId ?? participantId;
   const sessionStatus = useTaskSessionStatus(
-    participantId,
+    menteeId,
     task.metaInformation?.sessionId,
     isSessionTask,
+  );
+  const isCoachSession = useIsCoachSession(
+    menteeId,
+    task.metaInformation?.sessionId,
+    user?.id,
+    isSessionTask && sessionStatus === 'scheduled',
   );
 
   // ── Local state ──────────────────────────────────────────────────────────
@@ -117,7 +128,10 @@ const SimpleObservationTask: React.FC<SimpleObservationTaskProps> = ({
   );
 
   const showActionButton = useMemo(
-    () => !isPreview || !!task?.isDeletable,
+    () =>
+      (!isPreview || !!task?.isDeletable) &&
+      // A custom task created from a session only offers delete (no Schedule/Update button).
+      !(task?.isCustomTask && task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null),
     [isPreview, task],
   );
 
@@ -325,6 +339,7 @@ const SimpleObservationTask: React.FC<SimpleObservationTaskProps> = ({
         isSyncTaskId={isSyncTaskId}
         isSessionTask={isSessionTask}
         sessionStatus={sessionStatus}
+        isCoachSession={isCoachSession}
         t={t}
         extraActions={extraActions}
       />

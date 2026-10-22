@@ -92,6 +92,8 @@
     "attended": "Attended",
     "scheduled": "Scheduled",
     "missed": "Missed",
+    "coachSession": "Coach Session",
+    "checkingOfferings": "Checking for Offerings...",
     "scheduleIntervention": "Schedule intervention",
     "whoWillConduct": "Who will be conducting \"{{taskName}}\"?",
     "whoWillConductGeneric": "Who will be conducting this intervention?",
