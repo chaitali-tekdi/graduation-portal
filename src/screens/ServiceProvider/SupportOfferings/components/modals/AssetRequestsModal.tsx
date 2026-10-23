@@ -38,6 +38,7 @@ interface AssetRequestsModalProps {
   isOpen: boolean;
   onClose: () => void;
   asset: AssetItem | null;
+  onApproved?: () => void;
 }
 
 interface EnrolledParticipant {
@@ -57,6 +58,7 @@ export default function AssetRequestsModal({
   isOpen,
   onClose,
   asset,
+  onApproved,
 }: AssetRequestsModalProps): React.JSX.Element | null {
   const { t } = useLanguage();
   const { showAlert } = useAlert();
@@ -149,6 +151,7 @@ export default function AssetRequestsModal({
     setIsApprovingAll(true);
     try {
       await completeTrainingSession(asset!.id, { mentees: pendingIds });
+      onApproved?.();
       showAlert('success', t(`${BASE_PATH}.allApproved`, 'All requests approved successfully.'));
       await fetchRequests();
       onClose();
