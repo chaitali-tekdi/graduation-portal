@@ -227,7 +227,7 @@ const getAccessPages = (
         { name: 'sessions-support/create', path: '/sessions-support/create', component: CreateSupportSessionScreen },
         { name: 'sessions-support-create-session', path: '/sessions-support/:type/:id', component: CreateSupportSessionScreen },
         { name: 'session-details', path: '/sessions-support/:sessionId', component: SessionDetailsScreen },
-        { name: 'request-details', path: '/sessions-support/:requestId', component: RequestDetailsScreen },
+        { name: 'request-details', path: '/sessions-support/request-details/:requestId', component: RequestDetailsScreen },
         { name: 'project', path: '/project', component: ProjectPlayer },
       ];
     case 'participant':
