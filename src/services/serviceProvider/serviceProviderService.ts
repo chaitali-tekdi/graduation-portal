@@ -66,6 +66,7 @@ export interface AcceptAndSchedulePayload {
   delivery_mode?: string;
   capacity?: string;
   estimatedValue?: string;
+  certificate_provided?: boolean;
   assetType?: string;
   livelihoodCategory?: string;
   location?: string;
@@ -383,7 +384,7 @@ export const acceptAndScheduleSupportRequest = async (
     end_date: endDate,
     delivery_mode: isAsset || isService ? 'offline' : (payload.delivery_mode || 'online'),
     can_be_copied: false,
-    certificate_provided: false,
+    certificate_provided: payload.certificate_provided ?? false,
     recommended_for: payload.recommended_for?.length ? payload.recommended_for : ['user'],
     ...(isAsset
       ? {

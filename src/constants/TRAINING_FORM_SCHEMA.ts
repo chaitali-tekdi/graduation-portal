@@ -771,7 +771,6 @@ export const CREATE_SESSION_HIDE_FIELDS: string[] = [
 // SP fills in (capacity, format, venue / link).
 export const ACCEPT_SESSION_HIDE_FIELDS: string[] = [
   'recommended_for',
-  'certificate_provided',
   'can_be_copied',
   'resources',
 ];

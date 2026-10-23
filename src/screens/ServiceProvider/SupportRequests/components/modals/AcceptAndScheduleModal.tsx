@@ -220,8 +220,10 @@ export default function AcceptAndScheduleModal({
 
     const raw = item.raw || {};
     const meta = raw.meta || {};
-    const startDate = toDateTime(raw.session?.start_date ?? raw.start_date);
-    const endDate = toDateTime(raw.session?.end_date ?? raw.end_date);
+    // Request without dates: same default range SP Create uses (toDatePayload: now .. now + 4 years, none for training)
+    const defaultDates = valueMapping({}, false, {}, formType);
+    const startDate = toDateTime(raw.session?.start_date ?? raw.start_date) || toDateTime(defaultDates.start_date);
+    const endDate = toDateTime(raw.session?.end_date ?? raw.end_date) || toDateTime(defaultDates.end_date);
     const title = raw.title || item.title || '';
     const description = raw.description || raw.agenda || item.justification || '';
 
@@ -243,14 +245,12 @@ export default function AcceptAndScheduleModal({
       });
     } else {
       // Same API -> form mapping the edit / copy screens use for these forms
-      setValues(
-        valueMapping(
+      setValues({
+        ...valueMapping(
           {
             ...meta,
             title,
             description,
-            start_date: raw.session?.start_date ?? raw.start_date,
-            end_date: raw.session?.end_date ?? raw.end_date,
             // Older training requests store the type as idp_training_task
             idp_tasks: raw.idp_tasks ?? meta.idp_tasks ?? meta.idp_training_task,
           },
@@ -258,7 +258,9 @@ export default function AcceptAndScheduleModal({
           {},
           formType,
         ),
-      );
+        start_date: startDate,
+        end_date: endDate,
+      });
     }
 
     setErrors({});
@@ -348,6 +350,7 @@ export default function AcceptAndScheduleModal({
       capacity: values.seats_limit ? String(values.seats_limit) : undefined,
       location: values.location,
       meetingLink: values.meeting_link,
+      ...(!isService ? { certificate_provided: values.certificate_provided === 'true' } : {}),
     };
   };
 
