@@ -259,7 +259,7 @@ const Card: React.FC<CardProps> = ({
   const enrolledCount = (item as any).enrolled_mentees_count ?? confirmedPresent;
   const presentCount = (item as any).present_mentees_count ?? 0;
   // Attendance can be marked only once: completing the session sets its status to COMPLETED
-  const canConfirmAttendance = hasEnded && enrolledCount > 0 && presentCount <= 0 && currentStatus !== SESSION_STATUS.COMPLETED;
+  const canConfirmAttendance = hasEnded && enrolledCount > 0 && presentCount <= 0;
   const spotsText = expectedParticipants > 0 ? ` (${seatsRemaining} spots)` : '';
 
   // Editing is only allowed for draft sessions, or upcoming sessions that have
