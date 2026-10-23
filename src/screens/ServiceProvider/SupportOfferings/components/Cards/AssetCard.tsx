@@ -251,6 +251,8 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
         isOpen={isRequestsModalOpen}
         onClose={() => setIsRequestsModalOpen(false)}
         asset={item}
+        // Approving completes the asset session (shown as Accepted), so Cancel no longer applies
+        onApproved={() => setItem((prev) => ({ ...prev, status: 'Accepted' }))}
       />
     </Box>
   );

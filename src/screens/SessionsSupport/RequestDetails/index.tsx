@@ -5,7 +5,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import PageHeader from '@components/PageHeader';
 import moment from 'moment';
 import openExternalLink from '@utils/openExternalLink';
-import { getSessionCategories, getLivelihoodCategoriesOptions, getRecommendedFor } from '../../../services/mentoringService';
+import { getSessionCategories, getLivelihoodCategoriesOptions, getRecommendedFor, getAssetTypesOptions, getSessionTypesByPillar, getAdditionalServiceCategories } from '../../../services/mentoringService';
+import { SUPPORT_OFFERING_TYPE_VALUES } from '@constants/SUPPORT_PROVIDER_CARDS';
 import { getRequestSessionDetails } from '../../../services/serviceProvider/serviceProviderService';
 import { getProvincesList } from '../../../services/usersService';
 import styles from './styles';
@@ -100,6 +101,8 @@ export const RequestDetailsScreen: React.FC = () => {
   const [pillarOptions, setPillarOptions] = useState<any[]>([]);
   const [livelihoodOptions, setLivelihoodOptions] = useState<any[]>([]);
   const [recommendedForOptions, setRecommendedForOptions] = useState<any[]>([]);
+  const [assetTypeOptions, setAssetTypeOptions] = useState<any[]>([]);
+  const [sessionTypeOptions, setSessionTypeOptions] = useState<any[]>([]);
 
   // Entity lists used to turn the stored category values into labels
   useEffect(() => {
@@ -107,10 +110,14 @@ export const RequestDetailsScreen: React.FC = () => {
       getSessionCategories().catch(() => []),
       getLivelihoodCategoriesOptions().catch(() => []),
       getRecommendedFor().catch(() => []),
-    ]).then(([pillars, livelihoods, recommendedFor]) => {
-      setPillarOptions(pillars || []);
+      getAssetTypesOptions().catch(() => []),
+      getAdditionalServiceCategories().catch(() => []),
+    ]).then(([pillars, livelihoods, recommendedFor, assetTypes, additionalServicePillars]) => {
+      // Additional Service requests use their own pillar list
+      setPillarOptions([...(pillars || []), ...(additionalServicePillars || [])]);
       setLivelihoodOptions(livelihoods || []);
       setRecommendedForOptions(recommendedFor || []);
+      setAssetTypeOptions(assetTypes || []);
     });
   }, []);
 
@@ -136,6 +143,12 @@ export const RequestDetailsScreen: React.FC = () => {
             const rawProv = sessionObj.provinces?.[0] || sessionObj?.meta?.provinces?.[0];
             const foundProvince = provincesData?.find((e: any) => e._id === rawProv || e.externalId === rawProv || e.name === rawProv);
             const provinceName = foundProvince ? foundProvince.name : (rawProv || '');
+
+            // Service type names for the Submitted Information card
+            const rawPillar = [found.categories, found.meta?.categories, sessionObj.categories].find((c) => Array.isArray(c) && c.length)?.[0];
+            const pillarCode = String((typeof rawPillar === 'object' ? rawPillar?.value : rawPillar) || '').toLowerCase();
+            const sessionTypes = await getSessionTypesByPillar(pillarCode).catch(() => []);
+            setSessionTypeOptions(sessionTypes || []);
 
             const linkValue = sessionObj.meeting_info_details?.link || sessionObj.meeting_info?.link || '';
             const descriptionText = sessionObj.description || sessionObj.notes || '';
@@ -305,6 +318,37 @@ export const RequestDetailsScreen: React.FC = () => {
   const formatVal = displayValue(sessionObj.delivery_mode || requestItem.delivery_mode || requestItem.format);
   const venueVal = displayValue(sessionObj.meeting_info?.location || sessionObj.location || requestItem.venue || requestItem.meeting_link);
 
+  // One screen serves training, additional service and asset requests; older requests without a type are training
+  const rawOfferingType = sessionObj.support_offering_type ?? requestItem.support_offering_type;
+  const offeringType = String((typeof rawOfferingType === 'object' ? rawOfferingType?.value : rawOfferingType) || SUPPORT_OFFERING_TYPE_VALUES.TRAINING_SESSION).toLowerCase();
+  const isAdditionalService = offeringType === SUPPORT_OFFERING_TYPE_VALUES.ADDITIONAL_SERVICE;
+  const isAsset = offeringType === SUPPORT_OFFERING_TYPE_VALUES.ASSET;
+  const isTraining = !isAdditionalService && !isAsset;
+  const typeLabel = isAsset
+    ? t('lc.sessionsSupport.requestDetails.assetType', 'Asset')
+    : isAdditionalService
+      ? t('lc.sessionsSupport.requestDetails.additionalServiceType', 'Additional Service')
+      : t('lc.sessionsSupport.requestDetails.sessionType', 'Session');
+
+  const toList = (val: any): any[] => (Array.isArray(val) ? val : val ? [val] : []);
+  const unwrapVal = (val: any) => (typeof val === 'object' ? val?.value ?? val?.label : val);
+  const learningObjectivesVal = (mappedSessionDetails?.learningObjectives || []).join(', ') || '-';
+  const serviceTypesVal = toList(sessionObj.idp_tasks ?? requestItem.idp_tasks)
+    .map((task) => findLabel(sessionTypeOptions, task) || unwrapVal(task))
+    .filter(Boolean)
+    .join(', ') || '-';
+
+  // Asset request details are sent under meta (assetType, estimatedValue, quantity)
+  const pickAssetValue = (key: string) => sessionObj[key] ?? sessionObj.meta?.[key] ?? requestItem[key];
+  const rawAssetType = pickAssetValue('assetType') ?? pickAssetValue('asset_types');
+  const assetTypeVal = findLabel(assetTypeOptions, Array.isArray(rawAssetType) ? rawAssetType[0] : rawAssetType)
+    || displayValue(Array.isArray(rawAssetType) ? rawAssetType[0] : rawAssetType);
+  const rawEstimatedValue = pickAssetValue('estimatedValue') ?? pickAssetValue('estimated_value');
+  const estimatedValueVal = rawEstimatedValue !== undefined && rawEstimatedValue !== null && rawEstimatedValue !== ''
+    ? `R ${rawEstimatedValue}`
+    : '-';
+  const quantityVal = displayValue(pickAssetValue('quantity'));
+
   return (
     <Box {...styles.detailsScreenRoot}>
       <PageHeader
@@ -363,21 +407,20 @@ export const RequestDetailsScreen: React.FC = () => {
                       {t('lc.sessionsSupport.requestDetails.typeLabel', 'Type')}
                     </Text>
                     <Text {...styles.metaValue}>
-                      {t('lc.sessionsSupport.requestDetails.sessionType', 'Session')}
+                      {typeLabel}
                     </Text>
                   </VStack>
 
-                  <VStack {...styles.metaItem}>
+                  {/* <VStack >
                     <Text {...styles.metaLabel}>
                       {t('lc.sessionsSupport.requestDetails.providerLabel', 'Provider')}
                     </Text>
                     <Text {...styles.metaValue}>
                       {displayValue(mentorName)}
                     </Text>
-                  </VStack>
-                </Box>
+                  </VStack> */}
 
-                <VStack space="xs" mb="$5">
+                  <VStack {...styles.metaItem}>
                   <Text {...styles.metaLabel}>
                     {t('lc.sessionsSupport.requestDetails.titleLabel', 'Title')}
                   </Text>
@@ -385,8 +428,18 @@ export const RequestDetailsScreen: React.FC = () => {
                     {requestItem.title}
                   </Text>
                 </VStack>
+                </Box>
+{/* 
+                <VStack space="xs" mb="$5">
+                  <Text {...styles.metaLabel}>
+                    {t('lc.sessionsSupport.requestDetails.titleLabel', 'Title')}
+                  </Text>
+                  <Text {...styles.titleText}>
+                    {requestItem.title}
+                  </Text>
+                </VStack> */}
 
-                <VStack space="xs" width="100%">
+                {/* <VStack space="xs" width="100%">
                   <Text {...styles.notesHeader}>
                     {t('lc.sessionsSupport.requestDetails.notesUpdatesLabel', 'Notes / Updates')}
                   </Text>
@@ -395,7 +448,7 @@ export const RequestDetailsScreen: React.FC = () => {
                       {notesText || '-'}
                     </Text>
                   </Box>
-                </VStack>
+                </VStack> */}
               </Box>
             </Box>
 
@@ -425,12 +478,24 @@ export const RequestDetailsScreen: React.FC = () => {
 
               <Box {...styles.detailsCardContent}>
                 <VStack width="100%">
-                  <Box {...styles.infoRow}>
-                    <Text {...styles.infoRowLabel}>
-                      {t('lc.sessionsSupport.requestDetails.pillarLabel', 'Pillar')}
-                    </Text>
-                    <Text {...styles.infoRowValue}>{pillar}</Text>
-                  </Box>
+                  {/* Asset requests have no pillar; their category is the livelihood category */}
+                  {!isAsset && (
+                    <Box {...styles.infoRow}>
+                      <Text {...styles.infoRowLabel}>
+                        {t('lc.sessionsSupport.requestDetails.pillarLabel', 'Pillar')}
+                      </Text>
+                      <Text {...styles.infoRowValue}>{pillar}</Text>
+                    </Box>
+                  )}
+
+                  {isAsset && (
+                    <Box {...styles.infoRow}>
+                      <Text {...styles.infoRowLabel}>
+                        {t('lc.sessionsSupport.requestDetails.assetTypeLabel', 'Asset Type')}
+                      </Text>
+                      <Text {...styles.infoRowValue}>{assetTypeVal}</Text>
+                    </Box>
+                  )}
 
                   {!!livelihoodLabel && (
                     <Box {...styles.infoRow}>
@@ -441,9 +506,22 @@ export const RequestDetailsScreen: React.FC = () => {
                     </Box>
                   )}
 
+                  {isAdditionalService && (
+                    <Box {...styles.infoRow}>
+                      <Text {...styles.infoRowLabel}>
+                        {t('lc.sessionsSupport.requestDetails.serviceTypeLabel', 'Service Type')}
+                      </Text>
+                      <Text {...styles.infoRowValue}>{serviceTypesVal}</Text>
+                    </Box>
+                  )}
+
                   <Box {...styles.infoRow}>
                     <Text {...styles.infoRowLabel}>
-                      {t('lc.sessionsSupport.requestDetails.trainingSessionLabel', 'Training / Session')}
+                      {isAsset
+                        ? t('lc.sessionsSupport.requestDetails.titleLabel', 'Title')
+                        : isAdditionalService
+                          ? t('lc.sessionsSupport.requestDetails.serviceLabel', 'Service')
+                          : t('lc.sessionsSupport.requestDetails.trainingSessionLabel', 'Training / Session')}
                     </Text>
                     <Text {...styles.infoRowValue}>{trainingArea}</Text>
                   </Box>
@@ -455,7 +533,17 @@ export const RequestDetailsScreen: React.FC = () => {
                     <Text {...styles.infoRowValue}>{description}</Text>
                   </Box>
 
-                  <Box {...styles.infoRow}>
+                  {isTraining && (
+                    <Box {...styles.infoRow}>
+                      <Text {...styles.infoRowLabel}>
+                        {t('lc.sessionsSupport.requestDetails.learningObjectivesLabel', 'Learning Objectives')}
+                      </Text>
+                      <Text {...styles.infoRowValue}>{learningObjectivesVal}</Text>
+                    </Box>
+                  )}
+
+                  {/* Not part of the request form, so hidden: only the form's required fields are shown */}
+                  {/* <Box {...styles.infoRow}>
                     <Text {...styles.infoRowLabel}>
                       {t('lc.sessionsSupport.requestDetails.targetAudienceLabel', 'Target Audience')}
                     </Text>
@@ -474,8 +562,27 @@ export const RequestDetailsScreen: React.FC = () => {
                       {t('lc.sessionsSupport.requestDetails.maxCapacityLabel', 'Max Capacity')}
                     </Text>
                     <Text {...styles.infoRowValue}>{maxCapacity}</Text>
-                  </Box>
+                  </Box> */}
 
+                  {isAsset && (
+                    <>
+                      <Box {...styles.infoRow}>
+                        <Text {...styles.infoRowLabel}>
+                          {t('lc.sessionsSupport.requestDetails.estimatedValueLabel', 'Estimated Value')}
+                        </Text>
+                        <Text {...styles.infoRowValue}>{estimatedValueVal}</Text>
+                      </Box>
+
+                      <Box {...styles.infoRow}>
+                        <Text {...styles.infoRowLabel}>
+                          {t('lc.sessionsSupport.requestDetails.quantityLabel', 'Quantity')}
+                        </Text>
+                        <Text {...styles.infoRowValue}>{quantityVal}</Text>
+                      </Box>
+                    </>
+                  )}
+
+                  {/* Every request form has start / end date */}
                   <Box {...styles.infoRow}>
                     <Text {...styles.infoRowLabel}>
                       {t('lc.sessionsSupport.requestDetails.startDateLabel', 'Start Date & Time')}
@@ -483,14 +590,15 @@ export const RequestDetailsScreen: React.FC = () => {
                     <Text {...styles.infoRowValue}>{startDateTime}</Text>
                   </Box>
 
-                  <Box {...styles.infoRow}>
+                  <Box {...styles.infoRowLast}>
                     <Text {...styles.infoRowLabel}>
                       {t('lc.sessionsSupport.requestDetails.endDateLabel', 'End Date & Time')}
                     </Text>
                     <Text {...styles.infoRowValue}>{endDateTime}</Text>
                   </Box>
 
-                  <Box {...styles.infoRow}>
+                  {/* Not part of the request form, so hidden: only the form's required fields are shown */}
+                  {/* <Box {...styles.infoRow}>
                     <Text {...styles.infoRowLabel}>
                       {t('lc.sessionsSupport.requestDetails.formatLabel', 'Format')}
                     </Text>
@@ -502,7 +610,7 @@ export const RequestDetailsScreen: React.FC = () => {
                       {t('lc.sessionsSupport.requestDetails.venueLabel', 'Venue')}
                     </Text>
                     <Text {...styles.infoRowValue}>{venueVal}</Text>
-                  </Box>
+                  </Box> */}
                 </VStack>
               </Box>
             </Box>
