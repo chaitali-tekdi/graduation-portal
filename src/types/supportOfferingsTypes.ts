@@ -96,6 +96,7 @@ export interface AssetItem {
   province?: string;
   siteKey?: string;
   mentor_name?: string;
+  requested_by?: { id?: string; name?: string | null; organization?: string | null };
   organization?: OrganizationObject | string;
   delivery_mode?: DeliveryModeObject | string;
   seats_limit?: number;

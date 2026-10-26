@@ -87,7 +87,7 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
   const isDraft = item.status === SESSION_STATUS_LABEL.DRAFT;
 
   const { siteNames, locationValue } = getLocationValue(item, provinces, sites);
-  const { requesterOrgName } = useRequesterInfo(item as any);
+  const { requesterName, requesterOrgName } = useRequesterInfo(item as any);
   const claimed = getClaimedCount(item);
   const totalFund = getTotalFund(item);
 
@@ -196,11 +196,11 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
 
         {/* ROW 4 - ACTIONS */}
         <HStack {...styles.requestedByRowHStack}>
-          {item.mentor_name ? (
+          {requesterName ? (
             <Text {...styles.cardRequestedByText}>
               {t('supportProvider.supportOfferings.cards.requestedByPrefix', 'Requested by: ')}
               <Text fontWeight="$normal" color="$textPrimary" fontSize={'$xs'}>
-                {item.mentor_name}
+                {requesterName}
               </Text>
               {requesterOrgName ? ` (${requesterOrgName})` : ''}
             </Text>

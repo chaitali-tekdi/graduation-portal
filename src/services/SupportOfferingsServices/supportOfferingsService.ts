@@ -149,6 +149,7 @@ export const mapToAssetItem = (raw: any): AssetItem => {
     siteKey: Array.isArray(raw.sites) ? raw.sites[0] : raw.sites,
     requests: raw.requests ?? raw.meta?.requests,
     mentor_name: raw.mentor_name ?? raw.meta?.mentor_name,
+    requested_by: raw.requested_by,
     organization: raw.organization ?? raw.meta?.organization,
     delivery_mode: raw.delivery_mode,
     seats_limit: raw.seats_limit,

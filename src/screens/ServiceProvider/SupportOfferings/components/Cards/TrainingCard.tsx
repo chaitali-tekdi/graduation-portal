@@ -26,7 +26,7 @@ import CancelInterventionModal from '../modals/CancelInterventionModal';
 import openExternalLink from '@utils/openExternalLink';
 import styles from '../../styles';
 import { FORM_MODE, SESSION_STATUS, SESSION_STATUS_LABEL } from '@constants/SUPPORT_PROVIDER_CARDS';
-import { useSessionStatus, useMentorInfo } from '@hooks/useSessionStatus';
+import { useSessionStatus, useRequesterInfo } from '@hooks/useSessionStatus';
 import { useSessionAttendance } from '@hooks/useSessionAttendance';
 import { openDownload } from "@utils/helper";
 import { cancelSession } from '../../../../../services/mentoringService';
@@ -204,7 +204,7 @@ const Card: React.FC<CardProps> = ({
     currentStatus !== SESSION_STATUS.COMPLETED;
   const statusTag = isExpired ? SESSION_STATUS_LABEL.EXPIRED : derivedStatusTag;
   const statusColors = getStatusColors(statusTag);
-  const { mentorName, mentorOrgName } = useMentorInfo(item as any);
+  const { requesterName, requesterOrgName } = useRequesterInfo(item as any);
 
   const canCopy = !!item.can_be_copied && currentStatus !== SESSION_STATUS.DRAFT;
 
@@ -459,13 +459,13 @@ const Card: React.FC<CardProps> = ({
           footer(item)
         ) : (
           <HStack {...styles.requestedByRowHStack}>
-            {mentorName && (
+            {requesterName && (
               <Text {...styles.cardRequestedByText}>
-                {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published By ')}
+                {t('supportProvider.supportOfferings.cards.requestedByPrefix', 'Requested by: ')}
                 <Text fontWeight="$normal" color="$textPrimary" fontSize={'$xs'}>
-                  {mentorName}
+                  {requesterName}
                 </Text>
-                {mentorOrgName ? ` (${mentorOrgName})` : ''}
+                {requesterOrgName ? ` (${requesterOrgName})` : ''}
               </Text>
             )}
             <HStack {...styles.badgeContentHStack}>

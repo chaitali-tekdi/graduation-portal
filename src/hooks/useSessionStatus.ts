@@ -70,20 +70,22 @@ export function useSessionStatus(item: SessionStatusItem, statusOverride?: strin
 interface RequesterInfoItem {
   mentor_name?: string;
   organization?: string | { name?: string };
+  requested_by?: { name?: string | null; organization?: string | null };
   meta?: {
     mentor_name?: string;
     organization?: string | { name?: string };
   };
 }
 
+// Only offerings created by accepting an LC request have a requester (from the session list API);
+// offerings the SP created themselves show no "Requested by"
 export function useRequesterInfo(item: RequesterInfoItem) {
   return useMemo(() => {
-    const requesterName = item?.mentor_name || item?.meta?.mentor_name;
-    const org = item?.organization || item?.meta?.organization;
-    const requesterOrgName = typeof org === 'object' ? org?.name : org;
+    const requesterName = item?.requested_by?.name || undefined;
+    const requesterOrgName = item?.requested_by?.organization || undefined;
 
     return { requesterName, requesterOrgName };
-  }, [item?.mentor_name, item?.meta?.mentor_name, item?.organization, item?.meta?.organization]);
+  }, [item?.requested_by?.name, item?.requested_by?.organization]);
 }
 
 export function useMentorInfo(item: RequesterInfoItem) {
