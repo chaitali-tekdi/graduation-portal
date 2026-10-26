@@ -231,7 +231,7 @@ export function requestAssetPayloadMapping(formValues: any): any {
     certificate_provided: false,
     // The shared request-session API requires these regardless of offering type, even though
     // they don't really apply to a physical asset - reuse the closest Asset-form equivalent.
-    categories: formValues.livelihoodCategory ? [formValues.livelihoodCategory] : [],
+    categories: toArray(formValues.livelihoodCategory),
     idp_tasks: toIdpTasksPayload(null, SUPPORT_CATEGORIES.ASSET),
     delivery_mode: 'offline',
     meeting_info: {
