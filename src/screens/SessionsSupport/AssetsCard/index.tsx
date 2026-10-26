@@ -12,6 +12,7 @@ import {
   ButtonSpinner,
 } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
+import { useMentorInfo } from '@hooks/useSessionStatus';
 import type { AssetItem } from '../../../types/supportOfferingsTypes';
 // Read-only reuse of the existing card style tokens, mirroring AdditionalServiceCard's approach.
 import soStyles from '../../ServiceProvider/SupportOfferings/styles';
@@ -36,10 +37,8 @@ const Card: React.FC<AssetsCardItemProps> = ({ item, onRequestAsset }) => {
     ? t('lc.sessionsSupport.assetsCard.available', 'Available')
     : t('lc.sessionsSupport.assetsCard.unavailable', 'Unavailable');
 
-  const fundedByName =
-    (typeof item.organization === 'object' ? item.organization?.name : item.organization) ||
-    item.mentor_name ||
-    '';
+  // LC sees who published the asset: the mentor's name and organisation
+  const { mentorName, mentorOrgName } = useMentorInfo(item as any);
 
   const totalFund =
     item.estimatedValuePerParticipant !== undefined && item.quantity !== undefined
@@ -101,11 +100,12 @@ const Card: React.FC<AssetsCardItemProps> = ({ item, onRequestAsset }) => {
           ) : null}
         </HStack>
 
-        {/* Row 4: Footer - Funded by + Request Asset */}
+        {/* Row 4: Footer - Published by + Request Asset */}
         <HStack {...lcStyles.requestorFooter}>
           <Text {...lcStyles.requestorFooterText}>
-            {t('lc.sessionsSupport.assetsCard.fundedBy', 'Funded by:')}{' '}
-            <Text {...lcStyles.requestorFooterOrgText}>{fundedByName}</Text>
+            {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published by: ')}
+            <Text {...lcStyles.requestorFooterOrgText}>{mentorName}</Text>
+            {mentorOrgName ? ` (${mentorOrgName})` : ''}
           </Text>
 
           <HStack {...lcStyles.requestorFooterActions}>
