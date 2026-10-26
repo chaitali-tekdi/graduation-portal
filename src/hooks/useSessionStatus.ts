@@ -85,3 +85,13 @@ export function useRequesterInfo(item: RequesterInfoItem) {
     return { requesterName, requesterOrgName };
   }, [item?.mentor_name, item?.meta?.mentor_name, item?.organization, item?.meta?.organization]);
 }
+
+export function useMentorInfo(item: RequesterInfoItem) {
+  return useMemo(() => {
+    const mentorName = item?.mentor_name || item?.meta?.mentor_name;
+    const org = item?.organization || item?.meta?.organization;
+    const mentorOrgName = typeof org === 'object' ? org?.name : org;
+
+    return { mentorName, mentorOrgName };
+  }, [item?.mentor_name, item?.meta?.mentor_name, item?.organization, item?.meta?.organization]);
+}

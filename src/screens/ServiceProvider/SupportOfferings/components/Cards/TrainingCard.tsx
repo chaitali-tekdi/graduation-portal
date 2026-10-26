@@ -22,12 +22,14 @@ import { completeTrainingSession, getSessionEnrolledParticipants } from '../../.
 // import { openFilePicker } from '../../../../../project-player/components/Task/FileEvidence/file-picker';
 import type { MaterialItem, TrainingSessionItem, ParticipantAttendanceItem } from '../../../../../types/supportOfferingsTypes';
 import SessionCompleteModal from '../modals/SessionCompleteModal';
+import CancelInterventionModal from '../modals/CancelInterventionModal';
 import openExternalLink from '@utils/openExternalLink';
 import styles from '../../styles';
 import { FORM_MODE, SESSION_STATUS, SESSION_STATUS_LABEL } from '@constants/SUPPORT_PROVIDER_CARDS';
-import { useSessionStatus, useRequesterInfo } from '@hooks/useSessionStatus';
+import { useSessionStatus, useMentorInfo } from '@hooks/useSessionStatus';
 import { useSessionAttendance } from '@hooks/useSessionAttendance';
 import { openDownload } from "@utils/helper";
+import { cancelSession } from '../../../../../services/mentoringService';
 
 const getDeliveryMode = (item: TrainingSessionItem): 'offline' | 'online' | 'hybrid' => {
   const rawMode = (
@@ -182,7 +184,10 @@ const Card: React.FC<CardProps> = ({
   const { t } = useLanguage();
   const { showAlert } = useAlert();
   const navigation = useNavigation();
-
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [statusOverride, setStatusOverride] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  
   const [item, setItem] = useState<TrainingSessionItem>(initialItem);
   const [files, setFiles] = useState<MaterialItem[] | null>(null);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
@@ -191,7 +196,7 @@ const Card: React.FC<CardProps> = ({
   const deliveryBadge = getDeliveryBadge(deliveryMode);
 
   const currentStatus = item.status.toUpperCase();
-  const { statusTag: derivedStatusTag } = useSessionStatus(item);
+  const { statusTag: derivedStatusTag, isDraft, isUpcoming, isCancelled, isInProgress } = useSessionStatus(item);
   // Provider view: session time is over but attendance not yet confirmed in DB
   const isExpired =
     !footer &&
@@ -199,7 +204,7 @@ const Card: React.FC<CardProps> = ({
     currentStatus !== SESSION_STATUS.COMPLETED;
   const statusTag = isExpired ? SESSION_STATUS_LABEL.EXPIRED : derivedStatusTag;
   const statusColors = getStatusColors(statusTag);
-  const { requesterName, requesterOrgName } = useRequesterInfo(item as any);
+  const { mentorName, mentorOrgName } = useMentorInfo(item as any);
 
   const canCopy = !!item.can_be_copied && currentStatus !== SESSION_STATUS.DRAFT;
 
@@ -298,6 +303,22 @@ const Card: React.FC<CardProps> = ({
     setIsCompleteModalOpen(true);
     await ensureLoaded();
   };
+
+  // The cancel API marks the session as CANCELLED (it is not deleted), so keep the card and show it as Cancelled
+    const handleConfirmCancel = async (reason: string) => {
+      if (isCancelling) return;
+      setIsCancelling(true);
+      try {
+        await cancelSession(item.id, reason);
+        setStatusOverride(SESSION_STATUS_LABEL.CANCELLED);
+        setIsCancelModalOpen(false);
+        showAlert('success', t('supportProvider.supportOfferings.cards.alerts.offeringCancelled', 'Intervention cancelled successfully!'));
+      } catch (error) {
+        showAlert('error', t('supportProvider.supportOfferings.cards.alerts.cancelFailed', 'Failed to cancel intervention. Please try again.'));
+      } finally {
+        setIsCancelling(false);
+      }
+    };
 
   /*
    * Keep participant ID based completion functionality.
@@ -438,16 +459,29 @@ const Card: React.FC<CardProps> = ({
           footer(item)
         ) : (
           <HStack {...styles.requestedByRowHStack}>
-            {requesterName && (
+            {mentorName && (
               <Text {...styles.cardRequestedByText}>
-                {t('supportProvider.supportOfferings.cards.requestedByPrefix', 'Requested by: ')}
+                {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published By ')}
                 <Text fontWeight="$normal" color="$textPrimary" fontSize={'$xs'}>
-                  {requesterName}
+                  {mentorName}
                 </Text>
-                {requesterOrgName ? ` (${requesterOrgName})` : ''}
+                {mentorOrgName ? ` (${mentorOrgName})` : ''}
               </Text>
             )}
             <HStack {...styles.badgeContentHStack}>
+              {isUpcoming && (
+                <Button
+                  // @ts-ignore
+                  variant="outlineghost" {...styles.cancelActionBtn}
+                  onPress={() => setIsCancelModalOpen(true)}
+                >
+                  <ButtonIcon as={LucideIcon} name="X" {...styles.cardCopyIconProps} color={'$red600'} />
+                  {/* @ts-ignore */}
+                  <ButtonText {...styles.cancelActionBtnText}>
+                    {t('supportProvider.supportOfferings.cards.cancel', 'Cancel')}
+                  </ButtonText>
+                </Button>
+              )}
               {/* DRAFT, or UPCOMING with no participants assigned yet */}
               {canEditSession && (
                 <Button
@@ -458,7 +492,7 @@ const Card: React.FC<CardProps> = ({
                 </Button>
               )}
               {/* IN PROGRESS */}
-              {currentStatus === SESSION_STATUS.LIVE || currentStatus === SESSION_STATUS_LABEL.IN_PROGRESS && (
+              {isInProgress && (
                 <Button variant="solid" {...styles.completeActionBtn} onPress={handleOpenCompleteModal} disabled={isCompleting}  >
                   <ButtonIcon as={LucideIcon} name="CheckCircle" {...styles.cardWhiteIconProps} />
                   {/* @ts-ignore */}
@@ -622,6 +656,21 @@ const Card: React.FC<CardProps> = ({
         }
       </VStack >
 
+      <CancelInterventionModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        title={item.title}
+        statusLabel={statusTag}
+        participantsInfo={
+          enrolledCount !== undefined
+            ? `${enrolledCount} ${t('supportProvider.supportOfferings.cancelModal.assignedParticipants', 'assigned participants')}`
+            : undefined
+        }
+        supportTypeLabel={t('supportProvider.supportOfferings.cancelModal.additionalServiceType', 'Training & Session')}
+        location={provinceName || item.location}
+        isSubmitting={isCancelling}
+        onConfirmCancel={handleConfirmCancel}
+      />
       {/* SESSION COMPLETE MODAL */}
       < SessionCompleteModal
         isOpen={isCompleteModalOpen}

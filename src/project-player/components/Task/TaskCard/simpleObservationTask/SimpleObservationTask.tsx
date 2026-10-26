@@ -91,14 +91,14 @@ const SimpleObservationTask: React.FC<SimpleObservationTaskProps> = ({
 
   // Session / training tasks are `simple` tasks mapped to a support offering.
   const supportOfferingType: string | undefined = task.metaInformation?.support_offering_type;
-  // const isSessionTask =
-  //   !isObservationTask &&
-  //   (task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null ||
-  //     (!!supportOfferingType &&
-  //       (Object.values(SUPPORT_OFFERING_TYPE_VALUES) as string[]).includes(supportOfferingType)));
-  
-  const isSessionTask = !isObservationTask &&
-    (task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null )
+  // A session task is either one already mapped to a session, or an unscheduled task whose support
+  // offering type can be scheduled (this is what shows the Schedule button and its prompt).
+  const hasMappedSession = task.metaInformation?.sessionId !== undefined && task.metaInformation?.sessionId !== null;
+  const isSessionTask =
+    !isObservationTask &&
+    (hasMappedSession ||
+      (!!supportOfferingType &&
+        (Object.values(SUPPORT_OFFERING_TYPE_VALUES) as string[]).includes(supportOfferingType)));
   const menteeId = config?.profileInfo?.userId ?? participantId;
   const sessionStatus = useTaskSessionStatus(
     menteeId,

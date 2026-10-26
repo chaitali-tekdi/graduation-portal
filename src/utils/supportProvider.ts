@@ -108,11 +108,15 @@ const toDatePayload = (formValues: any, formType: SupportOfferingFormType) => {
   };
 };
 
-// idp_tasks is always string[]; Asset has no task picker so it uses the id from .env
-export const toIdpTasksPayload = (value: any, formType?: SupportOfferingFormType): string[] =>
-  formType === SUPPORT_CATEGORIES.ASSET
-    ? [process.env.ASSET_IDP_TASK_ID].filter(Boolean) as string[]
-    : toArray(value).map(unwrap).filter(Boolean);
+// idp_tasks is always string[]; Asset has no task picker so it uses the id from .env.
+// When no task is picked the session is saved as 'custom', so it is later mapped as a custom task.
+export const toIdpTasksPayload = (value: any, formType?: SupportOfferingFormType): string[] => {
+  if (formType === SUPPORT_CATEGORIES.ASSET) {
+    return [process.env.ASSET_IDP_TASK_ID].filter(Boolean) as string[];
+  }
+  const tasks = toArray(value).map(unwrap).filter(Boolean);
+  return tasks.length ? tasks : ['custom'];
+};
 
 function mapFormToPayload(formValues: any, formType: SupportOfferingFormType): any {
   return {
