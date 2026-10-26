@@ -77,7 +77,8 @@ export function mapAssetApiToFormValues(data: any): any {
     province: unwrap(firstOf(data?.provinces)) || '',
     site: toArray(data?.sites).map(unwrap).filter(Boolean).map(String),
     assetType: unwrap(firstOf(data?.asset_types)) || '',
-    livelihoodCategory: unwrap(firstOf(data?.livelihood_categories ?? data?.livelihoods)) || '',
+    // Multiselect field, so keep every saved livelihood category
+    livelihoodCategory: toArray(data?.livelihood_categories ?? data?.livelihoods).map(unwrap).filter(Boolean),
     assetTitle: data?.title || '',
     assetDescription: data?.description || '',
     estimatedValue: estimatedValue !== undefined && estimatedValue !== null ? String(estimatedValue) : '',
