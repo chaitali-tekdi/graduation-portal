@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import {
   Avatar,
   AvatarFallbackText,
@@ -14,6 +14,7 @@ import {
 } from '@gluestack-ui/themed';
 import { useAuth } from '@contexts/AuthContext';
 import { useLanguage } from '@contexts/LanguageContext';
+import { useProfileCompletion } from '@hooks';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import type { MenuItemData } from '@components/ui/Menu';
 import Menu from '@components/ui/Menu';
@@ -44,9 +45,9 @@ const SPHeader: React.FC<SPHeaderProps> = ({
   const { t } = useLanguage();
   const { user, isLoggedIn } = useAuth();
   
-  const orgName = useMemo(() => {
-    return user?.organizations?.[0]?.name || '';
-}, [user]);
+  // Header shows the mentor's contact person name from the profile (falls back to the login name), not the organisation
+  const { profileName } = useProfileCompletion();
+  const userName = profileName || user?.name || '';
   const renderMenuTrigger = useCallback(
     (triggerProps: any) => (
       <Pressable
@@ -146,13 +147,13 @@ const SPHeader: React.FC<SPHeaderProps> = ({
         </HStack>
 
         <HStack alignItems="center" space="md">
-          {orgName ? (
+          {userName ? (
             <Text
               fontSize="$sm"
               fontWeight="$medium"
               color="$white"
             >
-              {orgName}
+              {userName}
             </Text>
           ) : null}
           <Pressable position="relative">
