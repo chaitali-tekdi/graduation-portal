@@ -45,9 +45,9 @@ const SPHeader: React.FC<SPHeaderProps> = ({
   const { t } = useLanguage();
   const { user, isLoggedIn } = useAuth();
   
-  // Header shows the mentor's contact person name from the profile (falls back to the login name), not the organisation
-  const { profileName } = useProfileCompletion();
-  const userName = profileName || user?.name || '';
+  // Header shows the Support Provider Name from the mentoring profile
+  const { providerName } = useProfileCompletion();
+  const userName = providerName;
   const renderMenuTrigger = useCallback(
     (triggerProps: any) => (
       <Pressable

@@ -23,8 +23,8 @@ export const useProfileCompletion = () => {
   const [allowedSubOptions, setAllowedSubOptions] = useState<Record<string, string[]>>({});
   const [allowedProvinces, setAllowedProvinces] = useState<string[]>([]);
   const [allowedSites, setAllowedSites] = useState<string[]>([]);
-  // Contact person (focal person) name saved on the mentoring profile
-  const [profileName, setProfileName] = useState<string>('');
+  // Support Provider Name saved on the mentoring profile
+  const [providerName, setProviderName] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
@@ -85,7 +85,7 @@ export const useProfileCompletion = () => {
           setAllowedSubOptions(subOptions);
           setAllowedProvinces(provinceIds);
           setAllowedSites(siteIds);
-          setProfileName(profileData?.name || '');
+          setProviderName(profileData?.provider_name || meta?.provider_name || '');
         }
       } catch (err) {
         console.error('Error checking profile completion:', err);
@@ -127,7 +127,7 @@ export const useProfileCompletion = () => {
     getAllowedSubOptionIds,
     allowedProvinces,
     allowedSites,
-    profileName,
+    providerName,
   };
 };
 
