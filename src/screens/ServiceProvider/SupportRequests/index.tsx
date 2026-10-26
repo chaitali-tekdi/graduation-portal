@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Container, VStack, HStack, Box, Text } from '@ui';
 import styles from './styles';
 import SPTitleHeader from '@components/Header/SPTitleHeader';
@@ -25,9 +26,22 @@ const DEFAULT_SITE_OPTIONS = [
 
 const App = (): React.JSX.Element => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('sessions');
+  const navigation = useNavigation();
+  const route = useRoute<any>();
+  const requestedTab = route.params?.activeTab;
+  const [activeTab, setActiveTab] = useState(requestedTab || 'sessions');
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [requestsData, setRequestsData] = useState<any[]>([]);
+
+  // Links (e.g. SP dashboard) send the tab to open; clear it so the same tab can be sent again
+  useEffect(() => {
+    if (!requestedTab) return;
+    if (requestedTab !== activeTab) {
+      setRequestsData([]);
+      setActiveTab(requestedTab);
+    }
+    (navigation as any).setParams({ activeTab: undefined });
+  }, [requestedTab]);
   const [tabCounts, setTabCounts] = useState<{
     sessions: number;
     additional_services: number;

@@ -1030,7 +1030,7 @@ const SupportProviderDashboard = ({ variant = 'admin' }: { variant?: 'admin' | '
                     onManage={() => (navigation as any).navigate('opportunities', { activeTab: SUPPORT_OFFERING_TABS.ASSETS })}
                   />
                   <HStack justifyContent="flex-end" mt="$2">
-                    <Button onPress={() => navigation.navigate('requests' as never)}>
+                    <Button onPress={() => (navigation as any).navigate('requests', { activeTab: SUPPORT_OFFERING_TABS.ASSETS })}>
                       <ButtonText>{t('supportProviderDashboard.reviewRequests', 'Review Coach Asset Requests')}</ButtonText>
                     </Button>
                   </HStack>
