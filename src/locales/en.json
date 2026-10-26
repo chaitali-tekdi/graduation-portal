@@ -2953,6 +2953,7 @@
         "bothAudience": "Both",
         "requestedBy": "Requested by: {{name}}",
         "requestedByPrefix": "Requested by: ",
+        "publishedByPrefix": "Published by: ",
         "requestsCount": "{{count}} requests / spots",
         "copySession": "Copy Session",
         "copyOffering": "Copy Offering",

@@ -96,7 +96,7 @@ export const ASSET_SCHEMA = (hideFields: string[] = []): FormSection[] => {
               fields: [
                 ...(hideFields.includes('livelihoodCategory') ? [] : [{
                   name: 'livelihoodCategory',
-                  type: 'select',
+                  type: 'multiselect',
                   required: true,
                   label: { key: 'livelihoodCategory', fallback: 'Category of Livelihoods' },
                   placeholder: { key: 'livelihoodCategoryPlaceholder', fallback: 'Select livelihood category' },
