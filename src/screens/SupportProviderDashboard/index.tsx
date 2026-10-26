@@ -24,7 +24,8 @@ import { useAuth, useIsTenantAdmin } from '@contexts/AuthContext';
 import { useProfileCompletion } from '@hooks';
 import { getProvincesList, getSitesByProvince } from '../../services/usersService';
 import { MentoringOption, getMentoringEntities } from '../../services/mentoringService';
-import { SUPPORT_OFFERING_TYPE_VALUES } from '@constants/SUPPORT_PROVIDER_CARDS';
+import { SUPPORT_OFFERING_TYPE_VALUES, SESSION_STATUS_LABEL, SUPPORT_OFFERING_TABS } from '@constants/SUPPORT_PROVIDER_CARDS';
+import { deriveStatusLabel } from '@hooks/useSessionStatus';
 import {
   getSupportDashboardSummary,
   getSupportDashboardByMentor,
@@ -547,8 +548,13 @@ const SupportProviderDashboard = ({ variant = 'admin' }: { variant?: 'admin' | '
     getSupportTypeOptions().then(setSupportTypes);
     getSupportTypeOptionsWithExclusion().then(setFilterSupportTypes);
     if (isMentor) {
+      // "Upcoming" is a date-based label, not a DB status, so derive it the same way the session cards do
       getTrainingSessions({}).then((res) =>
-        setUpcomingSessions((res?.result?.data || []).filter((s: any) => s.status === 'Upcoming')),
+        setUpcomingSessions(
+          (res?.result?.data || [])
+            .filter((s: any) => deriveStatusLabel(s) === SESSION_STATUS_LABEL.UPCOMING)
+            .sort((a: any, b: any) => Number(a.start_date) - Number(b.start_date)),
+        ),
       );
       getAssets({}).then((res) => setPublishedAssets(res?.result?.data || []));
     }
@@ -1021,10 +1027,10 @@ const SupportProviderDashboard = ({ variant = 'admin' }: { variant?: 'admin' | '
                   />
                   <PublishedAssetsTable
                     assets={publishedAssets}
-                    onManage={() => navigation.navigate('opportunities' as never)}
+                    onManage={() => (navigation as any).navigate('opportunities', { activeTab: SUPPORT_OFFERING_TABS.ASSETS })}
                   />
                   <HStack justifyContent="flex-end" mt="$2">
-                    <Button onPress={() => navigation.navigate('requests' as never)}>
+                    <Button onPress={() => (navigation as any).navigate('requests', { activeTab: SUPPORT_OFFERING_TABS.ASSETS })}>
                       <ButtonText>{t('supportProviderDashboard.reviewRequests', 'Review Coach Asset Requests')}</ButtonText>
                     </Button>
                   </HStack>
