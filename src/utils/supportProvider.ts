@@ -70,6 +70,24 @@ function mapApiToFormValues(data: any, formType: SupportOfferingFormType): any {
   };
 }
 
+// Asset form uses its own field names (ASSET_SCHEMA), so it has a separate reverse mapping for edit
+export function mapAssetApiToFormValues(data: any): any {
+  const estimatedValue = data?.estimated_value ?? data?.meta?.estimated_value;
+  return {
+    province: unwrap(firstOf(data?.provinces)) || '',
+    site: toArray(data?.sites).map(unwrap).filter(Boolean).map(String),
+    assetType: unwrap(firstOf(data?.asset_types)) || '',
+    livelihoodCategory: unwrap(firstOf(data?.livelihood_categories ?? data?.livelihoods)) || '',
+    assetTitle: data?.title || '',
+    assetDescription: data?.description || '',
+    estimatedValue: estimatedValue !== undefined && estimatedValue !== null ? String(estimatedValue) : '',
+    availableQuantity: data?.seats_limit !== undefined && data?.seats_limit !== null ? String(data.seats_limit) : '',
+    startDate: toDateTimeValue(data?.start_date),
+    endDate: toDateTimeValue(data?.end_date),
+    assetDocuments: data?.resources,
+  };
+}
+
 // ---------- form -> API (create / update) ----------
 
 const toRecommendedForPayload = (value: any, formType: SupportOfferingFormType): string[] => {
@@ -159,6 +177,7 @@ export function requestSessionPayloadMapping(formValues: any, optionMap: any = {
     idp_tasks: toIdpTasksPayload(formValues.idp_tasks),
     description: formValues.description,
     learning_objectives: formValues.learning_objectives,
+    ...(formValues.seats_limit ? { seats_limit: Number(formValues.seats_limit) } : {}),
     // Leave dates out when not entered - the provider sets them when accepting the request
     ...(formValues.start_date ? { start_date: moment(formValues.start_date).unix() } : {}),
     ...(formValues.end_date ? { end_date: moment(formValues.end_date).unix() } : {}),
