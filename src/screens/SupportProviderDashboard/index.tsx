@@ -24,7 +24,7 @@ import { useAuth, useIsTenantAdmin } from '@contexts/AuthContext';
 import { useProfileCompletion } from '@hooks';
 import { getProvincesList, getSitesByProvince } from '../../services/usersService';
 import { MentoringOption, getMentoringEntities } from '../../services/mentoringService';
-import { SUPPORT_OFFERING_TYPE_VALUES, SESSION_STATUS_LABEL } from '@constants/SUPPORT_PROVIDER_CARDS';
+import { SUPPORT_OFFERING_TYPE_VALUES, SESSION_STATUS_LABEL, SUPPORT_OFFERING_TABS } from '@constants/SUPPORT_PROVIDER_CARDS';
 import { deriveStatusLabel } from '@hooks/useSessionStatus';
 import {
   getSupportDashboardSummary,
@@ -1027,7 +1027,7 @@ const SupportProviderDashboard = ({ variant = 'admin' }: { variant?: 'admin' | '
                   />
                   <PublishedAssetsTable
                     assets={publishedAssets}
-                    onManage={() => navigation.navigate('opportunities' as never)}
+                    onManage={() => (navigation as any).navigate('opportunities', { activeTab: SUPPORT_OFFERING_TABS.ASSETS })}
                   />
                   <HStack justifyContent="flex-end" mt="$2">
                     <Button onPress={() => navigation.navigate('requests' as never)}>
