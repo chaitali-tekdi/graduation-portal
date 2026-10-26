@@ -97,6 +97,8 @@ export interface AssetItem {
   siteKey?: string;
   mentor_name?: string;
   organization?: OrganizationObject | string;
+  start_date?: number | string;
+  end_date?: number | string;
   delivery_mode?: DeliveryModeObject | string;
   seats_limit?: number;
   seats_remaining?: number;

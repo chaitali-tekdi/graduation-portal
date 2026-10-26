@@ -150,6 +150,9 @@ export const mapToAssetItem = (raw: any): AssetItem => {
     requests: raw.requests ?? raw.meta?.requests,
     mentor_name: raw.mentor_name ?? raw.meta?.mentor_name,
     organization: raw.organization ?? raw.meta?.organization,
+    // Dates drive the card tag (Upcoming / In progress / Completed)
+    start_date: raw.start_date,
+    end_date: raw.end_date,
     delivery_mode: raw.delivery_mode,
     seats_limit: raw.seats_limit,
     seats_remaining: raw.seats_remaining,
