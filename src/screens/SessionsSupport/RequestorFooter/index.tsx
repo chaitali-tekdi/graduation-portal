@@ -2,6 +2,7 @@ import React from 'react';
 import { HStack, Text, Button, ButtonText } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
+import { useMentorInfo } from '@hooks/useSessionStatus';
 import styles from '../styles';
 
 interface RequestFooterProps {
@@ -15,7 +16,8 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
   const navigation = useNavigation();
 
   const sessionId = item?.id || item?._id || '';
-  const mentorName = item?.providedBy || item?.mentor_name || '';
+  // LC sees who published the offering: the mentor's name and organisation
+  const { mentorName, mentorOrgName } = useMentorInfo(item);
   const rawProvinceId = (Array.isArray(item?.provinces) ? item.provinces[0] : item?.provinces);
   const provinceName = provinces?.find((p: any) => p._id === rawProvinceId)?.name || rawProvinceId;
 
@@ -27,10 +29,11 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
   return (
     <HStack {...styles.requestorFooter}>
       <Text {...styles.requestorFooterText}>
-        {t('supportProvider.supportOfferings.cards.providedBy')}{' '}
+        {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published by: ')}
         <Text {...styles.requestorFooterOrgText}>
           {mentorName}
         </Text>
+        {mentorOrgName ? ` (${mentorOrgName})` : ''}
       </Text>
 
       <HStack {...styles.requestorFooterActions}>

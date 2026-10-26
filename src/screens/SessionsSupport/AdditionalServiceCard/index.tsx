@@ -20,6 +20,7 @@ import soStyles from '../../ServiceProvider/SupportOfferings/styles';
 // Footer styles (Provided by + View Details) already defined for the LC requestor flow.
 import lcStyles from '../styles';
 import { SESSION_STATUS, SESSION_STATUS_LABEL } from '@constants/SUPPORT_PROVIDER_CARDS';
+import { useMentorInfo } from '@hooks/useSessionStatus';
 
 // ---------- Card ----------
 
@@ -94,7 +95,8 @@ const Card: React.FC<AdditionalServiceCardItemProps> = ({ item, provinces, sites
   const statusColors = getStatusColors(displayStatus);
   const audienceLabel = getAudienceLabel(item, t);
 
-  const providedByName = item.providedBy || item.mentor_name || (typeof item.organization === 'object' ? item.organization?.name : item.organization) || '';
+  // LC sees who published the offering: the mentor's name and organisation
+  const { mentorName, mentorOrgName } = useMentorInfo(item);
 
   // `item.provinces`/`item.sites` are raw ids - resolve them to display names instead of
   // showing the ids (or nothing) directly.
@@ -175,11 +177,12 @@ const Card: React.FC<AdditionalServiceCardItemProps> = ({ item, provinces, sites
           ) : null}
         </HStack>
 
-        {/* Row 4: Footer - Provided by + View Details */}
+        {/* Row 4: Footer - Published by + View Details */}
         <HStack {...lcStyles.requestorFooter}>
           <Text {...lcStyles.requestorFooterText}>
-            {t('supportProvider.supportOfferings.cards.providedBy')}{' '}
-            <Text {...lcStyles.requestorFooterOrgText}>{providedByName}</Text>
+            {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published by: ')}
+            <Text {...lcStyles.requestorFooterOrgText}>{mentorName}</Text>
+            {mentorOrgName ? ` (${mentorOrgName})` : ''}
             {/* {provinceName ? (
               <Text {...lcStyles.requestorFooterProvinceText}>{` • ${provinceName}`}</Text>
             ) : null} */}
