@@ -12,7 +12,7 @@ import { useLanguage } from '@contexts/LanguageContext';
 import { useAuth } from '@contexts/AuthContext';
 import { getSitesByProvince, getProvincesList } from '../../../../services/usersService';
 import { requestSession, getLivelihoodCategoriesOptions, getAssetTypesOptions, createSession, getSessionDetails, updateSessionWithResources } from '../../../../services/mentoringService';
-import { requestAssetPayloadMapping, toIdpTasksPayload, uploadService, applyDraftDefaults, ASSET_DRAFT_CONFIG, mapAssetApiToFormValues } from '@utils/supportProvider';
+import { requestAssetPayloadMapping, toIdpTasksPayload, uploadService, applyDraftDefaults, ASSET_DRAFT_CONFIG, mapAssetApiToFormValues, valueMapping } from '@utils/supportProvider';
 import { useProfileCompletion } from '@hooks';
 import NotFound from '@components/NotFound';
 import {
@@ -24,7 +24,6 @@ import {
   SUPPORT_OFFERING_TABS,
 } from '@constants/SUPPORT_PROVIDER_CARDS';
 import { ROLE_NAMES } from '@constants/ROLES';
-import moment from 'moment';
 
 /**
  * Clones the schema, running `patcher` over the named field so it can show a
@@ -236,6 +235,13 @@ const App = (): React.JSX.Element => {
           refreshRequests: Date.now(),
         });
       } else {
+        // No dates: same default range as Additional Service (toDatePayload: now .. now + 4 years)
+        const { start_date: startDate, end_date: endDate } = valueMapping(
+          { start_date: formValues.startDate, end_date: formValues.endDate },
+          false,
+          {},
+          SUPPORT_CATEGORIES.ASSET,
+        );
         const payload = {
           support_offering_type: SUPPORT_CATEGORIES.ASSET,
           categories: [
@@ -266,8 +272,8 @@ const App = (): React.JSX.Element => {
           provinces: formValues.province ? [formValues.province] : [],
           sites: Array.isArray(formValues.site) ? formValues.site : (formValues.site ? [formValues.site] : []),
           recommended_for: ['user'],
-          start_date: formValues.startDate ? moment(formValues.startDate).unix() : moment().unix(),
-          end_date: formValues.endDate ? moment(formValues.endDate).unix() : moment().add(2, 'years').unix(),
+          start_date: startDate,
+          end_date: endDate,
           status: isDraft ? 'DRAFT' : 'PUBLISHED',
           can_be_copied: false,
           certificate_provided: false,

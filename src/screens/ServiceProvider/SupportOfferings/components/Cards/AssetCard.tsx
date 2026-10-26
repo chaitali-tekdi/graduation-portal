@@ -14,9 +14,9 @@ import {
   ButtonSpinner,
 } from '@ui';
 import { useLanguage } from '@contexts/LanguageContext';
-import { useRequesterInfo } from '@hooks/useSessionStatus';
+import { useRequesterInfo, deriveStatusLabel } from '@hooks/useSessionStatus';
 import { useNavigation } from '@react-navigation/native';
-import { FORM_MODE, SESSION_STATUS_LABEL } from '@constants/SUPPORT_PROVIDER_CARDS';
+import { FORM_MODE, SESSION_STATUS, SESSION_STATUS_LABEL } from '@constants/SUPPORT_PROVIDER_CARDS';
 import type { AssetItem } from '../../../../../types/supportOfferingsTypes';
 import { cancelSession } from '../../../../../services/mentoringService';
 import CancelInterventionModal from '../modals/CancelInterventionModal';
@@ -50,6 +50,9 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
     switch (status) {
       case 'Upcoming':
         return { bg: '$blue50', border: '$blue200', text: '$blue600', icon: 'Clock' };
+      case 'In progress':
+        return { bg: '$observationTaskBg', border: '#fde68a', text: '$warningIconColor', icon: 'AlertCircle' };
+      case 'Completed':
       case 'Accepted':
         return { bg: '$success50', border: '#a7f3d0', text: '$success600', icon: 'CheckCircle' };
       case 'Pending':
@@ -81,8 +84,12 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
     return hasTotalFund ? (assetItem.estimatedValuePerParticipant || 0) * (assetItem.quantity || 0) : undefined;
   }, []);
 
-  const statusColors = getStatusColors(item.status);
-  const isUpcoming = item.status === 'Upcoming';
+  // Published assets (mapped as Upcoming) get their tag from the dates, same as additional services
+  const statusLabel = item.status === SESSION_STATUS_LABEL.UPCOMING
+    ? deriveStatusLabel({ status: SESSION_STATUS.PUBLISHED, start_date: item.start_date, end_date: item.end_date })
+    : item.status;
+  const statusColors = getStatusColors(statusLabel);
+  const isUpcoming = statusLabel === SESSION_STATUS_LABEL.UPCOMING;
   const isCancelled = String(item.status || '').toLowerCase() === 'cancelled';
   const isDraft = item.status === SESSION_STATUS_LABEL.DRAFT;
 
@@ -118,7 +125,7 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
             <Badge {...styles.badgeContainer(statusColors.bg, statusColors.border)}>
               <HStack {...styles.badgeContentHStack}>
                 <LucideIcon name={statusColors.icon} {...styles.badgeIconProps(statusColors.text)} />
-                <BadgeText {...styles.badgeText(statusColors.text)}>{item.status}</BadgeText>
+                <BadgeText {...styles.badgeText(statusColors.text)}>{statusLabel}</BadgeText>
               </HStack>
             </Badge>
 
@@ -256,7 +263,7 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
         title={item.title}
-        statusLabel={item.status}
+        statusLabel={statusLabel}
         participantsInfo={
           claimed !== undefined
             ? `${claimed} ${t('supportProvider.supportOfferings.cancelModal.assignedParticipants', 'assigned participants')}`

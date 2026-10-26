@@ -98,6 +98,8 @@ export interface AssetItem {
   mentor_name?: string;
   requested_by?: { id?: string; name?: string | null; organization?: string | null };
   organization?: OrganizationObject | string;
+  start_date?: number | string;
+  end_date?: number | string;
   delivery_mode?: DeliveryModeObject | string;
   seats_limit?: number;
   seats_remaining?: number;
