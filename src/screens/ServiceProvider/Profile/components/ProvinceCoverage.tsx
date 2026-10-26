@@ -320,7 +320,7 @@ export const ProvinceCoverage: React.FC<ProvinceCoverageProps> = ({
 
             <VStack {...styles.inputCol}>
               <HStack {...styles.labelCol}>
-                <Text {...styles.label}>{t('profile.siteFieldLabel', 'Site Field')}</Text>
+                <Text {...styles.label}>{t('profile.siteFieldLabel', 'Site')}</Text>
                 <Text {...styles.redAsteriskSmall}> *</Text>
               </HStack>
               <Select
