@@ -284,7 +284,7 @@ const App = (): React.JSX.Element => {
           'success',
           isDraft
             ? t('supportProvider.assetForm.draftSuccessMessage')
-            : t('supportProvider.assetForm.requestSuccessMessage'),
+            : t('supportProvider.supportOfferings.cards.alerts.supportPublished', 'Support published successfully!'),
         );
         // @ts-ignore
         navigation.navigate(ROUTES.OPPORTUNITIES, { activeTab: SUPPORT_OFFERING_TABS.ASSETS });
