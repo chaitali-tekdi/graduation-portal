@@ -232,10 +232,10 @@ export default function AcceptAndScheduleModal({
         province: unwrap(toList(meta.provinces ?? meta.province)[0]) || '',
         site: toList(meta.sites ?? meta.site).map(unwrap).filter(Boolean),
         assetType: matchOptionValue(assetTypes, meta.assetType ?? toList(meta.asset_types)[0]),
-        livelihoodCategory: matchOptionValue(
-          livelihoodCategories,
-          meta.livelihoodCategory ?? toList(meta.livelihood_categories)[0] ?? toList(meta.categories)[0],
-        ),
+        // Category of Livelihoods is a multiselect, so prefill every value the LC picked
+        livelihoodCategory: toList(meta.livelihoodCategory ?? meta.livelihood_categories ?? meta.categories)
+          .map((value) => matchOptionValue(livelihoodCategories, value))
+          .filter(Boolean),
         assetTitle: title,
         assetDescription: meta.assetDescription || description,
         estimatedValue: String(meta.estimatedValue ?? meta.estimated_value ?? ''),
