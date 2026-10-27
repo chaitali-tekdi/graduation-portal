@@ -68,7 +68,7 @@ export interface AcceptAndSchedulePayload {
   estimatedValue?: string;
   certificate_provided?: boolean;
   assetType?: string;
-  livelihoodCategory?: string;
+  livelihoodCategory?: string | string[];
   location?: string;
   meetingLink?: string;
   notes?: string;
@@ -428,9 +428,14 @@ export const acceptAndScheduleSupportRequest = async (
       ...(payload.estimatedValue ? { estimated_value: payload.estimatedValue } : {}),
     };
     // Same asset fields the SP "Create Asset" form saves, so the accepted asset keeps its type and livelihood
-    body.categories = [SUPPORT_OFFERING_TYPE_VALUES.ASSET, payload.livelihoodCategory].filter(Boolean);
+    const livelihoods = Array.isArray(payload.livelihoodCategory)
+      ? payload.livelihoodCategory
+      : payload.livelihoodCategory
+        ? [payload.livelihoodCategory]
+        : [];
+    body.categories = [SUPPORT_OFFERING_TYPE_VALUES.ASSET, ...livelihoods];
     body.asset_types = payload.assetType ? [payload.assetType] : [];
-    body.livelihood_categories = payload.livelihoodCategory ? [payload.livelihoodCategory] : [];
+    body.livelihood_categories = livelihoods;
     if (payload.estimatedValue) {
       body.estimated_value = payload.estimatedValue;
     }
