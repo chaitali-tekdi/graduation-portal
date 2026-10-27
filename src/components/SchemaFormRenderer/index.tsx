@@ -147,6 +147,25 @@ FastTextareaInput.displayName = 'SFR_FastTextareaInput';
 
 export type OptionsMap = Record<string, { value: string; label: string }[]>;
 
+// Scrolls a field container into view and focuses its first input (web); also used by screens for non-schema sections
+export const scrollToAndFocusNode = (node: any) => {
+  if (!node) return;
+  if (node.scrollIntoView) {
+    node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  const focusable = node.querySelector
+    ? node.querySelector('input, textarea, select, button, [tabindex]')
+    : null;
+  if (focusable && focusable.focus) {
+    focusable.focus();
+  } else if (node.focus) {
+    if (!node.hasAttribute || !node.hasAttribute('tabindex')) {
+      node.setAttribute?.('tabindex', '-1');
+    }
+    node.focus();
+  }
+};
+
 export interface SchemaFormRendererProps {
   schema: FormSection[];
   /**
@@ -2457,25 +2476,7 @@ const SchemaFormRenderer: React.FC<SchemaFormRendererProps> = ({
       1600,
     );
 
-    setTimeout(() => {
-      const node = fieldRefsRef.current[name];
-      if (node) {
-        if (node.scrollIntoView) {
-          node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        const focusable = node.querySelector
-          ? node.querySelector('input, textarea, select, button, [tabindex]')
-          : null;
-        if (focusable && focusable.focus) {
-          focusable.focus();
-        } else if (node.focus) {
-          if (!node.hasAttribute || !node.hasAttribute('tabindex')) {
-            node.setAttribute?.('tabindex', '-1');
-          }
-          node.focus();
-        }
-      }
-    }, 50);
+    setTimeout(() => scrollToAndFocusNode(fieldRefsRef.current[name]), 50);
   }, []);
 
   // Applies a fresh validation pass without auto-revealing newly-invalid fields:

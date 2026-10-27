@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,7 +14,7 @@ import {
 } from '@ui';
 import { LucideIcon } from '@ui/index';
 import SPTitleHeader from '@components/Header/SPTitleHeader';
-import SchemaFormRenderer, { validateSchema, resolveFileUploads } from '@components/SchemaFormRenderer';
+import SchemaFormRenderer, { validateSchema, resolveFileUploads, scrollToAndFocusNode } from '@components/SchemaFormRenderer';
 import { useAuth } from '@contexts/AuthContext';
 import { getUserProfile } from '../../../services/authenticationService';
 import {
@@ -271,6 +271,19 @@ const OrganizationProfile = (): React.JSX.Element => {
     });
   }, []);
 
+  const coverageRef = useRef<any>(null);
+  const categoriesRef = useRef<any>(null);
+
+  // Coverage and categories are not schema fields, so their errors are cleared here when they change
+  const clearError = useCallback((name: string) => {
+    setErrors((prev: any) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  }, []);
+
   // Cancels editing mode and restores the previous saved values.
   const handleCancel = () => {
     setValues(originalValues);
@@ -309,6 +322,12 @@ const handleSave = async () => {
 
   if (Object.keys(allErrors).length > 0) {
     setErrors(allErrors);
+    // Schema fields scroll to themselves via SchemaFormRenderer; otherwise go to the first empty section
+    const hasSchemaErrors = Object.keys({ ...basicErrors, ...contactErrors, ...docErrors }).length > 0;
+    if (!hasSchemaErrors) {
+      const sectionRef = allErrors.provinceCoverage ? coverageRef : categoriesRef;
+      setTimeout(() => scrollToAndFocusNode(sectionRef.current), 50);
+    }
     showAlert(
       'error',
       t(
@@ -520,7 +539,7 @@ try {
           </VStack>
 
           {/* Card 3: Coverage */}
-          <VStack {...styles.sectionCard}>
+          <VStack ref={coverageRef} {...styles.sectionCard}>
             <SectionHeader
               icon="MapPin"
               title={t('profile.coverage', 'Coverage')}
@@ -530,14 +549,22 @@ try {
 
             <ProvinceCoverage
               value={provinceCoverage}
-              onChange={setProvinceCoverage}
+              onChange={(value: any) => {
+                setProvinceCoverage(value);
+                clearError('provinceCoverage');
+              }}
               mode={mode}
               t={t}
             />
+            {errors.provinceCoverage && (
+              <Text color="$error600" fontSize="$xs">
+                {errors.provinceCoverage}
+              </Text>
+            )}
           </VStack>
 
           {/* Card 4: Support Categories Offered */}
-          <VStack {...styles.sectionCard}>
+          <VStack ref={categoriesRef} {...styles.sectionCard}>
             <SectionHeader
               icon="Layers"
               title={t('profile.supportCategoriesOffered', 'Support Categories Offered')}
@@ -547,10 +574,18 @@ try {
 
             <SupportCategories
               value={supportCategories}
-              onChange={setSupportCategories}
+              onChange={(value: any) => {
+                setSupportCategories(value);
+                clearError('supportCategories');
+              }}
               mode={mode}
               t={t}
             />
+            {errors.supportCategories && (
+              <Text color="$error600" fontSize="$xs">
+                {errors.supportCategories}
+              </Text>
+            )}
           </VStack>
 
           {/* Card 5: Documents */}
