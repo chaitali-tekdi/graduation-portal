@@ -921,6 +921,7 @@ const SupportProviderDashboard = ({ variant = 'admin' }: { variant?: 'admin' | '
                       />
                       <UpcomingSessions
                         sessions={upcomingSessions}
+                        provinceNames={provinceNames}
                         onViewAll={() => navigation.navigate('opportunities' as never)}
                       />
                     </VStack>

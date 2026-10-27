@@ -81,14 +81,22 @@ const formatSessionDate = (value: any): string => {
     : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-export const UpcomingSessions = ({ sessions, onViewAll }: { sessions: any[]; onViewAll: () => void }) => {
+export const UpcomingSessions = ({
+  sessions,
+  provinceNames,
+  onViewAll,
+}: {
+  sessions: any[];
+  provinceNames: Record<string, string>;
+  onViewAll: () => void;
+}) => {
   const { t } = useTranslation();
   return (
     <VStack space="sm">
       {sessions.slice(0, 3).map((session) => {
         const limit = session.seats_limit || 0;
         const enrolled = Math.max(0, limit - (session.seats_remaining || 0));
-        const location = session.meeting_info?.location || session.provinces?.[0] || '-';
+        const location = provinceNames[String(session.provinces?.[0])] || '-';
         return (
           <VStack key={session.id} p="$3" borderWidth={1} borderColor="$borderLight200" borderRadius="$lg" space="xs">
             <Text fontSize={14} fontWeight="$semibold">{session.title}</Text>
