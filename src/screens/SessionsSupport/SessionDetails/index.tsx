@@ -328,7 +328,7 @@ const SessionDetailsScreen: React.FC = () => {
                   </Box>
                   <VStack>
                     <Text {...styles.detailsItemLabel}>
-                      {t('lc.sessionsSupport.sessionDetails.location')}
+                      {t('lc.sessionsSupport.sessionDetails.location','Province')}
                     </Text>
                     <Text {...styles.detailsItemValue}>{session.provinceName}</Text>
                   </VStack>
