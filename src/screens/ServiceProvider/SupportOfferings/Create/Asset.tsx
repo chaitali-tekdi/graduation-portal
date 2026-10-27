@@ -371,6 +371,11 @@ const App = (): React.JSX.Element => {
             showSaveDraftButton={!isLc}
             isSubmitting={isSubmitting}
             uploadService={uploadService}
+            // SP publishes with the same button as Training; LC keeps the default Submit for its request
+            {...(!isLc && {
+              submitButtonProps: { bg: "green", icon: "Check", _icon: { color: "$white" } },
+              submitButtonText: t("supportProvider.supportOfferings.buttonTexts.publishSupport"),
+            })}
           />
         </Card>
       </Container>
