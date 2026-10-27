@@ -211,8 +211,7 @@ export function requestAssetPayloadMapping(formValues: any): any {
   const resolvedProvince = formValues.provinces ?? province;
   const resolvedSites = formValues.sites ?? site;
 
-  // Availability is optional on the Asset form, but the shared request-session API enforces a
-  // 30 minute - 24 hour window on every request - default to a valid 30 minute slot when left blank.
+  // Asset form names its availability dates startDate/endDate; leave them out when not entered
   const startMoment = formValues.startDate ? moment(formValues.startDate) : '';
   const endMoment = formValues.endDate ? moment(formValues.endDate) : '';
 
@@ -222,8 +221,8 @@ export function requestAssetPayloadMapping(formValues: any): any {
     sites: Array.isArray(resolvedSites) ? resolvedSites : (resolvedSites ? [resolvedSites] : []),
     title: formValues.assetTitle,
     agenda: formValues.assetDescription || formValues.assetTitle,
-    ...(formValues.start_date ? { start_date: moment(formValues.start_date).unix() } : {}),
-    ...(formValues.end_date ? { end_date: moment(formValues.end_date).unix() } : {}),
+    ...(startMoment ? { start_date: startMoment.unix() } : {}),
+    ...(endMoment ? { end_date: endMoment.unix() } : {}),
     requestees: formValues.requestees || [],
     recommended_for: formValues.recommended_for?.length ? formValues.recommended_for : ['user'],
     status: formValues.isDraft ? 'DRAFT' : 'Requested',
