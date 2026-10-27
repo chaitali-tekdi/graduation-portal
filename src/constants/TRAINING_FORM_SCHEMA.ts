@@ -1,8 +1,17 @@
-import type { FormSection } from '@components/SchemaFormRenderer/type';
+import type { FormSection, HintObject } from '@components/SchemaFormRenderer/type';
 
 // Minimum minutes between now and a session's start time, configurable via .env
 // @ts-ignore - process.env is injected by webpack DefinePlugin on web
 export const SESSION_MIN_LEAD_MINUTES = Number(process.env.SESSION_MIN_LEAD_MINUTES);
+
+// Backend accepts only these characters in a session description
+export const DESCRIPTION_SPECIAL_CHARS_HINT: HintObject = {
+  type: 'warning',
+  title: {
+    key: 'descriptionSpecialCharsWarning',
+    fallback: 'Special characters are not allowed. Use only letters, numbers, spaces, hyphens (-), full stops (.) and commas (,).',
+  },
+};
 
 export const TRAINING_SESSION_SCHEMA = (hideFields: string[] = [], originalStartDate?: string) => ([
   // ─── Tab 1: Session Details ───────────────────────────────────────────────
@@ -177,6 +186,7 @@ export const TRAINING_SESSION_SCHEMA = (hideFields: string[] = [], originalStart
                   key: 'description',
                   fallback: 'Training / Session Description',
                 },
+                hint: DESCRIPTION_SPECIAL_CHARS_HINT,
                 placeholder: {
                   key: 'descriptionPlaceholder',
                   fallback: 'Describe what this session covers and what participants will learn...',

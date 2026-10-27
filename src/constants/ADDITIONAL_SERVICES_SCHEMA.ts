@@ -1,5 +1,5 @@
 import type { FormField, FormSection } from '@components/SchemaFormRenderer/type';
-import { SESSION_MIN_LEAD_MINUTES } from './TRAINING_FORM_SCHEMA';
+import { SESSION_MIN_LEAD_MINUTES, DESCRIPTION_SPECIAL_CHARS_HINT } from './TRAINING_FORM_SCHEMA';
 
 // Strips the card border/padding so a nested section blends into its parent card
 const PLAIN_SECTION = { borderWidth: 0, p: '$0' };
@@ -133,6 +133,7 @@ export const ADDITIONAL_SERVICES_SCHEMA = (hideFields: string[] = [], originalSt
                   type: 'textarea',
                   required: true,
                   label: { key: 'servicesDescription', fallback: 'Services Description' },
+                  hint: DESCRIPTION_SPECIAL_CHARS_HINT,
                   placeholder: {
                     key: 'servicesDescriptionPlaceholder',
                     fallback: 'Describe what this service provides and who it benefits...',
