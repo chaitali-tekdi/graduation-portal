@@ -411,6 +411,11 @@ const Calendar: React.FC<CalendarProps> = ({
               </Text>
             </Pressable>
           </HStack>
+          {/* Explicit confirm so touch users can close the picker without
+              tapping outside it (datetime mode stays open after selection). */}
+          <Pressable accessibilityRole="button" accessibilityLabel={labels.done} onPress={handleDone}>
+            <Text {...mergeStyle(calendarStyles.footerButtonText, styles?.button)}>{labels.done}</Text>
+          </Pressable>
         </HStack>
       )}
     </Box>
