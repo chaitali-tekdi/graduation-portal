@@ -38,7 +38,7 @@ const Card: React.FC<AssetsCardItemProps> = ({ item, onRequestAsset }) => {
     : t('lc.sessionsSupport.assetsCard.unavailable', 'Unavailable');
 
   // LC sees who published the asset: the mentor's name and organisation
-  const { mentorName, mentorOrgName } = useMentorInfo(item as any);
+  const { providerName } = useMentorInfo(item as any);
 
   const totalFund =
     item.estimatedValuePerParticipant !== undefined && item.quantity !== undefined
@@ -104,8 +104,9 @@ const Card: React.FC<AssetsCardItemProps> = ({ item, onRequestAsset }) => {
         <HStack {...lcStyles.requestorFooter}>
           <Text {...lcStyles.requestorFooterText}>
             {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published by: ')}
-            <Text {...lcStyles.requestorFooterOrgText}>{mentorName}</Text>
-            {mentorOrgName ? ` (${mentorOrgName})` : ''}
+            <Text {...lcStyles.requestorFooterOrgText}>{providerName}</Text>
+            {/* Tenant org (e.g. brac_gbl) is not meaningful to LC, so hidden */}
+            {/* {mentorOrgName ? ` (${mentorOrgName})` : ''} */}
           </Text>
 
           <HStack {...lcStyles.requestorFooterActions}>

@@ -69,10 +69,12 @@ export function useSessionStatus(item: SessionStatusItem, statusOverride?: strin
 
 interface RequesterInfoItem {
   mentor_name?: string;
+  provider_name?: string | null;
   organization?: string | { name?: string };
   requested_by?: { name?: string | null; organization?: string | null };
   meta?: {
     mentor_name?: string;
+    provider_name?: string | null;
     organization?: string | { name?: string };
   };
 }
@@ -93,7 +95,9 @@ export function useMentorInfo(item: RequesterInfoItem) {
     const mentorName = item?.mentor_name || item?.meta?.mentor_name;
     const org = item?.organization || item?.meta?.organization;
     const mentorOrgName = typeof org === 'object' ? org?.name : org;
+    // Show the Support Provider's name; fall back to the mentor's own name when it is not set
+    const providerName = item?.provider_name || item?.meta?.provider_name || mentorName;
 
-    return { mentorName, mentorOrgName };
-  }, [item?.mentor_name, item?.meta?.mentor_name, item?.organization, item?.meta?.organization]);
+    return { mentorName, mentorOrgName, providerName };
+  }, [item?.mentor_name, item?.meta?.mentor_name, item?.organization, item?.meta?.organization, item?.provider_name, item?.meta?.provider_name]);
 }

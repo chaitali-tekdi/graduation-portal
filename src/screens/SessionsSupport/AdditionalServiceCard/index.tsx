@@ -96,7 +96,7 @@ const Card: React.FC<AdditionalServiceCardItemProps> = ({ item, provinces, sites
   const audienceLabel = getAudienceLabel(item, t);
 
   // LC sees who published the offering: the mentor's name and organisation
-  const { mentorName, mentorOrgName } = useMentorInfo(item);
+  const { providerName } = useMentorInfo(item);
 
   // `item.provinces`/`item.sites` are raw ids - resolve them to display names instead of
   // showing the ids (or nothing) directly.
@@ -181,8 +181,9 @@ const Card: React.FC<AdditionalServiceCardItemProps> = ({ item, provinces, sites
         <HStack {...lcStyles.requestorFooter}>
           <Text {...lcStyles.requestorFooterText}>
             {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published by: ')}
-            <Text {...lcStyles.requestorFooterOrgText}>{mentorName}</Text>
-            {mentorOrgName ? ` (${mentorOrgName})` : ''}
+            <Text {...lcStyles.requestorFooterOrgText}>{providerName}</Text>
+            {/* Tenant org (e.g. brac_gbl) is not meaningful to LC, so hidden */}
+            {/* {mentorOrgName ? ` (${mentorOrgName})` : ''} */}
             {/* {provinceName ? (
               <Text {...lcStyles.requestorFooterProvinceText}>{` • ${provinceName}`}</Text>
             ) : null} */}
