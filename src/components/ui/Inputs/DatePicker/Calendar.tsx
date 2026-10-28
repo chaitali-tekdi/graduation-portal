@@ -178,8 +178,12 @@ const Calendar: React.FC<CalendarProps> = ({
   }, [onCancel]);
 
   const handleDone = useCallback(() => {
+    const target = mode === 'date' ? startOfDay(value) : value;
+    if (!isDateDisabled(mode === 'time' ? value : startOfDay(value), minimumDate, effectiveMaxDate)) {
+      onChange(target);
+    }
     onClose();
-  }, [onClose]);
+  }, [mode, value, minimumDate, effectiveMaxDate, onChange, onClose]);
 
   const handleGridKeyDown = useCallback(
     (e: any) => {
@@ -411,6 +415,11 @@ const Calendar: React.FC<CalendarProps> = ({
               </Text>
             </Pressable>
           </HStack>
+          {/* Explicit confirm so touch users can close the picker without
+              tapping outside it (datetime mode stays open after selection). */}
+          <Pressable accessibilityRole="button" accessibilityLabel={labels.done} onPress={handleDone}>
+            <Text {...mergeStyle(calendarStyles.footerButtonText, styles?.button)}>{labels.done}</Text>
+          </Pressable>
         </HStack>
       )}
     </Box>

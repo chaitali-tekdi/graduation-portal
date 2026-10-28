@@ -144,6 +144,7 @@ const App = (): React.JSX.Element => {
   };
 
   const handleSave = async (submittedValues: any, isDraft: boolean) => {
+    if (lodingButton) return;
     try {
       const formValues = isDraft && !isLc ? applyDraftDefaults(submittedValues, ADDITIONAL_SERVICE_DRAFT_CONFIG.defaults) : submittedValues;
       setValues(formValues);
@@ -255,6 +256,7 @@ const App = (): React.JSX.Element => {
             draftRequiredFields={isLc ? undefined : ADDITIONAL_SERVICE_DRAFT_CONFIG.requiredFields}
             // LC request goes to requestSessions/create, which has no draft support
             showSaveDraftButton={!isLc}
+            lodingButton={lodingButton}
             uploadService={uploadService}
             // SP publishes with the same button as Training; LC keeps the default Submit for its request
             {...(!isLc && {
