@@ -24,6 +24,10 @@ interface AttendedSessionsProps {
   participant?: ParticipantData;
 }
 
+// delivery_mode comes back as a plain string or as a { value, label } object
+const deliveryModeText = (mode: any): string =>
+  mode && typeof mode === 'object' ? String(mode.label ?? mode.value ?? '') : mode ?? '';
+
 const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
   const { t } = useLanguage();
   const [filterType, setFilterType] = useState<FilterType>('ATTENDED');
@@ -157,10 +161,10 @@ const AttendedSessions: React.FC<AttendedSessionsProps> = ({ participant }) => {
                     {t('participantDetail.attendedSessions.serviceProvider')}: {session.mentor_name}
                   </Text>
                 )}
-                {!!session.delivery_mode && (
+                {!!deliveryModeText(session.delivery_mode) && (
                   <HStack {...styles.metaItemHStack}>
                     <LucideIcon name="Building2" size={14} color="$success600" />
-                    <Text {...styles.deliveryText}>{session.delivery_mode}</Text>
+                    <Text {...styles.deliveryText}>{deliveryModeText(session.delivery_mode)}</Text>
                   </HStack>
                 )}
               </HStack>
