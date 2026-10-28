@@ -17,7 +17,7 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
 
   const sessionId = item?.id || item?._id || '';
   // LC sees who published the offering: the mentor's name and organisation
-  const { mentorName, mentorOrgName } = useMentorInfo(item);
+  const { providerName } = useMentorInfo(item);
   const rawProvinceId = (Array.isArray(item?.provinces) ? item.provinces[0] : item?.provinces);
   const provinceName = provinces?.find((p: any) => p._id === rawProvinceId)?.name || rawProvinceId;
 
@@ -31,9 +31,10 @@ export const RequestFooter: React.FC<RequestFooterProps> = ({ item, onAssignSess
       <Text {...styles.requestorFooterText}>
         {t('supportProvider.supportOfferings.cards.publishedByPrefix', 'Published by: ')}
         <Text {...styles.requestorFooterOrgText}>
-          {mentorName}
+          {providerName}
         </Text>
-        {mentorOrgName ? ` (${mentorOrgName})` : ''}
+        {/* Tenant org (e.g. brac_gbl) is not meaningful to LC, so hidden */}
+        {/* {mentorOrgName ? ` (${mentorOrgName})` : ''} */}
       </Text>
 
       <HStack {...styles.requestorFooterActions}>
