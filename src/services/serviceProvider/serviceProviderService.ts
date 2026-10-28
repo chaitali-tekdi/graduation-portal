@@ -121,7 +121,8 @@ const mapRequestSessionItem = (
   const provinceName = provinceMap[provinceId];
   const siteNames = siteIds.map((id) => siteMap[id] || id).join(', ');
 
-  const participantsCount = item.participants_count ?? session.seats_remaining ?? (Array.isArray(item.requestees) ? item.requestees.length : undefined) ?? 1;
+  // Capacity the LC entered on the request form is stored as meta.seats_limit
+  const participantsCount = meta.seats_limit ?? item.participants_count ?? session.seats_remaining ?? (Array.isArray(item.requestees) ? item.requestees.length : undefined) ?? 1;
 
   const title = item.title;
 
