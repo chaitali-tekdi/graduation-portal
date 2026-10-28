@@ -165,6 +165,8 @@ export interface FormField {
   subTitle?: { key?: string; fallback?: string };
   /** Informational message rendered above the input — simple string or a severity banner */
   hint?: Hint;
+  /** Small red note rendered below the input */
+  footnote?: { key?: string; fallback?: string };
   /** `note` fields only: 'success' renders the highlighted banner-with-badge layout instead of the plain info box */
   variant?: 'success';
   /** `note` fields only, paired with `variant: 'success'`: a value badge shown on the right of the banner */

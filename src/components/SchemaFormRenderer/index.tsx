@@ -3463,6 +3463,12 @@ const FieldContainer = memo(
           globalInputProps={globalInputProps}
         />
 
+        {!!field.footnote && (
+          <Text color="$error600" fontSize="$xs">
+            {t(`admin.users.createUser.${field.footnote.key}`, field.footnote.fallback)}
+          </Text>
+        )}
+
         {error && (
           <Text color="$error600" fontSize="$xs">
             {error}
