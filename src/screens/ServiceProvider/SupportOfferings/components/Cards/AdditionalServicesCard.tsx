@@ -88,7 +88,7 @@ const Card: React.FC<CardProps> = ({ item, provinces, sites, footer }) => {
   );
   const participantsDisplay = `${assignedCount ?? 0} / ${seatsLimit ?? 0} participants`;
 
-  const { requesterName, requesterOrgName } = useRequesterInfo(item as any);
+  const { requesterName } = useRequesterInfo(item as any);
 
   // The cancel API marks the session as CANCELLED (it is not deleted), so keep the card and show it as Cancelled
   const handleConfirmCancel = async (reason: string) => {
@@ -167,7 +167,8 @@ const Card: React.FC<CardProps> = ({ item, provinces, sites, footer }) => {
               <Text fontWeight="$normal" color="$textPrimary" fontSize={'$xs'}>
                 {requesterName}
               </Text>
-              {requesterOrgName ? ` (${requesterOrgName})` : ''}
+              {/* Tenant org (e.g. brac_gbl) is not meaningful to SP, so hidden */}
+              {/* {requesterOrgName ? ` (${requesterOrgName})` : ''} */}
             </Text>
           ) : null}
 

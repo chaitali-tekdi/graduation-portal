@@ -25,7 +25,7 @@ export default function AdditionalServiceCompletionModal({
 }: AdditionalServiceCompletionModalProps): React.JSX.Element | null {
   const { t } = useLanguage();
   const { showAlert } = useAlert();
-  const { requesterName, requesterOrgName } = useRequesterInfo(service as any);
+  const { requesterName } = useRequesterInfo(service as any);
 
   const [isLoading, setIsLoading] = useState(false);
   const [participants, setParticipants] = useState<ParticipantAttendanceItem[]>([]);
@@ -100,7 +100,9 @@ export default function AdditionalServiceCompletionModal({
           {requesterName
             ? ` • ${t(`${BASE_PATH}.requestedBy`, {
               name: requesterName,
-              org: requesterOrgName ? ` (${requesterOrgName})` : '',
+              // Tenant org (e.g. brac_gbl) is not meaningful to SP, so hidden
+              // org: requesterOrgName ? ` (${requesterOrgName})` : '',
+              org: '',
             })}`
             : ''}
         </Text>

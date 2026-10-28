@@ -94,7 +94,7 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
   const isDraft = item.status === SESSION_STATUS_LABEL.DRAFT;
 
   const { siteNames, locationValue } = getLocationValue(item, provinces, sites);
-  const { requesterName, requesterOrgName } = useRequesterInfo(item as any);
+  const { requesterName } = useRequesterInfo(item as any);
   const claimed = getClaimedCount(item);
   const totalFund = getTotalFund(item);
 
@@ -209,7 +209,8 @@ const Card: React.FC<CardProps> = ({ item: initialItem, provinces, sites, onView
               <Text fontWeight="$normal" color="$textPrimary" fontSize={'$xs'}>
                 {requesterName}
               </Text>
-              {requesterOrgName ? ` (${requesterOrgName})` : ''}
+              {/* Tenant org (e.g. brac_gbl) is not meaningful to SP, so hidden */}
+              {/* {requesterOrgName ? ` (${requesterOrgName})` : ''} */}
             </Text>
           ) : null}
 
