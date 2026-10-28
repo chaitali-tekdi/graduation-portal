@@ -146,7 +146,8 @@ const CreateSessionScreen = (): React.JSX.Element => {
 
       // Build a session object from the form values to immediately show in My Sessions
       const newSession = {
-        id: result?.result?.id,
+        // Editing (e.g. publishing a draft) keeps the same id so My Sessions updates that card instead of adding a new one
+        id: sessionId || result?.result?.id,
         title: formValues.title || formValues.idp_training_task_label || '',
         status: isDraft ? 'DRAFT' : 'UPCOMING',
         start_date: formValues.start_date,
