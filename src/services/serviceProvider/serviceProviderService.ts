@@ -121,8 +121,10 @@ const mapRequestSessionItem = (
   const provinceName = provinceMap[provinceId];
   const siteNames = siteIds.map((id) => siteMap[id] || id).join(', ');
 
-  // Capacity the LC entered on the request form is stored as meta.seats_limit
-  const participantsCount = meta.seats_limit ?? item.participants_count ?? session.seats_remaining ?? (Array.isArray(item.requestees) ? item.requestees.length : undefined) ?? 1;
+  // Capacity the LC entered on the request form is stored as meta.seats_limit (training / service)
+  // or meta.quantity (asset's available quantity)
+  const assetQuantity = meta.quantity !== undefined && meta.quantity !== '' ? Number(meta.quantity) : undefined;
+  const participantsCount = meta.seats_limit ?? assetQuantity ?? item.participants_count ?? session.seats_remaining ?? (Array.isArray(item.requestees) ? item.requestees.length : undefined) ?? 1;
 
   const title = item.title;
 
