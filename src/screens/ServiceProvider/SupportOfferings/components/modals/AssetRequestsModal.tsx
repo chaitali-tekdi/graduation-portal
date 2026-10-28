@@ -365,9 +365,10 @@ export default function AssetRequestsModal({
                         <Text fontWeight="$semibold" fontSize="$xs" color="$textPrimary">
                           {item.name}
                         </Text>
-                        <Text fontSize="$2xs" color="$textMuted">
+                        {/* Requested date hidden as per requirement */}
+                        {/* <Text fontSize="$2xs" color="$textMuted">
                           {t(`${BASE_PATH}.requestedOn`, { defaultValue: 'Requested: {{date}}', date: item.enrolledDate })}
-                        </Text>
+                        </Text> */}
                       </VStack>
 
                       {item.isApproved ? (
