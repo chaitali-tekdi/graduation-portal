@@ -22,6 +22,7 @@ import {
   ASSET_FORM_FIELDS as FORM_FIELDS,
   ASSET_SESSIONS_SUPPORT_TABS as SESSIONS_SUPPORT_TABS,
   SUPPORT_OFFERING_TABS,
+  BUTTON_LOADING_STATE,
 } from '@constants/SUPPORT_PROVIDER_CARDS';
 import { ROLE_NAMES } from '@constants/ROLES';
 
@@ -69,6 +70,7 @@ const App = (): React.JSX.Element => {
   const [assetTypeOpts, setAssetTypeOpts] = useState<any[]>([]);
   const [values, setValues] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lodingButton, setLodingButton] = useState<false | typeof BUTTON_LOADING_STATE[keyof typeof BUTTON_LOADING_STATE]>(false);
   
   const handleFieldChange = useCallback((name: string, value: string) => {
     setValues((prev: any) => {
@@ -213,9 +215,11 @@ const App = (): React.JSX.Element => {
   }, [hideFields, totalFundBreakdownText, totalFundAvailableText, isLc]);
 
   const handleSave = useCallback(async (submittedValues: any, isDraft: boolean) => {
+    if (lodingButton || isSubmitting) return;
     try {
       const formValues = isDraft && !isLc ? applyDraftDefaults(submittedValues, ASSET_DRAFT_CONFIG.defaults) : submittedValues;
       setIsSubmitting(true);
+      setLodingButton(isDraft ? BUTTON_LOADING_STATE.SAVE_DRAFT : BUTTON_LOADING_STATE.SUBMIT);
       setValues(formValues);
 
       if (isLc) {
@@ -300,8 +304,9 @@ const App = (): React.JSX.Element => {
       showAlert('error', errMsg);
     } finally {
       setIsSubmitting(false);
+      setLodingButton(false);
     }
-  }, [isLc, isEdit, sessionId, navigation, showAlert, t]);
+  }, [isLc, isEdit, sessionId, navigation, showAlert, t, lodingButton, isSubmitting]);
 
   const handleBackPress = () => {
     if (navigation.canGoBack && navigation.canGoBack()) {
@@ -370,6 +375,7 @@ const App = (): React.JSX.Element => {
             // LC request goes to requestSessions/create, which has no draft support
             showSaveDraftButton={!isLc}
             isSubmitting={isSubmitting}
+            lodingButton={lodingButton}
             uploadService={uploadService}
           />
         </Card>
