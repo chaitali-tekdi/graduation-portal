@@ -204,7 +204,7 @@ const Card: React.FC<CardProps> = ({
     currentStatus !== SESSION_STATUS.COMPLETED;
   const statusTag = isExpired ? SESSION_STATUS_LABEL.EXPIRED : derivedStatusTag;
   const statusColors = getStatusColors(statusTag);
-  const { requesterName, requesterOrgName } = useRequesterInfo(item as any);
+  const { requesterName } = useRequesterInfo(item as any);
 
   const canCopy = !!item.can_be_copied && currentStatus !== SESSION_STATUS.DRAFT;
 
@@ -465,7 +465,8 @@ const Card: React.FC<CardProps> = ({
                 <Text fontWeight="$normal" color="$textPrimary" fontSize={'$xs'}>
                   {requesterName}
                 </Text>
-                {requesterOrgName ? ` (${requesterOrgName})` : ''}
+                {/* Tenant org (e.g. brac_gbl) is not meaningful to SP, so hidden */}
+                {/* {requesterOrgName ? ` (${requesterOrgName})` : ''} */}
               </Text>
             )}
             <HStack {...styles.badgeContentHStack}>
