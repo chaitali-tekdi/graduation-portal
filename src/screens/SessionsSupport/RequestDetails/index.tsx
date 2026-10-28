@@ -555,14 +555,19 @@ export const RequestDetailsScreen: React.FC = () => {
                       {t('lc.sessionsSupport.requestDetails.certificateProvidedLabel', 'Certificate Provided')}
                     </Text>
                     <Text {...styles.infoRowValue}>{certificate}</Text>
-                  </Box>
-
-                  <Box {...styles.infoRow}>
-                    <Text {...styles.infoRowLabel}>
-                      {t('lc.sessionsSupport.requestDetails.maxCapacityLabel', 'Max Capacity')}
-                    </Text>
-                    <Text {...styles.infoRowValue}>{maxCapacity}</Text>
                   </Box> */}
+
+                  {/* Seats limit is asked in the Training and Additional Service request forms */}
+                  {!isAsset && (
+                    <Box {...styles.infoRow}>
+                      <Text {...styles.infoRowLabel}>
+                        {isAdditionalService
+                          ? t('lc.sessionsSupport.requestDetails.numberOfParticipantsLabel', 'Number of Participants')
+                          : t('lc.sessionsSupport.requestDetails.maxCapacityLabel', 'Max Capacity')}
+                      </Text>
+                      <Text {...styles.infoRowValue}>{maxCapacity}</Text>
+                    </Box>
+                  )}
 
                   {isAsset && (
                     <>

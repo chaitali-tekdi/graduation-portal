@@ -2669,6 +2669,7 @@
         "targetAudienceLabel": "Target Audience",
         "certificateProvidedLabel": "Certificate Provided",
         "maxCapacityLabel": "Max Capacity",
+        "numberOfParticipantsLabel": "Number of Participants",
         "startDateLabel": "Start Date & Time",
         "endDateLabel": "End Date & Time",
         "formatLabel": "Format",
