@@ -40,6 +40,8 @@ interface SessionCompleteModalProps {
   onCancel?: () => void;
   /** Saved attendance is final: nothing can be ticked, unticked or confirmed */
   isReadOnly?: boolean;
+  /** Session is already completed, so "Skip & Mark Complete" has nothing left to do */
+  disableSkip?: boolean;
 }
 
 // Stable reference so an omitted `initialParticipants` prop doesn't create a new
@@ -62,6 +64,7 @@ const SessionCompleteModal: React.FC<SessionCompleteModalProps> = ({
   confirmButtonText,
   onCancel,
   isReadOnly = false,
+  disableSkip = false,
 }) => {
   const { t } = useLanguage();
   const [participants, setParticipants] = useState<ParticipantAttendanceItem[]>(initialParticipants);
@@ -128,7 +131,7 @@ const SessionCompleteModal: React.FC<SessionCompleteModalProps> = ({
   };
 
   // Without onCancel, "Skip" itself completes the session, so it follows the same rule
-  const isSkipDisabled = !onCancel && hasNoParticipants;
+  const isSkipDisabled = disableSkip || (!onCancel && hasNoParticipants);
 
   const handleSkip = () => {
     if (isSubmitting || isSkipDisabled) return;

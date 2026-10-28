@@ -514,10 +514,12 @@ const Card: React.FC<CardProps> = ({
                 </Button>
               )}
 
+              {/* Same green style as the Complete button */}
               {canConfirmAttendance && (
-                <Button variant={'outlineghost' as any}  {...styles.outlineActionBtn} onPress={handleOpenCompleteModal}  >
+                <Button variant="solid" {...styles.completeActionBtn} onPress={handleOpenCompleteModal} disabled={isCompleting}  >
+                  <ButtonIcon as={LucideIcon} name="CheckCircle" {...styles.cardWhiteIconProps} />
                   {/* @ts-ignore */}
-                  <ButtonText {...styles.outlineActionBtnText}>
+                  <ButtonText {...styles.completeActionBtnText}>
                     {t('supportProvider.supportOfferings.cards.confirmAttendance', 'Confirm Attendance')}
                   </ButtonText>
                 </Button>
@@ -682,6 +684,7 @@ const Card: React.FC<CardProps> = ({
         initialParticipants={enrolledParticipants ?? undefined}
         isLoadingParticipants={isLoadingParticipants}
         onConfirmComplete={handleConfirmSessionComplete}
+        disableSkip={currentStatus === SESSION_STATUS.COMPLETED}
       />
     </Box >
   );
