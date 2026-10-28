@@ -531,10 +531,10 @@ const SupportProviderDashboard = ({ variant = 'admin' }: { variant?: 'admin' | '
   const [commitUnits, setCommitUnits] = useState('');
   const [savingCommitments, setSavingCommitments] = useState(false);
 
-  // A supervisor only sees the provinces on their own profile; admins see every province
+  // A supervisor or mentor only sees the provinces on their own profile; admins see every province
   const visibleProvinces = useMemo(
-    () => (isSupervisor ? allProvinces.filter((p) => allowedProvinces.includes(p._id)) : allProvinces),
-    [isSupervisor, allProvinces, allowedProvinces],
+    () => (isSupervisor || isMentor ? allProvinces.filter((p) => allowedProvinces.includes(String(p._id))) : allProvinces),
+    [isSupervisor, isMentor, allProvinces, allowedProvinces],
   );
   const provinceNames = useMemo(
     () => Object.fromEntries(allProvinces.map((p) => [String(p._id), p.name])),
