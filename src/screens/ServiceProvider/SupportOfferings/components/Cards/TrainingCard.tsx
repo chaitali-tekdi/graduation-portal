@@ -196,7 +196,8 @@ const Card: React.FC<CardProps> = ({
   const deliveryBadge = getDeliveryBadge(deliveryMode);
 
   const currentStatus = item.status.toUpperCase();
-  const { statusTag: derivedStatusTag, isDraft, isUpcoming, isCancelled, isInProgress } = useSessionStatus(item);
+  // statusOverride shows Cancelled right after cancel, without a page refresh
+  const { statusTag: derivedStatusTag, isDraft, isUpcoming, isCancelled, isInProgress } = useSessionStatus(item, statusOverride);
   // Provider view: session time is over but attendance not yet confirmed in DB
   const isExpired =
     !footer &&
