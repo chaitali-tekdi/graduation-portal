@@ -42,7 +42,9 @@ export default function AdditionalServiceCompletionModal({
         (mentees || []).map((mentee: any) => ({
           id: String(mentee.id),
           name: mentee.name || '',
-          lcName: mentee.organization?.name || '',
+          // Tenant org (e.g. brac_gbl) is not meaningful to SP, so hidden
+          // lcName: mentee.organization?.name || '',
+          lcName: '',
           isPresent: !!(mentee.is_attended ?? mentee.joined_at),
         })),
       );
