@@ -265,7 +265,10 @@ const Card: React.FC<CardProps> = ({
   const enrolledCount = (item as any).enrolled_mentees_count ?? confirmedPresent;
   const presentCount = (item as any).present_mentees_count ?? 0;
   // Attendance can be marked only once: completing the session sets its status to COMPLETED
-  const canConfirmAttendance = hasEnded && enrolledCount > 0 && presentCount <= 0;
+  // Button always shows after session end; enabled only when participants are enrolled
+  // const canConfirmAttendance = hasEnded && enrolledCount > 0 && presentCount <= 0;
+  const canConfirmAttendance = hasEnded && presentCount <= 0;
+  const hasEnrolledParticipants = enrolledCount > 0;
   const spotsText = expectedParticipants > 0 ? ` (${seatsRemaining} spots)` : '';
 
   // Editing is only allowed for draft sessions, or upcoming sessions that have
@@ -516,7 +519,7 @@ const Card: React.FC<CardProps> = ({
 
               {/* Same green style as the Complete button */}
               {canConfirmAttendance && (
-                <Button variant="solid" {...styles.completeActionBtn} onPress={handleOpenCompleteModal} disabled={isCompleting}  >
+                <Button variant="solid" {...styles.completeActionBtn} onPress={handleOpenCompleteModal} isDisabled={isCompleting || !hasEnrolledParticipants}  >
                   <ButtonIcon as={LucideIcon} name="CheckCircle" {...styles.cardWhiteIconProps} />
                   {/* @ts-ignore */}
                   <ButtonText {...styles.completeActionBtnText}>
