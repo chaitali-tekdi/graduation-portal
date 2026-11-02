@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, HStack, VStack, Text, Pressable, Textarea, TextareaInput } from '@gluestack-ui/themed';
+import { Box, HStack, VStack, Text, Pressable, Textarea, TextareaInput, Spinner } from '@gluestack-ui/themed';
 import Modal from '@components/ui/Modal';
 import LucideIcon from '@components/ui/LucideIcon';
 import modalStyles from '../../styles';
@@ -11,7 +11,7 @@ export interface RequestInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   item?: any;
-  onSubmit?: (message: string) => void;
+  onSubmit?: (message: string) => void | Promise<void>;
 }
 
 export default function RequestInfoModal({
@@ -22,6 +22,7 @@ export default function RequestInfoModal({
 }: RequestInfoModalProps): React.JSX.Element {
   const { t } = useLanguage();
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return <></>;
 
@@ -29,12 +30,16 @@ export default function RequestInfoModal({
   const coachName = item?.coach || '';
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await onSubmit?.(message);
       setMessage('');
       onClose();
     } catch (err) {
       console.error('[RequestInfoModal] Error sending request info:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -54,6 +59,7 @@ export default function RequestInfoModal({
           {/* Cancel Button */}
           <Pressable
             onPress={handleClose}
+            disabled={isSubmitting}
             {...modalStyles.declineCancelBtn}
           >
             <Text {...modalStyles.declineModalCancelText}>
@@ -64,10 +70,16 @@ export default function RequestInfoModal({
           {/* Send Request Button */}
           <Pressable
             onPress={handleSubmit}
+            disabled={isSubmitting}
             {...modalStyles.requestInfoBtnSend}
+            {...(isSubmitting && { opacity: 0.6 })}
           >
             <HStack {...modalStyles.modalConfirmRow}>
-              <LucideIcon name="MessageSquare" {...modalStyles.iconDeclineConfirm} />
+              {isSubmitting ? (
+                <Spinner size="small" color="$white" />
+              ) : (
+                <LucideIcon name="MessageSquare" {...modalStyles.iconDeclineConfirm} />
+              )}
               <Text {...modalStyles.modalConfirmText}>
                 {t(`${BASE_PATH}.buttonTexts.sendRequest`)}
               </Text>

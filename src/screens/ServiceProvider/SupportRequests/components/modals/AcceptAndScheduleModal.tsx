@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Box, HStack, VStack, Text, Button, ButtonText, ButtonIcon } from '@gluestack-ui/themed';
+import { Box, HStack, VStack, Text, Button, ButtonText, ButtonIcon, ButtonSpinner } from '@gluestack-ui/themed';
 import Modal from '@components/ui/Modal';
 import LucideIcon from '@components/ui/LucideIcon';
 import modalStyles from '../../styles';
@@ -81,7 +81,7 @@ export interface AcceptAndScheduleModalProps {
     estimatedValue?: string;
     location?: string;
     meetingLink?: string;
-  }) => void;
+  }) => void | Promise<void>;
 }
 
 export default function AcceptAndScheduleModal({
@@ -101,6 +101,7 @@ export default function AcceptAndScheduleModal({
   const [assetTypes, setAssetTypes] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [popupIssues, setPopupIssues] = useState<ValidationIssue[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAsset = item?.type === 'assets';
   const isService = item?.type === 'additional_services';
@@ -354,7 +355,9 @@ export default function AcceptAndScheduleModal({
     };
   };
 
-  function handleConfirmAndSchedule() {
+  // Wait for the API before closing so the loader shows and repeat clicks are blocked
+  async function handleConfirmAndSchedule() {
+    if (isSubmitting) return;
     const { errors: validationErrors, issues } = getValidationIssues(formSchema, values, optionsMap, t);
     if (issues.length > 0) {
       setErrors(validationErrors);
@@ -363,8 +366,13 @@ export default function AcceptAndScheduleModal({
     }
 
     setErrors({});
-    onSubmit?.({ ...buildAcceptData(), requestId: item?.id } as any);
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSubmit?.({ ...buildAcceptData(), requestId: item?.id } as any);
+    } finally {
+      setIsSubmitting(false);
+      onClose();
+    }
   }
 
   // The full wizard is a different screen per offering type - route there based on which
@@ -455,14 +463,18 @@ export default function AcceptAndScheduleModal({
       }
       footerContent={
         <HStack {...modalStyles.footer}>
-          <Button variant="outline" action="secondary" onPress={onClose}  {...modalStyles.cancelButton}>
+          <Button variant="outline" action="secondary" onPress={onClose} isDisabled={isSubmitting} {...modalStyles.cancelButton}>
             <ButtonText {...modalStyles.modalCancelText}>
               {t(`${BASE_PATH}.buttonTexts.cancel`, 'Cancel')}
             </ButtonText>
           </Button>
 
-          <Button variant="solid" action="primary" onPress={handleConfirmAndSchedule}  {...modalStyles.confirmButton}>
-            <ButtonIcon as={LucideIcon} name="CheckCircle" {...modalStyles.iconConfirmCheck} />
+          <Button variant="solid" action="primary" onPress={handleConfirmAndSchedule} isDisabled={isSubmitting} {...modalStyles.confirmButton}>
+            {isSubmitting ? (
+              <ButtonSpinner mr="$2" color="$white" />
+            ) : (
+              <ButtonIcon as={LucideIcon} name="CheckCircle" {...modalStyles.iconConfirmCheck} />
+            )}
             <ButtonText {...modalStyles.modalConfirmText}>
               {t(`${BASE_PATH}.buttonTexts.confirmSchedule`, 'Confirm & Schedule')}
             </ButtonText>
