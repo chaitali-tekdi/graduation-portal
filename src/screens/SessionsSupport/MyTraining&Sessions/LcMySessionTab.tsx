@@ -154,8 +154,10 @@ const LcMySessionTab: React.FC<LcMySessionTabProps> = ({
   // Counts come from the sessions list API; fall back to the assigned count when absent
   const enrolledCount = item.enrolled_mentees_count ?? assignedCount;
   const presentCount = item.present_mentees_count ?? 0;
-  // Stays visible until at least one attendee is marked present
-  const canConfirmAttendance = hasEnded && enrolledCount > 0 && presentCount <= 0;
+  // Stays visible until at least one attendee is marked present; enabled only when participants are enrolled
+  // const canConfirmAttendance = hasEnded && enrolledCount > 0 && presentCount <= 0;
+  const canConfirmAttendance = hasEnded && presentCount <= 0;
+  const hasEnrolledParticipants = enrolledCount > 0;
 
   const handleOpenCompleteModal = async () => {
     setIsCompleteModalOpen(true);
@@ -268,7 +270,7 @@ const LcMySessionTab: React.FC<LcMySessionTabProps> = ({
             )}
 
             {canConfirmAttendance && (
-              <Button {...styles.mySessionCardManageBtn} variant="solid" onPress={handleOpenCompleteModal}>
+              <Button {...styles.mySessionCardManageBtn} variant="solid" onPress={handleOpenCompleteModal} isDisabled={!hasEnrolledParticipants}>
                 <ButtonText {...styles.mySessionCardManageBtnText}>
                   {t('supportProvider.supportOfferings.cards.confirmAttendance', 'Confirm Attendance')}
                 </ButtonText>

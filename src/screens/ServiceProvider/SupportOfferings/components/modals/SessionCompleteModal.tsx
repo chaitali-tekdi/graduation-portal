@@ -269,9 +269,11 @@ const SessionCompleteModal: React.FC<SessionCompleteModalProps> = ({
                         <Text {...styles.modalParticipantNameText}>
                           {p.name}
                         </Text>
-                        <Text {...styles.modalParticipantLcText}>
-                          {p.lcName}
-                        </Text>
+                        {!!p.lcName && (
+                          <Text {...styles.modalParticipantLcText}>
+                            {p.lcName}
+                          </Text>
+                        )}
                       </VStack>
                     </HStack>
 
