@@ -7,6 +7,7 @@ import {
   Pressable,
   Button,
   ButtonText,
+  ButtonSpinner,
 } from '@gluestack-ui/themed';
 import Modal from '@components/ui/Modal';
 import LucideIcon from '@components/ui/LucideIcon';
@@ -28,7 +29,7 @@ export interface DeclineModalProps {
   isOpen: boolean;
   onClose: () => void;
   item?: any;
-  onSubmit?: (reason: string, details: string) => void;
+  onSubmit?: (reason: string, details: string) => void | Promise<void>;
 }
 
 export default function DeclineModal({
@@ -42,6 +43,7 @@ export default function DeclineModal({
     selectedReason: '',
     reasonDetails: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFieldChange = useCallback((name: string, value: string) => {
     setValues(prev => ({ ...prev, [name]: value }));
@@ -68,10 +70,17 @@ export default function DeclineModal({
     });
   };
 
-  const handleSubmit = () => {
-    onSubmit?.(values.selectedReason || '', values.reasonDetails || '');
-    resetForm();
-    onClose();
+  // Wait for the API before closing so the loader shows and repeat clicks are blocked
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onSubmit?.(values.selectedReason || '', values.reasonDetails || '');
+    } finally {
+      setIsSubmitting(false);
+      resetForm();
+      onClose();
+    }
   };
 
   const handleClose = () => {
@@ -91,6 +100,7 @@ export default function DeclineModal({
           <Button
             variant="outlineghost"
             onPress={handleClose}
+            isDisabled={isSubmitting}
             {...modalStyles.declineCancelBtnProps}
           >
             <ButtonText {...modalStyles.declineCancelBtnTextProps}>
@@ -102,10 +112,15 @@ export default function DeclineModal({
           <Button
             variant="solid"
             onPress={handleSubmit}
+            isDisabled={isSubmitting}
             {...modalStyles.declineConfirmBtnProps}
           >
             <HStack {...modalStyles.declineConfirmBtnRowProps}>
-              <LucideIcon name="X" {...modalStyles.declineConfirmBtnIconProps} />
+              {isSubmitting ? (
+                <ButtonSpinner color="$white" />
+              ) : (
+                <LucideIcon name="X" {...modalStyles.declineConfirmBtnIconProps} />
+              )}
               <ButtonText {...modalStyles.declineConfirmBtnTextProps}>
                 {t(`${BASE_PATH}.buttonTexts.confirmDecline`)}
               </ButtonText>
