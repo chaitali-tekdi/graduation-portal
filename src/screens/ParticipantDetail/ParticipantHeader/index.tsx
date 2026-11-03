@@ -290,6 +290,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
         !!participantProp?.idpProjectId
         // && participantProp?.idpProgress?.projectStatus !== PROJECT_STATUS.SUBMITTED,
         // && (!(endLineConfigData?.solution?.entity?.submissionsCount === 1 && endLineConfigData?.solution?.entity?.status === ENTITY_STATUS.COMPLETED) || endLineConfigData?.solution?.entity?.submissionsCount === 2)
+        && (endLineConfigData?.solution?.entity?.submissionsCount ?? 0) >= 1
         && !((endLineConfigData?.solution?.entity?.submissionsCount ?? 0) > 2 || ((endLineConfigData?.solution?.entity?.submissionsCount ?? 0) === 2 && endLineConfigData?.solution?.entity?.status === ENTITY_STATUS.COMPLETED))
       );
     }

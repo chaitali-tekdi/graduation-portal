@@ -368,21 +368,21 @@ export default function ParticipantDetail() {
       const endLineSolution = solutions.find(item => item?.keywords?.includes(ENDLINE_KEYWORD))
       const submissionsCount = endLineSolution?.entity?.submissionsCount || 0;
       const isSubmissionCompleted = endLineSolution?.entity?.status === ENTITY_STATUS.COMPLETED;
-      if (submissionsCount === 1 && isSubmissionCompleted) {
+      if (submissionsCount >= 2 && isSubmissionCompleted) {
+        setEndLineConfigData(pre => ({
+          ...pre,
+          allowEditTaskIds: [],
+          showAddCustomTask: false,
+          mode: MODE.readOnlyMode?.mode,
+          solution:endLineSolution,
+          isLoading: false
+        }))
+      } else if (submissionsCount >= 1 && (isSubmissionCompleted || submissionsCount >= 2)) {
         // Pre-assigned tasks are locked; custom tasks and Add Custom Task stay available
         setEndLineConfigData(pre => ({
           ...pre,
           allowEditTaskIds: getCustomTaskIds(projectData?.tasks || []),
           showAddCustomTask: true,
-          mode: MODE.readOnlyMode?.mode,
-          solution:endLineSolution,
-          isLoading: false
-        }))
-      } else if (submissionsCount >= 2) {
-        setEndLineConfigData(pre => ({
-          ...pre,
-          allowEditTaskIds: [],
-          showAddCustomTask: false,
           mode: MODE.readOnlyMode?.mode,
           solution:endLineSolution,
           isLoading: false
@@ -631,6 +631,8 @@ export default function ParticipantDetail() {
                     onProjectDataChange={setProjectData}
                     projectUnavailableOffline={projectUnavailableOffline}
                     {...endLineConfigData}
+                    // Hold rendering until the endline submission count is known, so tasks never flash editable
+                    isLoading={endLineConfigData ? endLineConfigData.isLoading : participant?.status === STATUS.IN_PROGRESS}
                     {...(isdminPanalAccess || participant?.accountUserStatus === USER_STATUS.INACTIVE || isDropoutRequestSentForApproval || isIDPRequestSentForApproval ? {mode:MODE.readOnlyMode?.mode}:{})}
                   />
                 </Box>
