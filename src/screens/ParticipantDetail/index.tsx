@@ -368,7 +368,7 @@ export default function ParticipantDetail() {
       const endLineSolution = solutions.find(item => item?.keywords?.includes(ENDLINE_KEYWORD))
       const submissionsCount = endLineSolution?.entity?.submissionsCount || 0;
       const isSubmissionCompleted = endLineSolution?.entity?.status === ENTITY_STATUS.COMPLETED;
-      if (submissionsCount >= 2 && isSubmissionCompleted) {
+      if (submissionsCount >= 2) {
         setEndLineConfigData(pre => ({
           ...pre,
           allowEditTaskIds: [],
@@ -377,7 +377,7 @@ export default function ParticipantDetail() {
           solution:endLineSolution,
           isLoading: false
         }))
-      } else if (submissionsCount >= 1 && (isSubmissionCompleted || submissionsCount >= 2)) {
+      } else if (submissionsCount === 1 && isSubmissionCompleted) {
         // Pre-assigned tasks are locked; custom tasks and Add Custom Task stay available
         setEndLineConfigData(pre => ({
           ...pre,
