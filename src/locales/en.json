@@ -2459,7 +2459,7 @@
       "recentActivity": "Recent Activity (30 days)",
       "enrollmentStatus": "Enrollment Status",
       "enrollment": {
-        "notEnrolled": "Not Enrolled",
+        "notOnboarded": "Not Onboarded",
         "onboarded": "Onboarded",
         "inProgress": "In Progress",
         "completed": "Completed"
