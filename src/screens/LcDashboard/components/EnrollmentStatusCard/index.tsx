@@ -14,7 +14,7 @@ interface StatusConfig {
 }
 
 const STATUS_CONFIG: StatusConfig[] = [
-  { key: 'notEnrolled', labelKey: 'lc.dashboard.enrollment.notEnrolled', keys: ['not_enrolled', 'notEnrolled'] },
+  { key: 'notOnboarded', labelKey: 'lc.dashboard.enrollment.notOnboarded', keys: ['not_onboarded'] },
   { key: 'onboarded', labelKey: 'lc.dashboard.enrollment.onboarded', keys: ['onboarded', 'Onboarded'] },
   { key: 'inProgress', labelKey: 'lc.dashboard.enrollment.inProgress', keys: ['in_progress', 'inProgress', 'inprogress'] },
   { key: 'completed', labelKey: 'lc.dashboard.enrollment.completed', keys: ['completed', 'Completed'] },

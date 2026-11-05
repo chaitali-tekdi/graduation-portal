@@ -131,28 +131,13 @@ const PerformanceActivityReport: React.FC<PerformanceActivityReportProps> = ({ d
         data?.bigPush?.totalValue !== undefined ? formatCurrency(data.bigPush.totalValue) : undefined,
     },
     {
-      key: 'interventionsScheduled',
-      icon: 'Clock',
-      iconColor: '#64748B',
-      labelKey: 'lc.dashboard.interventionsScheduled',
-      subtitleKey: 'lc.dashboard.interventionsScheduledSubtitle',
-      comingSoon: true,
-    },
-    {
-      key: 'interventionsCompleted',
-      icon: 'ListChecks',
-      iconColor: '#64748B',
-      labelKey: 'lc.dashboard.interventionsCompleted',
-      subtitleKey: 'lc.dashboard.interventionsCompletedSubtitle',
-      comingSoon: true,
-    },
-    {
       key: 'slowClimbers',
       icon: 'TrendingDown',
       iconColor: '#64748B',
       labelKey: 'lc.dashboard.slowClimbers',
       subtitleKey: 'lc.dashboard.slowClimbersSubtitle',
-      //comingSoon: true,
+      value: data?.slowClimberCount,
+
     },
     {
       key: 'fastClimbers',

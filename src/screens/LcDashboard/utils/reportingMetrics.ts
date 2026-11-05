@@ -35,6 +35,7 @@ export interface LcDashboardOverviewData {
     totalValue: number;
   };
   fastClimberCount: number;
+  slowClimberCount: number;
   groupCheckinCount: number;
   computedAt: string;
 }
@@ -70,14 +71,13 @@ export const extractLcDashboardMetrics = (
 ): LcDashboardMetrics => {
   if (!data) return {};
 
-  const activeParticipants = pickBreakdownValue(data.lifecycleStatusBreakdown, [
-    'in_progress',
-    'inProgress',
-    'inprogress',
-  ]);
+  const inProgress = pickBreakdownValue(data.lifecycleStatusBreakdown, ['in_progress', 'inProgress', 'inprogress']) ?? 0;
+  const onboarded = pickBreakdownValue(data.lifecycleStatusBreakdown, ['onboarded', 'Onboarded']) ?? 0;
+
+  const activeParticipants = inProgress + onboarded;
   const { totalTasks, completedTasks } = data.idpTasks ?? ({} as LcDashboardOverviewData['idpTasks']);
-  const averageProgress =
-    totalTasks ? `${Math.round(((completedTasks ?? 0) / totalTasks) * 100)}%` : undefined;
+  
+  const averageProgress = totalTasks ? `${Math.round(((completedTasks ?? 0) / totalTasks) * 100)}%` : undefined;
 
   return {
     totalCaseload: data.totalParticipants,
