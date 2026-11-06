@@ -50,9 +50,9 @@ export const AssessmentCard: React.FC<AssessmentSurveyCardProps> = ({
     isReadOnlyParticipant = participantStatus === STATUS.GRADUATED || participantStatus === STATUS.DROPOUT || participantStatus === STATUS.NOT_ELIGIBLE || participantAccountUserStatus === USER_STATUS.INACTIVE;
   }
   const hasSubmittedData = entity?.status === CARD_STATUS.COMPLETED;
-  // Endline allows at most 2 submissions; from the 2nd onwards it is view-only
+  // Endline allows at most 2 submissions; once the 2nd is completed it is view-only
   const isEndlineLocked =
-    !!card?.keywords?.includes(ENDLINE_KEYWORD) && (entity?.submissionsCount ?? 0) >= 2;
+    !!card?.keywords?.includes(ENDLINE_KEYWORD) && (entity?.submissionsCount ?? 0) >= 2 && hasSubmittedData;
   const shouldShowViewButton =
     entity?.status &&
     (isReadOnlyParticipant ||

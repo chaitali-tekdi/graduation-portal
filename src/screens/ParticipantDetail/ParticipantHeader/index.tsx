@@ -248,8 +248,11 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
       // setStatus(STATUS.COMPLETED);
       // onStatusUpdate?.(STATUS.COMPLETED);
       // showAlert('success',t('participantDetail.header.projectCompleteSuccess'));
+      const endlineEntity = solution?.entity;
+      const endlineCount = endlineEntity?.submissionsCount ?? 0;
+      const submissionNumber = endlineCount >= 2 || (endlineCount === 1 && endlineEntity?.status === ENTITY_STATUS.COMPLETED) ? 2 : 1;
       // @ts-ignore
-      navigation.push('observation', { id: participantId, solutionId: solution.solutionId, submissionNumber: 1 });
+      navigation.push('observation', { id: participantId, solutionId: solution.solutionId, submissionNumber });
     } catch (error) {
       showAlert('error', t('participantDetail.header.projectCompleteFailure'))
       console.log('error', error);
@@ -290,7 +293,7 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
         !!participantProp?.idpProjectId
         // && participantProp?.idpProgress?.projectStatus !== PROJECT_STATUS.SUBMITTED,
         // && (!(endLineConfigData?.solution?.entity?.submissionsCount === 1 && endLineConfigData?.solution?.entity?.status === ENTITY_STATUS.COMPLETED) || endLineConfigData?.solution?.entity?.submissionsCount === 2)
-        && (endLineConfigData?.solution?.entity?.submissionsCount ?? 0) >= 1
+        && ((endLineConfigData?.solution?.entity?.submissionsCount ?? 0) >= 1 || (graduationProgress ?? updatedProgress) >= GRADUATION_READINESS_PROGRESS_THRESHOLD)
         && !((endLineConfigData?.solution?.entity?.submissionsCount ?? 0) > 2 || ((endLineConfigData?.solution?.entity?.submissionsCount ?? 0) === 2 && endLineConfigData?.solution?.entity?.status === ENTITY_STATUS.COMPLETED))
       );
     }
@@ -603,7 +606,12 @@ const ParticipantHeader: React.FC<ParticipantHeaderProps> = ({
           <ButtonIcon as={LucideIcon} name="Check" />
         )}
         <ButtonText>
-          {t('participantDetail.header.complete')} {endLineConfigData?.solution?.name}
+          {(() => {
+            const entity = endLineConfigData?.solution?.entity;
+            const count = entity?.submissionsCount ?? 0;
+            const isSecond = count >= 2 || (count === 1 && entity?.status === ENTITY_STATUS.COMPLETED);
+            return isSecond ? 'Complete Second Endline Survey' : 'Complete First Endline Survey';
+          })()}
         </ButtonText>
       </Button>
     ) : null;
