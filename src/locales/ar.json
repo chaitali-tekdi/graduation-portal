@@ -1,5 +1,8 @@
 {
   "common": {
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
     "loading": "جار التحميل...",
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -8,6 +11,9 @@
     "close": "إغلاق",
     "search": "بحث",
     "filter": "تصفية",
+    "filters": "المرشحات",
+    "clearFilters": "مسح المرشحات",
+    "clear": "مسح",
     "submit": "إرسال",
     "back": "رجوع",
     "next": "التالي",
@@ -16,7 +22,20 @@
     "confirm": "تأكيد",
     "offline": "وضع عدم الاتصال",
     "online": "متصل",
-    "selectOption": "اختر خياراً"
+    "selectOption": "اختر خياراً",
+    "selectAll": "تحديد الكل",
+    "placeholder": "البحث عن المستخدمين والقوالب والسجلات...",
+    "actions": "الإجراءات",
+    "noDataFound": "لم يتم العثور على بيانات",
+    "optional": "(اختياري)"
+  },
+  "datePicker": {
+    "today": "اليوم",
+    "now": "الآن",
+    "done": "تم",
+    "selectDate": "اختر التاريخ",
+    "selectTime": "اختر الوقت",
+    "selectDateTime": "اختر التاريخ والوقت"
   },
   "navigation": {
     "menu": "القائمة",
@@ -37,6 +56,116 @@
     "es": "Español",
     "hi": "हिन्दी"
   },
+  "admin": {
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "dashboardDescription": "مرحبًا بعودتك! هذا ما يحدث في نظام إدارة التعلم الخاص بك.",
+    "quickActions": "إجراءات سريعة",
+    "recentActivity": "النشاط الأخير",
+    "pageTitle": {
+      "user-management": "إدارة المستخدمين",
+      "admin-dashboard": "لوحة تحكم الإدارة",
+      "template-management": "إدارة القوالب",
+      "csv-templates": "قوالب استيراد CSV",
+      "ProfilePermissions": "أذونات الملف الشخصي",
+      "PasswordPolicy": "سياسة كلمة المرور",
+      "audit-log": "سجل التدقيق",
+      "assign-users": "تعيين المستخدمين",
+      "welcome": "مرحبا",
+      "select-language": "اختر اللغة",
+      "dashboard": "لوحة القيادة",
+      "participants": "المشاركون الخاصون بي",
+      "participant-detail": "تفاصيل المشارك",
+      "log-visit": "تسجيل الزيارة",
+      "check-ins-list": "قائمة الزيارات",
+      "observation": "الملاحظة",
+      "template": "القالب",
+      "project": "مشغل المشروع"
+    },
+    "menu": {
+      "userManagement": "إدارة المستخدمين",
+      "templateManagement": "إدارة القوالب",
+      "auditLog": "سجل التدقيق",
+      "uploadUsers": "تحميل المستخدمين",
+      "createUser": "إنشاء مستخدم",
+      "main": "الرئيسية",
+      "quickActions": "إجراءات سريعة"
+    },
+    "users": {
+      "profileModal": {
+        "editProfile": "تعديل الملف الشخصي"
+      }
+    }
+  },
+  "brand": {
+    "primaryName": "brac",
+    "secondaryName": "GBL Admin",
+    "version": "Console v1.0"
+  },
+  "system": {
+    "online": "النظام نشط",
+    "offline": "النظام غير نشط"
+  },
+  "login": {
+    "pleaseEnterBothEmailAndPassword": "يرجى إدخال البريد الإلكتروني وكلمة المرور",
+    "invalidEmailOrPassword": "بريد إلكتروني أو كلمة مرور غير صالحة",
+    "anErrorOccurredDuringLogin": "حدث خطأ أثناء تسجيل الدخول",
+    "logIn": "تسجيل الدخول",
+    "testAccounts": "حسابات الاختبار:",
+    "welcomeToYourAccount": "مرحبًا بك في حسابك",
+    "logInToContinue": "تسجيل الدخول للمتابعة",
+    "description": "تسجيل الدخول للمتابعة",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "rememberMe": "تذكرني",
+    "rememberMeDescription": "تذكرني على هذا الجهاز لمدة 30 يومًا",
+    "testAccountsCredentials": "admin@brac.net | supervisor@brac.net | lc@brac.net",
+    "title": "توليد سبل عيش أفضل"
+  },
+  "actions": {
+    "bulkUploadCSV": "رفع مجمع (CSV)",
+    "createUser": "إنشاء مستخدم"
+  },
+  "filters": {
+    "role": "الدور",
+    "status": "الحالة",
+    "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني...",
+    "allRoles": "جميع الأدوار",
+    "admin": "مسؤول",
+    "supervisor": "مشرف",
+    "linkageChampion": "ابطال الربط",
+    "participant": "مشارك",
+    "allStatus": "جميع الحالات",
+    "active": "نشط",
+    "deactivated": "معطل"
+  },
+  "bulkOperations": {
+    "title": "العمليات المجمعة وقوالب CSV",
+    "csvImportTemplates": "قوالب استيراد CSV",
+    "participantImportTemplate": "قالب استيراد المشاركين",
+    "lcAssignmentTemplate": "قالب تعيين Coach",
+    "supervisorMappingTemplate": "قالب تعيين المشرف",
+    "userMapping": "تعيين المستخدمين",
+    "userMappingDescription": "استخدم تحميلات CSV لتعيين العلاقات بين المستخدمين:",
+    "assignParticipantsToLCs": "تعيين المشاركين إلى Coaches",
+    "linkLCsToSupervisors": "ربط Coaches بالمشرفين",
+    "updateRoleHierarchies": "تحديث التسلسل الهرمي للدور بشكل مجمع",
+    "passwordManagement": "إدارة كلمة المرور",
+    "passwordManagementDescription": "يمكن للمشرفين والمسؤولين إعادة تعيين كلمات المرور لـ:",
+    "participantsAllLevels": "المشاركون (جميع المستويات)",
+    "linkageChampions": "ابطال الربط (المشرفون+)",
+    "otherSupervisors": "مشرفون آخرون (المسؤول فقط)"
+  },
+  "stats": {
+    "totalUsers": "إجمالي المستخدمين",
+    "allRoles": "جميع الأدوار",
+    "participants": "المشاركون",
+    "activeLearners": "المتعلمون النشطون",
+    "linkageChampions": "ابطال الربط",
+    "activeCoaches": "المدربون النشطون",
+    "supervisors": "المشرفون",
+    "activeSupervisors": "المشرفون النشطون"
+  },
   "welcome": {
     "welcomeBack": "مرحبًا بعودتك",
     "chooseOptionBelowToGetStarted": "اختر أحد الخيارات أدناه للبدء",
@@ -47,5 +176,30 @@
     "connectWithExperts": "تواصل مع الخبراء",
     "connectWithExpertsDescription": "احصل على الدعم، اطرح الأسئلة، وتواصل مع المتخصصين",
     "getStarted": "ابدأ"
+  },
+  "participants": {
+    "myParticipants": "مشاركيّ",
+    "dashboard": "لوحة التحكم",
+    "searchByNameOrId": "ابحث بالاسم أو المعرّف...",
+    "notEnrolled": "غير مُدمج",
+    "enrolled": "مُدمج",
+    "inProgress": "قيد التقدم",
+    "completed": "مكتمل",
+    "droppedOut": "منسحب",
+    "name": "الاسم",
+    "participantID": "معرّف المشارك",
+    "overallProgress": "التقدم العام",
+    "contact": "التواصل",
+    "actions": "الإجراءات",
+    "noParticipantsFound": "لم يتم العثور على مشاركين",
+    "loadingParticipants": "جاري تحميل المشاركين...",
+    "dashboardComingSoon": "لوحة التحكم قريباً..."
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "logVisit": "تسجيل الزيارة",
+    "dropout": "انسحاب",
+    "confirmDropout": "تأكيد الانسحاب",
+    "dropoutMessage": "هل أنت متأكد من رغبتك في وضع {{name}} كمنسحب؟ يمكن التراجع عن هذا الإجراء لاحقًا."
   }
 }

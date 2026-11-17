@@ -1,0 +1,638 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import { HStack, Box, Container, ReadMoreAlert, Text, Modal, Button, ButtonText, Alert, AlertText, LucideIcon } from '@ui';
+import DownloadConfigModal from '@components/DownloadConfigModal';
+import ParticipantHeader from './ParticipantHeader';
+import { ParticipantProfileModal } from './ParticipantProfileModal';
+import {
+  getSolutionWithEntityStatus,
+  // getSitesByProvince,
+  // verifyParticipantCompletionActions
+} from '../../services/participantService';
+import dataService from '../../services/dataService';
+import offlineStorage, { isParticipantOffline } from '../../services/offlineStorage';
+import { PARTICIPANT_KEYS } from '@constants/STORAGE_KEYS';
+import type { OfflineSolutionEntry } from '@app-types/offline';
+import { useLanguage } from '@contexts/LanguageContext';
+import { useDocumentTitle } from '../../hooks';
+import NotFound from '@components/NotFound';
+import { TabButton } from '@components/Tabs';
+import { PARTICIPANT_DETAIL_TABS } from '@constants/TABS';
+// import { PROVINCES } from '@constants/PARTICIPANTS_LIST';
+import InterventionPlan from './InterventionPlan';
+import AssessmentSurveys from './AssessmentSurveys';
+import type {
+  ParticipantData,
+  // PathwayType,
+} from '@app-types/participant';
+import { Loader } from '@ui';
+import {
+  ENTITY_STATUS,
+  GRADUATION_READINESS_PROGRESS_THRESHOLD,
+  // GRADUATION_READINESS_PROGRESS_THRESHOLD,
+  PARTICIPANT_DETAILS_TABS, STATUS, USER_STATUS } from '@constants/app.constant';
+import { useAuth, useIsdminPanalAccess, User } from '@contexts/AuthContext';
+import DownloadFormsCard from './ParticipantHeader/DownloadFormsCard';
+import { ProjectData } from '../../project-player/types';
+import logger from '@utils/logger';
+import { FILTER_KEYWORDS, INDIVIDUAL_CHECKIN_KEYWORD } from '@constants/LOG_VISIT_CARDS';
+import { getObservationSubmissions, getTargetedSolutions } from '../../services/solutionService';
+import LogVisitModulePopup from './LogVisitModulePopup';
+import { useGlobal } from '@contexts/GlobalContext';
+import { getAnswerData } from '@utils/helper';
+import { PARTICIPANT_DETAIL_CHALLENGE_NOTES_ANSWER_ITEMS } from '@constants/GET_ANSWER_DATA';
+import { MODE } from '@constants/PROJECTDATA';
+import TargetingCriteriaCard from './ParticipantHeader/TargetingCriteriaCard';
+import { isOfflineEligible } from '../../services/offlineCacheUpdateService';
+import { deleteParticipantOfflineData } from '../../services/offlineCleanupService';
+import { useOfflineSync } from '@contexts/OfflineSyncContext';
+
+/**
+ * Route parameters type definition for ParticipantDetail screen
+ * The route path is configured as '/participants/:id', so the parameter is extracted as 'id'
+ * @example navigate('ParticipantDetail', { id: 'P-006' })
+ */
+type ParticipantDetailRouteParams = {
+  id?: string;
+};
+
+/**
+ * Route type for ParticipantDetail screen
+ */
+type ParticipantDetailRouteProp = RouteProp<{
+  params: ParticipantDetailRouteParams;
+}>;
+
+/**
+ * Content comparison for solution lists (rather than reference equality), so
+ * repeated fetches that resolve to the same data don't trigger a state update.
+ * Solutions are plain JSON API data, so a stringified comparison is sufficient.
+ */
+const areSolutionsEqual = (a: any[], b: any[]): boolean => {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+};
+
+export default function ParticipantDetail() {
+  const route = useRoute<ParticipantDetailRouteProp>();
+  const { user, setNavbarData } = useAuth();
+  const isdminPanalAccess = useIsdminPanalAccess();
+  const { isOffline, offlineDataVersion } = useOfflineSync();
+  const { t } = useLanguage();
+  const { setRefComponent } = useGlobal();
+  // Extract the id parameter from the route
+  const participantId = route.params?.id;
+  const authUserId = user?.id;
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>('intervention-plan');
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [status, setStatus] = useState('');
+  const [idpCreated, setIdpCreated] = useState(false);
+  const [participant, setParticipant] = useState<User | undefined>();
+  const resolvedCreatorId = participant?.hierarchy?.[0] || participant?.extra?.hierarchy?.find((item: any) => item.level === 0)?.id;
+  const [areAllTasksCompleted, setAreAllTasksCompleted] = useState(false);
+  const [updatedProgress, setUpdatedProgress] = useState<number | undefined>(
+    undefined,
+  );
+  const isFetchingRef = useRef(false);
+  const isFetchingSolutionsRef = useRef(false);
+  const [isOfflineUnavailable, setIsOfflineUnavailable] = useState(false);
+  const [projectData, setProjectData] = useState<ProjectData | undefined>(undefined);
+  const [projectUnavailableOffline, setProjectUnavailableOffline] = useState(false);
+  const [solutions, setSolutions] = useState<any[]>([]);
+  const [challenges,setChallenges] = useState<{successNotes:string|undefined,challengeNotes:string|undefined} | never>();
+  const [targetingCriteria,setTargetingCriteria] = useState(false);
+  const [showOfflineIneligibleModal, setShowOfflineIneligibleModal] = useState(false);
+  const [hasOfflineData, setHasOfflineData] = useState(false);
+  const [showOfflineInfoModal, setShowOfflineInfoModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  // Set document title with participant name
+  const pageTitle = participant?.name
+    ? `${participant.name} - ${t('lc.pageTitle.participant-detail')}`
+    : t('lc.pageTitle.participant-detail');
+  useDocumentTitle(pageTitle);
+
+  let showOnboardingProject;
+
+  // If the participant has a pending dropout request
+  const isDropoutRequestSentForApproval = Boolean(
+    participant?.pendingChangeRequest?.some(
+      (request: any) => request.action === 'PROGRAM_USER_DROPPING_OUT' && request.status === 'PENDING'
+    )
+  );
+
+  // If the participant has a pending IDP request
+  const isIDPRequestSentForApproval = Boolean(
+    participant?.pendingChangeRequest?.some(
+      (request: any) => request.action === 'USER_PROJECT_TEMPLATE_CHANGE' && request.status === 'PENDING'
+    )
+  );
+
+  showOnboardingProject = (isDropoutRequestSentForApproval) ? "dropout" 
+      : (participant?.accountUserStatus === USER_STATUS.INACTIVE && !participant?.idpProjectId)
+      ? "user-inactive"
+      : (status === STATUS.DROPOUT && !participant?.idpProjectId)
+      ? "dropout"
+      : status === STATUS.NOT_ENROLLED
+      ? "not_enrolled"
+      : status === STATUS.NOT_ELIGIBLE
+      ? "not_eligible"
+      : false;
+
+  const fetchEntityDetails = useCallback(async () => {
+    if (participantId && authUserId && !isFetchingRef.current) {
+      try {
+        isFetchingRef.current = true;
+        const result = await dataService.getParticipantDetails(participantId, authUserId);
+        const participantData = result.data as any;
+        const resolvedProjectId = (participantData.status === STATUS.NOT_ONBOARDED && participantData.onBoardedProjectId) ? participantData.onBoardedProjectId : participantData?.idpProjectId;
+        const response = await dataService.getProject<ProjectData>(participantData.id, resolvedProjectId, authUserId ?? '')
+        // If online and the participant's status is no longer offline-eligible,
+        // check whether stale offline data exists and prompt the user to delete it.
+        if (!result.isOffline && !isOfflineEligible(participantData.status) && user?.id && participantData.userId) {
+          const isIneligibleWithOfflineData = await isParticipantOffline(`${user.id}`, participantData.userId);
+          if (isIneligibleWithOfflineData) {
+            setShowOfflineIneligibleModal(true);
+          }
+        }
+        
+        if (result.isOffline && !result.offlineDataAvailable) {
+          setIsOfflineUnavailable(true);
+          setParticipant(undefined);
+          setStatus('');
+        } else {
+          setIsOfflineUnavailable(false);
+          setProjectData(response.data);
+          setProjectUnavailableOffline(
+            !!resolvedProjectId && response.isOffline && !response.offlineDataAvailable,
+          );
+          setParticipant(participantData);
+          setNavbarData({ subtitle: participantData?.name });
+          setStatus(participantData?.status);
+        }
+      } catch (error) {
+        logger.log(error);
+        setParticipant(undefined);
+      } finally {
+        setIsLoading(false);
+        isFetchingRef.current = false;
+      }
+    }
+    // @ts-ignore
+  }, [participantId, authUserId, setNavbarData, offlineDataVersion]);
+
+  // Tracks whether this participant has offline data, reusing the same
+  // isParticipantOffline check used elsewhere in this file — drives the
+  // "Offline Data Available" banner below. Re-checks on offlineDataVersion so
+  // it stays current after a download/remove/sync changes offline data.
+  useEffect(() => {
+    let cancelled = false;
+    if (authUserId && participant?.userId) {
+      isParticipantOffline(authUserId, participant.userId).then(result => {
+        if (!cancelled) setHasOfflineData(result);
+      });
+    } else {
+      setHasOfflineData(false);
+    }
+    return () => { cancelled = true; };
+  }, [authUserId, participant?.userId, offlineDataVersion]);
+
+  // Re-fetch data when screen comes into focus (e.g., navigating back)
+  useFocusEffect(
+    useCallback(() => {
+      fetchEntityDetails();
+      return () => {
+        setActiveTab("intervention-plan")
+        setSolutions([]);
+        setProjectData(undefined);
+        setNavbarData(null);
+        setParticipant(undefined);
+        setStatus("");
+        setIdpCreated(false);
+        setAreAllTasksCompleted(false);
+        setUpdatedProgress(undefined);
+        setIsLoading(true);
+        setChallenges(undefined);
+        setIsOfflineUnavailable(false);
+        setRefComponent?.(undefined)
+      };
+    }, [fetchEntityDetails, setNavbarData, isOffline])
+  );
+
+  // Re-fetch when idpCreated changes
+  useEffect(() => {
+    if (idpCreated) {
+      fetchEntityDetails();
+    }
+  }, [idpCreated, fetchEntityDetails]);
+
+  // Re-fetch when this participant's offline sync completes elsewhere (e.g. the
+  // global SyncOverviewModal, which isn't a navigation route and so never
+  // triggers the useFocusEffect above). Reuses the existing fetchEntityDetails
+  // load mechanism to bring status/offline-derived UI (Remove Offline button,
+  // offline badge, sync status) up to date without a full app reload.
+  const isInitialOfflineVersionRef = useRef(true);
+  useEffect(() => {
+    if (isInitialOfflineVersionRef.current) {
+      isInitialOfflineVersionRef.current = false;
+      return;
+    }
+    fetchEntityDetails();
+  }, [offlineDataVersion, fetchEntityDetails]);
+
+  const handleIdpCreated = () => {
+    setIdpCreated(true)
+  }
+
+  useEffect(() => {
+    setUpdatedProgress(undefined);
+  }, [participantId]);
+
+  useEffect(() => {
+    const fetchSolutions = async () => {
+      // Guards against overlapping calls: a participant/status update can
+      // re-run this effect (participant reference changes) while a previous
+      // fetch is still in flight, which previously caused two concurrent
+      // fetches to both resolve and call setSolutions with the same data.
+      if (isFetchingSolutionsRef.current) {
+        return;
+      }
+      isFetchingSolutionsRef.current = true;
+      try {
+      // When offline, load solutions from the per-participant downloaded mapping.
+      // The global targeted-solutions cache may be empty; the participant mapping
+      // is always populated during download and has the correct solutionId/keyword data.
+      if (dataService.isNetworkOffline()) {
+        if (participantId) {
+          const stored = await offlineStorage.read<OfflineSolutionEntry[]>(
+            PARTICIPANT_KEYS.solutions(authUserId ?? '', participantId),
+          );
+          if (stored?.length) {
+            const offlineSolutions = stored.map(e => ({
+              _id: e.observationId,
+              id: e.observationId,
+              solutionId: e.solutionId,
+              keywords: [e.keyword],
+              name: e.keyword,
+              description: '',
+            }));
+            setSolutions(prev => (areSolutionsEqual(prev, offlineSolutions) ? prev : offlineSolutions));
+          }
+        }
+        return;
+      }
+
+      let keywordsString = `${FILTER_KEYWORDS.PARTICIPANT_LOG_VISIT.join(',')}`;
+
+      if(participant?.status === STATUS.IN_PROGRESS && updatedProgress && updatedProgress >= GRADUATION_READINESS_PROGRESS_THRESHOLD) {
+        keywordsString += `,${FILTER_KEYWORDS.PROGRAM_COMPLETED_ONLY.join(',')}`;
+      }
+
+      if(participant?.status === STATUS.IN_PROGRESS) {
+        keywordsString += `,${FILTER_KEYWORDS.LOG_VISIT.join(',')}`;
+      }
+
+      const solutionsData = await getTargetedSolutions({
+        authUserId,
+        participantId: participantId,
+        type: 'observation',
+        'filter[keywords]': keywordsString,
+      });    // Verify participant completion conditions and perform certificate/graduation actions
+      const solutionsWithEntityStatus = await getSolutionWithEntityStatus(solutionsData, participant?.id as string, isdminPanalAccess ? resolvedCreatorId : undefined);
+
+      if(participant?.status === STATUS.IN_PROGRESS) {
+        const checkIns = solutionsWithEntityStatus.find(item => item?.keywords?.includes(INDIVIDUAL_CHECKIN_KEYWORD))
+        if(checkIns?.entity?.submissionsCount >= 1 && checkIns?.entity) {
+          const submissionsData = await getObservationSubmissions({
+            observationId:checkIns?.observationId,
+            entityId:checkIns?.entity?._id,
+            getAnswers:true,
+          });
+          const submission = submissionsData?.result.find((item:any) => item.status === ENTITY_STATUS.COMPLETED)
+          const { challengeNotes, successNotes } = getAnswerData(PARTICIPANT_DETAIL_CHALLENGE_NOTES_ANSWER_ITEMS,submission?.answers || {})
+          if(challengeNotes || successNotes) {
+            setChallenges({challengeNotes,successNotes});
+          }
+        }
+      }
+
+      setSolutions(prev => (areSolutionsEqual(prev, solutionsWithEntityStatus) ? prev : solutionsWithEntityStatus));
+
+      if (setRefComponent) {
+      setRefComponent({bottom :
+        solutionsWithEntityStatus.length > 0 ? (
+          <LogVisitModulePopup
+            participant={participant as ParticipantData}
+            solutions={solutionsWithEntityStatus}
+            observationLogsTitle={'actions.observationLogs'}
+            noSolutionsMessage={'logVisit.noSolutions'}
+            canAccessCoachObservations={isdminPanalAccess}
+          />
+        ) : null})
+      }
+      } finally {
+        isFetchingSolutionsRef.current = false;
+      }
+    }
+    if (setRefComponent && participant && participantId && authUserId && solutions.length === 0 && (!participant?.idpProjectId || (participant?.idpProjectId && updatedProgress !== undefined))) {
+      fetchSolutions();
+    } else if(updatedProgress && updatedProgress >= GRADUATION_READINESS_PROGRESS_THRESHOLD && solutions.length > 0) {
+      const bool = solutions.find((item:any) =>
+        item.keywords.some((key:any) => FILTER_KEYWORDS.PROGRAM_COMPLETED_ONLY.includes(key))
+      )
+      if(!bool?._id) {
+        fetchSolutions();
+      }
+    }
+  }, [setRefComponent, updatedProgress, participant, participantId, solutions, authUserId, isdminPanalAccess, resolvedCreatorId]);
+
+  const handleProgressChange = async (progress: number) => {
+    setUpdatedProgress(progress);
+  };
+
+  const handleParticipantAddressSaved = useCallback(
+    (patch: { location: string; email?: string }) => {
+      setParticipant((prev: User | undefined) =>
+        prev
+          ? ({
+              ...prev,
+              location: patch.location,
+              email: patch?.email || "",
+            } as User)
+          : prev,
+      );
+    },
+    [],
+  );
+
+  const closeProfileModal = useCallback(() => setIsProfileModalOpen(false), []);
+
+  const handleDeleteOfflineData = useCallback(async () => {
+    const pid = (participant as any)?.userId;
+    if (pid && user?.id) {
+      await deleteParticipantOfflineData(`${user.id}`, [pid]).catch(() => {});
+    }
+    setShowOfflineIneligibleModal(false);
+    fetchEntityDetails();
+  }, [participant, user?.id, fetchEntityDetails]);
+
+  const handleTargetingCriteriaResponce = useCallback((item:string|boolean) => {
+    if(item === STATUS.NOT_ELIGIBLE) {
+      setStatus(STATUS.NOT_ELIGIBLE);
+      setParticipant((prev: User | undefined) =>
+        prev
+          ? ({
+              ...prev,
+              status: STATUS.NOT_ELIGIBLE,
+            } as User)
+          : prev,
+      );
+    } else {
+      setTargetingCriteria(true)
+    }
+  }
+  , []);
+  
+  if (isLoading) {
+    return <Loader fullScreen message="Loading participant details..." />;
+  }
+
+  // Error State: Offline and no cached data
+  if (isOfflineUnavailable) {
+    return <NotFound message="offlineSync.dataUnavailable" />;
+  }
+
+  // Error State: Participant Not Found
+  if (!participant) {
+    return <NotFound message="participantDetail.notFound.title" />;
+  }
+
+  return (
+    <Box flex={1} bg="$accent100">
+      {/* Participant Header with status-based variations */}
+      <ParticipantHeader
+        participant={participant}
+        pathway={'employment'}
+        graduationDate={''}
+        updatedProgress={updatedProgress}
+        onViewProfile={() => setIsProfileModalOpen(true)}
+        areAllTasksCompleted={areAllTasksCompleted}
+        onStatusUpdate={newStatus => {
+          setStatus(newStatus);
+          setParticipant((prev: User | undefined) =>
+            prev
+              ? ({
+                  ...prev,
+                  status: newStatus,
+                } as User)
+              : prev,
+          );
+        }}
+        projectData={projectData}
+        // @ts-ignore
+        onParticipantRefresh={fetchEntityDetails}
+        solutions={solutions}
+        isHideSecondButton={isDropoutRequestSentForApproval || !!(!participant?.onBoardedProjectId && !targetingCriteria && (showOnboardingProject !== "not_enrolled" || isdminPanalAccess))}
+      />
+
+      {/* Offline Data Available banner — only while online, for a participant with offline data. */}
+      {!isLoading && hasOfflineData && !isOffline && (
+        <Box px="$4" pt="$4">
+          <Alert
+            borderWidth={1}
+            borderRadius="$xl"
+            p="$3"
+            width="$full"
+            borderColor="$info300"
+            bg="$info50"
+          >
+            <HStack space="sm" alignItems="center" width="$full" justifyContent="space-between">
+              <HStack space="sm" alignItems="center" flex={1} minWidth={0}>
+                <LucideIcon size={18} color="#2563EB" name="Info" />
+                <AlertText flexShrink={1} size="sm" color="$textPrimary">
+                  {t('offlineSync.offlineDataAvailableShort')}
+                </AlertText>
+              </HStack>
+              <Button size="xs" variant="outline" onPress={() => setShowOfflineInfoModal(true)}>
+                <ButtonText fontSize="$xs">{t('offlineSync.learnMore')}</ButtonText>
+              </Button>
+            </HStack>
+          </Alert>
+        </Box>
+      )}
+
+      <Modal
+        isOpen={showOfflineInfoModal}
+        onClose={() => setShowOfflineInfoModal(false)}
+        headerTitle={t('offlineSync.offlineDataAvailableTitle')}
+        size="md"
+        footerContent={
+          <HStack space="md" justifyContent="flex-end">
+            <Button variant="outline" size="sm" onPress={() => setShowOfflineInfoModal(false)}>
+              <ButtonText>{t('common.close')}</ButtonText>
+            </Button>
+            <Button
+              variant="solid"
+              size="sm"
+              onPress={() => {
+                setShowOfflineInfoModal(false);
+                setShowDownloadModal(true);
+              }}
+            >
+              <ButtonText>{t('actions.download')}</ButtonText>
+            </Button>
+          </HStack>
+        }
+      >
+        <Text fontSize="$sm" color="$textSecondary">{t('offlineSync.offlineDataAvailableFull')}</Text>
+      </Modal>
+
+      <DownloadConfigModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        participantId={participant?.userId ?? ''}
+        onSuccess={() => setShowDownloadModal(false)}
+      />
+
+      <Container px="$4" py="$6" $md-px="$6">
+        {showOnboardingProject === "not_eligible" ? (
+          <></>
+        ) : !participant?.onBoardedProjectId && !targetingCriteria ?
+          <TargetingCriteriaCard isReadOnly={!!(showOnboardingProject !== "not_enrolled" || isdminPanalAccess || participant?.accountUserStatus === USER_STATUS.INACTIVE)} user={user} participant={participant} setTargetingCriteria={handleTargetingCriteriaResponce}/>
+          : showOnboardingProject ? (
+          <>
+            {/* Hide Download Forms card for dropped out participants */}
+            {showOnboardingProject !== 'dropout' && (
+              <DownloadFormsCard
+                mode={
+                  dataService.isNetworkOffline() ? 'hide' : showOnboardingProject === 'not_enrolled' ? 'edit' : 'read-only'
+                }
+              />
+            )}
+            <InterventionPlan
+              key={`project-player-${participantId}`}
+              participantProfile={participant}
+              onTaskCompletionChange={setAreAllTasksCompleted}
+              projectData={projectData}
+              onProjectDataChange={setProjectData}
+              projectUnavailableOffline={projectUnavailableOffline}
+              {...((isdminPanalAccess || participant?.accountUserStatus === USER_STATUS.INACTIVE || isDropoutRequestSentForApproval) ? {mode:MODE.readOnlyMode?.mode}:{})}
+            />
+          </>
+        ) : (
+          // ENROLLED, IN_PROGRESS, DROPOUT: Show tabs with ProjectPlayer in InterventionPlan
+          <Box>
+            {/* Tabs */}
+            <Box width="$full" mt="$2" mb="$0">
+              <Box width="$full">
+                <HStack
+                  width="$full"
+                  bg="$backgroundLight50"
+                  borderRadius={50}
+                  p={4}
+                  gap={4}
+                  alignItems="center"
+                >
+                  {PARTICIPANT_DETAIL_TABS?.map(tab => (
+                    <TabButton
+                      key={tab.key}
+                      tab={tab}
+                      isActive={activeTab === tab.key}
+                      onPress={setActiveTab}
+                      variant="ButtonTab"
+                    />
+                  ))}
+                </HStack>
+              </Box>
+            </Box>
+
+            {/* Tab Content */}
+            <Box flex={1} mt="$2" mb="$4" bg="transparent" width="$full">
+              {activeTab === PARTICIPANT_DETAILS_TABS.INTERVENTION_PLAN && (
+                <Box gap="$2">
+                  {challenges?.challengeNotes && (
+                    <ReadMoreAlert
+                      label={t('participantDetail.interventionPlan.challenges')}
+                      variant="warning"
+                      text={challenges?.challengeNotes || ''}
+                      lineLimit={2}
+                      readMoreText={t('common.showMore')}
+                      readLessText={t('common.showLess')}
+                    />
+                  )}
+                  {challenges?.successNotes && (
+                    <ReadMoreAlert
+                      label={t(
+                        'participantDetail.interventionPlan.successNotes',
+                      )}
+                      variant="success"
+                      text={challenges?.successNotes || ''}
+                      lineLimit={2}
+                      readMoreText={t('common.showMore')}
+                      readLessText={t('common.showLess')}
+                    />
+                  )}
+                  <InterventionPlan
+                    participantProfile={participant}
+                    onIdpCreation={handleIdpCreated}
+                    onProgressChange={handleProgressChange}
+                    projectData={projectData}
+                    onProjectDataChange={setProjectData}
+                    projectUnavailableOffline={projectUnavailableOffline}
+                    {...(isdminPanalAccess || participant?.accountUserStatus === USER_STATUS.INACTIVE || isDropoutRequestSentForApproval || isIDPRequestSentForApproval ? {mode:MODE.readOnlyMode?.mode}:{})}
+                  />
+                </Box>
+              )}
+              {activeTab === PARTICIPANT_DETAILS_TABS.ASSESSMENTS_SURVEYS && (
+                <Box mt="$6">
+                  <AssessmentSurveys
+                    participant={participant as ParticipantData}
+                    completionPercentage={updatedProgress || 0}
+                    {...(isdminPanalAccess || participant?.accountUserStatus === USER_STATUS.INACTIVE ? {isReadOnly:true}:{})}
+                  />
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
+      </Container>
+
+      <ParticipantProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={closeProfileModal}
+        participantId={participant.userId || ''}
+        userId={authUserId || ''}
+        onParticipantSaved={handleParticipantAddressSaved}
+        {...(isdminPanalAccess || participant?.accountUserStatus === USER_STATUS.INACTIVE ? {isReadOnly:true}:{})}
+      />
+
+      {/* Non-dismissible modal — shown when offline data exists but the participant
+          is no longer eligible for offline access. User MUST tap Delete to proceed. */}
+      <Modal
+        isOpen={showOfflineIneligibleModal}
+        onClose={() => {}}
+        headerTitle={t('offlineSync.deleteOfflineDataTitle')}
+        size="md"
+        showCloseButton={false}
+        closeOnOverlayClick={false}
+        footerContent={
+          <HStack space="md" justifyContent="flex-end">
+            <Button variant="solid" size="sm" onPress={handleDeleteOfflineData}>
+              <ButtonText>{t('offlineSync.deleteOfflineDataAction')}</ButtonText>
+            </Button>
+          </HStack>
+        }
+      >
+        <Text fontSize="$sm" color="$textSecondary">
+          {t('offlineSync.offlineDataIneligibleMessage')}
+        </Text>
+      </Modal>
+    </Box>
+  );
+}

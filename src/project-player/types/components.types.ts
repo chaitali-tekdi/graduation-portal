@@ -1,0 +1,278 @@
+import { Task, ProjectData, Attachment, TaskStatus } from './project.types';
+
+// ============================================
+// TASK COMPONENT PROPS
+// ============================================
+
+export interface TaskCardProps {
+  task: Task;
+  level?: number;
+  isLastTask?: boolean;
+  isChildOfProject?: boolean;
+  isOnboardingTask?: boolean;
+}
+
+export interface TaskStatusProps {
+  status: TaskStatus;
+  isReadOnly: boolean;
+  onStatusChange?: (status: TaskStatus) => void;
+}
+
+export interface TaskAccordionProps {
+  task: Task;
+  level?: number;
+  showAccordionWrapper?: boolean;
+  parentIndex?:number
+  /** Only used when showAccordionWrapper is false — the single-select group is owned by the parent. */
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+}
+
+export interface TaskComponentProps {
+  task: Task;
+  level?: number;
+  isLastTask?: boolean;
+  isChildOfProject?: boolean;
+  isOnboardingTask?: boolean;
+  showAccordionWrapper?: boolean;
+  index?:number
+  parentIndex?:number,
+  projectContext?:any
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+}
+
+export interface UploadComponentProps {
+  taskId: string;
+  attachments?: Attachment[];
+}
+
+export interface ObservationPopupFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  formId: string;
+}
+
+// ============================================
+// PROJECT COMPONENT PROPS
+// ============================================
+
+export interface ProjectInfoCardProps {
+  project: ProjectData;
+}
+
+export interface ProjectAsTaskComponentProps {
+  task: Task;
+  level?: number;
+  showAccordionWrapper?: boolean;
+  parentIndex?:number
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+}
+
+export interface ProjectContextValue {
+  projectData: ProjectData | null;
+  oldProjectData: ProjectData | null;
+  isLoading: boolean;
+  error: Error | null;
+  mode: 'preview' | 'edit' | 'read-only';
+  config: ProjectPlayerConfig; // Full config object
+
+  // Actions
+  updateTask: (taskId:string, participantId:string ,updates: Partial<Task>) => Promise<void>;
+  updateProjectInfo: (updates: Partial<ProjectData>) => void;
+  addTask: (pillarId: string, task: Task) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
+  saveLocal: () => void;
+  syncToServer: () => Promise<void>;
+  addedToPlanTasks: Record<string, boolean>;
+  setTaskAddedToPlan: (taskId: string, added: boolean) => void;
+  setTasksAddedToPlan: (taskIds: string[], added: boolean) => void;
+  /** `project` is the full updated project tree, when available, so callers can sync it into an outer source of truth without a re-fetch. */
+  onTaskUpdate?: (task: Task, project?: ProjectData) => void;
+}
+
+export interface ProjectProviderProps {
+  children: React.ReactNode;
+  config: ProjectPlayerConfig;
+  initialData: ProjectData | null;
+  oldProjectData: ProjectData | null;
+  onTaskUpdate?: (task: Task, project?: ProjectData) => void;
+  offlineKeyPrefix?: string;
+  /** Participant ID (offline registry key) — enables offline cache updates after online task operations. */
+  participantId?: string;
+  /** Resumed accept/reject decisions from a pending offline IDP draft, seeded instead of starting empty. */
+  initialAddedToPlanTasks?: Record<string, boolean>;
+}
+
+// ============================================
+// MAIN COMPONENT PROPS
+// ============================================
+
+export interface ProjectPlayerConfig {
+  mode: 'preview' | 'edit' | 'read-only';
+  solutionId?: string;
+  projectId?: string;
+  permissions?: {
+    canEdit: boolean;
+    canAddTask: boolean;
+    canDelete: boolean;
+  };
+  maxFileSize?: number; // in MB
+  baseUrl?: string;
+  accessToken?: any;
+  language?: string;
+  showAddCustomTaskButton?: boolean; // Config to show/hide AddCustomTask button
+  showSubmitButton?: boolean; // Config to show/hide Submit Intervention Plan button
+  onSubmitInterventionPlan?: (projectId?: string) => void; // Callback for Submit Intervention Plan button
+  onQueueInterventionPlanOffline?: () => void; // Callback when the submission was queued for later sync (offline)
+  onChangePathway?: () => void; // Callback for Change Pathway button
+  isSubmitDisabled?: boolean; // Disable submit button until conditions are met
+  submitWarningMessage?: string; // Warning message to show when submit is disabled
+  /** True while a background offline sync is in flight — used to block Submit to avoid racing the sync engine draining the same queued IDP record. */
+  isOfflineSyncing?: boolean;
+  /**
+   * Live Pathway/Category selection state from Template/index.tsx, captured fresh on every
+   * submit so a queued offline IDP record can be resumed with the exact selections in effect.
+   */
+  idpDraftMeta?: {
+    selectedPathway: string;
+    selectionByPillar: Record<string, any>;
+    pillarIdsToGetIdp: string[];
+  };
+  profileInfo?: {
+    id: number | string;
+    name: string;
+    email?: string;
+    role?: string;
+    [key: string]: any;
+  };
+  redirectionLinks?: {
+    unauthorizedRedirectUrl?: string;
+    // loginRedirectUrl?: string;
+    // homeRedirectUrl?: string;
+    [key: string]: any;
+  };
+}
+
+export interface ProjectPlayerData {
+  solutionId?: string;
+  projectId?: string;
+  oldProjectId?: string;
+  entityId?: string;
+  userStatus?: string;
+  data?: ProjectData;
+  categoryIds?: string[]; // Array of category IDs (pillar IDs without categories + selected subcategory IDs)
+  selectedPathway?: string;
+  pillarCategoryRelation?: any;
+  province?:string;
+  offlineKeyPrefix?: string;
+  /** Participant ID (offline registry key) — passed through to ProjectProvider for offline cache updates. */
+  participantId?: string;
+  /** Resumed accept/reject decisions from a pending offline IDP draft, seeded into ProjectProvider instead of starting empty. */
+  initialAddedToPlanTasks?: Record<string, boolean>;
+  /** Resumed custom tasks from a pending offline IDP draft, re-injected into their owning pillar by pillarId. */
+  initialCustomTasks?: Array<Task & { pillarId: string }>;
+}
+
+export interface ProjectPlayerProps {
+  config: ProjectPlayerConfig;
+  data?: ProjectPlayerData;
+  projectData?: any; // as per mock data json
+  onTaskUpdate?: (task: Task, project?: ProjectData) => void;
+  onTaskCompletionChange?: (areAllCompleted: boolean) => void; // Callback when task completion status changes
+  onProgressChange?: (progress: number) => void; // Callback for progress updates
+  getProjectData?: (projectData: ProjectData) => void;
+}
+
+// ============================================
+// API TYPES
+// ============================================
+
+export interface ApiResponse<T> {
+  data: T;
+  error?: string;
+}
+
+export interface AddCustomTaskProps {
+  templateId?: string;
+  templateName?: string;
+}
+
+export interface AddCustomTaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  task?: Task; // If provided, we're in edit mode
+  templateId?: string;
+  templateName?: string;
+  mode?: 'add' | 'edit';
+}
+
+// ============================================
+// MODAL COMPONENT PROPS
+// ============================================
+
+// Attachment interface for evidence preview (extended from base Attachment)
+export interface EvidenceAttachment {
+  _id?: string;
+  name: string;
+  url?: string;
+  type?: string;
+  uploadedBy?: string;
+  uploadedAt?: string;
+  size?: number;
+  originalName?:string;
+}
+
+export interface EvidencePreviewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  taskName: string;
+  attachments: EvidenceAttachment[];
+}
+
+export interface FileUploadModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUpload: (method: 'camera' | 'device', files?: any[]) => void;
+  onConfirm?: (files?: any[]) => void;
+  taskName: string;
+  participantName?: string;
+  existingAttachments?: any[];
+  isConsent?: boolean;
+  /**
+   * Maximum total upload count allowed for this task.
+   * This limit is applied to "existing attachments + newly selected files".
+   */
+  maxFileUploadCount?: number;
+  /**
+   * Allowed file types for validation.
+   * Supports MIME patterns (e.g. "image/*", "application/pdf") and extensions (e.g. ".doc", ".docx").
+   */
+  allowedFileTypes?: string[];
+  /** Maximum size (in MB) allowed per file — mirrors ProjectPlayerConfig.maxFileSize. */
+  maxFileSize?: number;
+}
+
+export interface UploadMethodOptionProps {
+  method: 'camera' | 'device';
+  selectedMethod: 'camera' | 'device' | null;
+  title: string;
+  subtitle: string;
+  icon: string;
+  onSelect: (method: 'camera' | 'device') => void;
+}
+
+export interface NormalizedFile {
+  /** Unique generated file name used for upload, storage, and sync (e.g. "invoice_1751023456789.pdf"). */
+  name: string;
+  /** Original file name exactly as selected by the user — used only for display (e.g. "invoice.pdf"). */
+  originalName?: string;
+  size: number;
+  type?: string;
+  uri?: string;
+  file?: File;
+  originalFile?: any;
+  base64?: string;
+};

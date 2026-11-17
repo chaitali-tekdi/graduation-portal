@@ -75,3 +75,6 @@ yarn-error.log
 !.yarn/sdks
 !.yarn/versions
 /node_modules/
+dist/
+project-player-dist/
+.env

@@ -1,51 +1,118 @@
-import {
-  SettingsIcon,
-  EditIcon,
-  ThreeDotsIcon,
-  ArrowUpIcon,
-  AddIcon,
-} from '@ui';
-
-interface SidebarItem {
+export interface SidebarMenuItem {
   key: string;
   label: string;
-  icon: any;
+  icon: string; // Lucide icon name
+  /** In-app route (React Navigation) */
   route?: string;
-  children?: SidebarItem[];
+  /** Static help URL path (web only), opens in new tab — use with `route` omitted */
+  href?: string;
+  children?: SidebarMenuItem[];
 }
 
-export const MAIN_MENU_ITEMS: SidebarItem[] = [
+export const LC_USER_GUIDE_MENU_ITEM: SidebarMenuItem = {
+  key: 'user-story-lc-guide',
+  label: 'admin.menu.userStoryGblLcGuide',
+  icon: 'MapPin',
+  href: '/help/gbl-guide-lclf-v2.html',
+};
+
+export const REPORT_FEEDBACK_MENU_ITEM: SidebarMenuItem = {
+  key: 'report-feedback',
+  label: 'common.reportFeedback',
+  icon: 'MessageSquare',
+  href: process.env.REPORT_FEEDBACK_FORM_URL || 'https://forms.gle/12ZsUZs9wn2hHtfh9',
+};
+
+export const MAIN_MENU_ITEMS: SidebarMenuItem[] = [
+  // Dashboard is hidden from menu but still accessible via /admin-dashboard URL
+  // {
+  //   key: 'dashboard',
+  //   label: 'admin.dashboard',
+  //   icon: 'LayoutDashboard', // Lucide icon name
+  //   route: 'admin-dashboard',
+  // },
   {
     key: 'user-management',
     label: 'admin.menu.userManagement',
-    icon: SettingsIcon,
-    route: 'UserManagement',
+    icon: 'Users', // Lucide icon name
+    route: 'user-management',
   },
   {
-    key: 'template-management',
-    label: 'admin.menu.templateManagement',
-    icon: EditIcon,
-    route: 'TemplateManagement',
+    key: 'assign-users',
+    label: 'admin.menu.assignUsers',
+    icon: 'UserCheck', // Lucide icon name - distinct from Users icon
+    route: 'assign-users',
   },
   {
-    key: 'audit-log',
-    label: 'admin.menu.auditLog',
-    icon: ThreeDotsIcon,
-    route: 'AuditLog',
+    key: 'review-requests',
+    label: 'admin.menu.reviewRequests',
+    icon: 'ClipboardCheck', // Lucide icon name
+    route: 'review-requests',
+  },
+  // {
+  //   key: 'template-management',
+  //   label: 'admin.menu.templateManagement',
+  //   icon: 'FileText', // Lucide icon name
+  //   route: 'template-management',
+  // },
+  // {
+  //   key: 'audit-log',
+  //   label: 'admin.menu.auditLog',
+  //   icon: 'Activity', // Lucide icon name for activity log
+  //   route: 'audit-log',
+  // },
+];
+
+// export const QUICK_ACTION_MENU_ITEMS: SidebarMenuItem[] = [
+//   {
+//     key: 'upload-users',
+//     label: 'admin.menu.uploadUsers',
+//     icon: 'Upload', // Lucide icon name
+//     route: 'UploadUsers',
+//   },
+//   {
+//     key: 'new-lc',
+//     label: 'admin.menu.createUser',
+//     icon: 'UserPlus', // Lucide icon name
+//     route: 'NewLC',
+//   },
+// ];
+
+export const MORE_INFORMATION_MENU_ITEMS: SidebarMenuItem[] = [
+  {
+    key: 'csv-templates',
+    label: 'admin.menu.csvImportTemplates',
+    icon: 'FileDown', // Lucide icon name
+    route: 'csv-templates',
+  },
+  {
+    key: 'password-policy',
+    label: 'admin.menu.passwordManagementPolicy',
+    icon: 'Lock', // Lucide icon name
+    route: 'PasswordPolicy', // Placeholder route
+  },
+  {
+    key: 'profile-permissions',
+    label: 'admin.menu.profileFieldEditPermissions',
+    icon: 'FilePenLine', // Lucide icon name
+    route: 'ProfilePermissions', // Placeholder route
   },
 ];
 
-export const QUICK_ACTION_MENU_ITEMS: SidebarItem[] = [
+/** GBL help guides and feedback links */
+export const USER_STORY_MENU_ITEMS: SidebarMenuItem[] = [
   {
-    key: 'upload-users',
-    label: 'admin.menu.uploadUsers',
-    icon: ArrowUpIcon,
-    route: 'UploadUsers',
+    key: 'user-story-admin-guide',
+    label: 'admin.menu.userStoryGblAdminGuide',
+    icon: 'BookOpen',
+    href: '/help/gbl-guide-admin.html',
   },
   {
-    key: 'new-lc',
-    label: 'admin.menu.createUser',
-    icon: AddIcon,
-    route: 'NewLC',
+    key: 'user-story-dashboard-guide',
+    label: 'admin.menu.userStoryGblDashboardGuide',
+    icon: 'LayoutDashboard',
+    href: '/help/gbl-guide-dashboard.html',
   },
+  LC_USER_GUIDE_MENU_ITEM,
+  REPORT_FEEDBACK_MENU_ITEM,
 ];

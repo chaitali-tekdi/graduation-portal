@@ -1,17 +1,15 @@
 export const stylesHeader = {
   container: {
-    borderBottomWidth: '$1',
-    borderBottomColor: '$borderDark200',
-    px: '$4',
-    py: '$2',
-    minHeight: 64,
+    px: '$4' as const,
+    py: '$3' as const,
     justifyContent: 'center' as const,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 1,
     shadowRadius: 3,
-    bg: '$backgroundLight0' as const,
-    shadowColor: '$black' as const,
-    elevation: 2,
+    elevation: 3,
+    borderBottomWidth: '$1' as const,
+    borderBottomColor: '$borderDark200' as const,
+    zIndex: 1
   },
   title: {
     alignItems: 'center',
@@ -67,46 +65,51 @@ export const stylesHeader = {
   },
   notificationBadge: {
     position: 'absolute' as const,
-    top: 0,
-    right: 0,
-    bg: '$error600' as const,
+    top: 2,
+    right: 2,
+    bg: '$orange500' as const,
     rounded: '$full' as const,
-    minWidth: 20,
-    height: 20,
+    minWidth: 16,
+    height: 16,
+    px: 1,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
+
   notificationBadgeText: {
-    fontSize: '$2xs' as const,
+    fontSize: 10,
     color: '$white' as const,
-    fontWeight: '$bold' as const,
-  },
+    fontWeight: '$medium' as const,
+    lineHeight: 10,
+},
   userMenuTrigger: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     space: 'sm' as const,
     gap: '$2' as const,
-    px: '$2' as const,
   },
   userAvatar: {
     bg: '$primary600' as const,
     size: 'sm' as const,
   },
   userInfoContainer: {
-    space: 'xs' as const,
+    // space: 'xs' as const,
   },
+  // Updated typography for LC header: fontSize $sm → $md, fontWeight $semibold → $normal, color $textLight900 → $textForegroundColor
   userNameText: {
-    fontSize: '$sm' as const,
-    fontWeight: '$semibold' as const,
-    color: '$textLight900' as const,
+    fontSize: '$md' as const,
+    fontWeight: '$normal' as const,
+    color: '$textForegroundColor' as const,
+    lineHeight:"$lg"
   },
   userRoleContainer: {
     alignItems: 'center' as const,
     space: 'xs' as const,
   },
   userRoleText: {
-    fontSize: '$xs' as const,
+    fontSize: '$sm' as const,
     color: '$textLight500' as const,
+    lineHeight:"$sm"
   },
   chevronIcon: {
     color: '$textLight500' as const,
@@ -114,7 +117,15 @@ export const stylesHeader = {
   },
   notificationIcon: {
     color: '$textLight900' as const,
-    size: 'xl' as const,
+    size: 'md' as const,
     p: '$3' as const,
   },
-};
+  headerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: '$full' as const,
+    bg: '$primary500' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+} as const;

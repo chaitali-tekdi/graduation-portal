@@ -1,0 +1,872 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  ScrollView,
+  Box,
+  HStack,
+  VStack,
+  Text,
+  Pressable,
+  LucideIcon,
+  Button,
+  ButtonText,
+  Container,
+  Input,
+  InputField
+} from '@ui';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import Modal from '@components/ui/Modal';
+import Select from '@components/ui/Inputs/Select';
+import templateStyles from './styles';
+import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
+import { theme } from '@config/theme';
+import { createOrUpdateProgramUserMapping, getParticipantById, getParticipantsList, updateEntityDetails } from '../../services/participantService';
+import {
+  getProjectCategoryList,
+} from '../../services/projectService';
+import { usePlatform } from '@utils/platform';
+import { useLanguage } from '@contexts/LanguageContext';
+import ProjectPlayer from '../ProjectPlayer/index';
+import {
+  MODE,
+  PROJECT_PLAYER_CONFIGS,
+} from '@constants/PROJECTDATA';
+import { ProjectPlayerData } from 'src/project-player/types/components.types';
+import { getCategoryList, getProjectDetails } from '../../project-player/services/projectPlayerService';
+import { useAuth } from '@contexts/AuthContext';
+import { STATUS, PATHWAY_TAGS } from '@constants/app.constant';
+import { Category, PillarCategoryMap, PillarSelection, SubCategory } from '@app-types/screens';
+import { PageHeader } from '@components/PageHeader';
+import LogVisitModulePopup from '../ParticipantDetail/LogVisitModulePopup';
+import offlineStorage from '../../services/offlineStorage';
+import { PARTICIPANT_KEYS } from '@constants/STORAGE_KEYS';
+import { useOfflineSync } from '@contexts/OfflineSyncContext';
+import { Task } from 'src/project-player/types/project.types';
+
+const DevelopInterventionPlan: React.FC = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { t } = useLanguage();
+  const { isMobile } = usePlatform();
+  const { user, setNavbarData } = useAuth();
+  const { isSyncing } = useOfflineSync();
+
+  const participantId = (route.params as { id?: string })?.id || '';
+  const existingProjectId = (route.params as { projectId?: string })?.projectId;
+
+  /* -------------------- STATE -------------------- */
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [pillarCategoryMap, setPillarCategoryMap] = useState<
+    PillarCategoryMap[]
+  >([]);
+
+  const [pillarData, setPillarData] = useState<any[]>([]);
+  const [pillarIdsToGetIdp, setPillarIdsToGetIdp] = useState<any[]>([]);
+  const [selectionByPillar, setSelectionByPillar] = useState<
+    Record<string, PillarSelection>
+  >({});
+
+  const [participant, setParticipant] = useState<any>(null);
+  const [selectedPathway, setSelectedPathway] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showProjectPlayerPreview, setShowProjectPlayerPreview] =
+    useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [idpCreated, setIdpCreated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Resumed state from a pending offline IDP draft for this participant (if any) — set
+  // once, seeded into the ProjectPlayer preview session instead of starting empty.
+  const [resumedAddedToPlanTasks, setResumedAddedToPlanTasks] = useState<Record<string, boolean>>({});
+  const [resumedCustomTasks, setResumedCustomTasks] = useState<Array<Task & { pillarId: string }>>([]);
+
+  /* -------------------- DERIVED -------------------- */
+  const participantName = participant?.name || '-';
+
+  useEffect(() => {
+    const fetchEntityDetails = async () => {
+      if (participantId && user?.id) {
+        try {
+          const response = await getParticipantsList({ entityId: participantId, userId: user?.id })
+          const { userDetails, ...rest } = response?.result?.data?.[0]
+          const participantData = { ...(userDetails || {}), ...rest }
+          setParticipant(participantData);
+          setNavbarData({
+            subtitle: participantData?.name,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+    fetchEntityDetails();
+  }, [participantId, user?.id, idpCreated, setNavbarData]);
+
+  const getCategoriesForPillar = (pillarId: string) => {
+    const categories = pillarCategoryMap.find(p => p.pillarId === pillarId)?.categories || [];
+    return categories.slice().sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  // const getSubCategoriesForPillar = (pillarId: string) => {
+  //   const pillarCategoryId = selectionByPillar[pillarId]?.categoryId;
+  //   if (!pillarCategoryId) {
+  //     return [];
+  //   }
+  //   const categories = getCategoriesForPillar(pillarId);
+  //   const selectedCategory = categories.find(c => c.id === pillarCategoryId);
+  //   return selectedCategory?.subcategories || [];
+  // };
+  const handleIdpCreation = useCallback(async (newProjectId: any) => {
+    // console.log('handleIdpCreation -  Project ID:', newProjectId);
+    setIdpCreated(true);
+    if(existingProjectId) {
+      // @ts-ignore
+      navigation.navigate('participant-detail' as never, { id: route.params?.id as never });
+    } else if (newProjectId) {
+      // Extract project ID from the response
+
+      const response = await getProjectDetails(newProjectId);
+      const project = response?.data;
+      const thisDate = new Date().toISOString();
+      // update entity to IN_PROGRESS
+      await updateEntityDetails({
+        userId: user?.userId,
+        entityId: participantId,
+        entityUpdates: {
+          idpProjectId: newProjectId,
+          idpProjectCreatedAt: thisDate,
+          status: STATUS.IN_PROGRESS,
+        },
+      });
+
+       // create user program Mapping for the participant
+      // await createOrUpdateProgramUserMapping({
+      //   userId: participantId,
+      //   programId: process.env.GLOBAL_LC_PROGRAM_ID,
+      //   metaInformation: {
+      //     idpProjectId: newProjectId,
+      //     idpProjectCreatedAt: thisDate,
+      //   },
+      //   status: STATUS.IN_PROGRESS
+      // });
+
+      // create user program Mapping for the participant
+      await createOrUpdateProgramUserMapping({
+        userId: participantId,
+        programId: project.programId,
+        metaInformation: {
+          idpProjectId: newProjectId,
+          idpProjectCratedAt: thisDate,
+        },
+        status: STATUS.IN_PROGRESS,
+        referenceFrom: {
+          publicProgramId: project.referenceFrom,
+        }
+      });
+
+      // await updateEntityDetails({
+      //   userId: participantId,
+      //   entityId: participantId,
+      //   entityUpdates: {
+      //     status: STATUS.IN_PROGRESS,
+      //   },
+      // });
+      // @ts-ignore
+      navigation.navigate('participant-detail' as never, { id: route.params?.id as never });
+    }
+  }, [navigation, participantId, user?.userId, route.params?.id]);
+
+  // Offline submission was queued for later sync — there is no newProjectId
+  // yet (nothing was created server-side), so just navigate back. The
+  // "queued" message itself is shown by ProjectComponent before this fires.
+  const handleQueueInterventionPlanOffline = useCallback(() => {
+    setIdpCreated(true);
+    // @ts-ignore
+    navigation.navigate('participant-detail' as never, { id: route.params?.id as never });
+  }, [navigation, route.params?.id]);
+
+  const handleChangePathway = useCallback(() => {
+    setShowProjectPlayerPreview(false);
+    setIsModalOpen(false);
+    setSelectedPathway('');
+    setPillarData([]);
+    setPillarIdsToGetIdp([]);
+    setSelectionByPillar({});
+    setPillarCategoryMap([]);
+  }, []);
+
+  const getPillarCategoryRelationships = useMemo(() => {
+    // Get all pillars that have child categories from pillarData
+    const pillarsWithCategories = pillarData.filter(
+      (pillar: any) => pillar?.hasChildCategories,
+    );
+
+    return pillarsWithCategories
+      .map((pillar: any) => {
+        const pillarId = pillar._id;
+        const selection = selectionByPillar[pillarId];
+
+        if (!selection) {
+          return null; // No selection made for this pillar
+        }
+
+        // Check if category is selected
+        if (selection.categoryId) {
+          return {
+            ...selection,
+            pillarId: pillarId,
+            pillarName: pillar.name,
+            selectedCategoryId: selection.categoryId,
+            type: 'category' as const,
+          };
+        }
+
+        // If no subcategory but category is selected, check if category has subcategories
+        if (selection.categoryId) {
+          // Get categories for this pillar directly from pillarCategoryMap
+          const pillarCategoryData = pillarCategoryMap.find(
+            p => p.pillarId === pillarId,
+          );
+          const categories = pillarCategoryData?.categories || [];
+          const selectedCategory = categories.find(
+            c => c.id === selection.categoryId,
+          );
+          
+          if (selectedCategory && !selectedCategory.hasChildren) {
+            return {
+              ...selection,
+              pillarId: pillarId,
+              pillarName: pillar.name,
+              selectedCategoryId: selection.categoryId,
+              type: 'category' as const,
+            };
+          }
+        }
+
+        return null; // Incomplete selection (category selected but subcategory pending)
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [pillarData, selectionByPillar, pillarCategoryMap]);
+
+  // Determine ProjectPlayer config and data based on participant status
+
+  const config = PROJECT_PLAYER_CONFIGS;
+  const selectedMode = participant?.status === STATUS.IN_PROGRESS && !existingProjectId ? MODE.editMode : MODE.previewMode;
+
+  const configData = {
+    ...config,
+    ...selectedMode,
+    profileInfo: participant,
+    showAddCustomTaskButton: true,
+    showSubmitButton: true,
+    onSubmitInterventionPlan: handleIdpCreation,
+    onQueueInterventionPlanOffline: handleQueueInterventionPlanOffline,
+    onChangePathway: handleChangePathway,
+    isOfflineSyncing: isSyncing,
+    // Live selection state, captured fresh on every submit so a queued offline IDP
+    // record can be resumed with the exact Pathway/Category selections in effect.
+    idpDraftMeta: {
+      selectedPathway,
+      selectionByPillar,
+      pillarIdsToGetIdp,
+    },
+  };
+
+  // Combine pillarIdsToGetIdp with selected subcategory IDs
+  const categoryIdsArray = useMemo(() => {
+    const selectedSubCategoryIds = Object.values(selectionByPillar)
+      .map(selection => selection.subCategoryId || selection.categoryId)
+      .filter((id): id is string => Boolean(id)); // Filter out empty strings/undefined
+    // Combine pillar IDs without categories + selected subcategory IDs
+    return [...pillarIdsToGetIdp, ...selectedSubCategoryIds];
+  }, [pillarIdsToGetIdp, selectionByPillar]);
+
+  const ProjectPlayerConfigData: ProjectPlayerData = useMemo(
+    () => ({
+      projectId: participant?.idpProjectId,
+      categoryIds: categoryIdsArray,
+      selectedPathway: selectedPathway,
+      pillarCategoryRelation: getPillarCategoryRelationships,
+      oldProjectId: existingProjectId,
+      offlineKeyPrefix: user?.id ?? '',
+      initialAddedToPlanTasks: resumedAddedToPlanTasks,
+      initialCustomTasks: resumedCustomTasks,
+    }),
+    [
+      categoryIdsArray,
+      selectedPathway,
+      getPillarCategoryRelationships,
+      participant?.idpProjectId,
+      existingProjectId,
+      resumedAddedToPlanTasks,
+      resumedCustomTasks,
+      user?.id,
+    ],
+  );
+
+  /* -------------------- EFFECTS -------------------- */
+
+  // Fetch participant (runs once when id is available)
+  useEffect(() => {
+    if (!participantId) return;
+
+    const data = getParticipantById(participantId);
+    setParticipant(data);
+  }, [participantId]);
+
+  // Resume a pending offline IDP draft for this participant, if one exists — prefills
+  // the Pathway + Category selections and seeds the Preview session's accept/reject and
+  // custom-task state instead of starting a second, conflicting draft. Only applies to
+  // the plain "create/first submission" flow (existingProjectId is the separate
+  // "replace pathway on an already-synced plan" flow, reached only while online).
+  useEffect(() => {
+    if (!participantId || !user?.id || existingProjectId || isSyncing) return;
+
+    let isMounted = true;
+    (async () => {
+      const pending = await offlineStorage.read<{
+        draft?: {
+          selectedPathway: string;
+          selectionByPillar: Record<string, PillarSelection>;
+          addedToPlanTasks: Record<string, boolean>;
+          customTasks: Array<Task & { pillarId: string }>;
+        };
+      }>(PARTICIPANT_KEYS.idpSubmissionPending(user.id, participantId));
+
+      if (!isMounted || !pending?.draft) return;
+
+      setResumedAddedToPlanTasks(pending.draft.addedToPlanTasks ?? {});
+      setResumedCustomTasks(pending.draft.customTasks ?? []);
+      if (pending.draft.selectedPathway) {
+        handlePathwaySelection(pending.draft.selectedPathway, pending.draft.selectionByPillar ?? {});
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [participantId, user?.id, existingProjectId, isSyncing]);
+
+  // Fetch templates & categories (RUNS ONLY ONCE)
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        let categories = [];
+        if(existingProjectId) {
+          const response = await getProjectDetails(existingProjectId);
+          categories = response?.data?.categories || [];
+        }
+
+        const templatesResponse = await getProjectCategoryList();
+        const templatesData = templatesResponse.filter((item:any) => !categories.find((cat:any) => cat.externalId === item.externalId))
+        if (!isMounted) return;
+        setTemplates(templatesData || []);
+      } catch (err) {
+        console.error('Failed to fetch project data', err);
+        if (isMounted) {
+          setError('Failed to load templates');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  /* -------------------- HANDLERS -------------------- */
+
+  const handleConfirm = () => {
+    // Check if all pillars with child categories have both category and subcategory selected
+    const allPillarsHaveSelections = pillarData
+      .filter((pillar: any) => pillar?.hasChildCategories)
+      .every(
+        (pillar: any) =>
+          selectionByPillar[pillar._id]?.categoryId
+        //  && selectionByPillar[pillar._id]?.subCategoryId,
+      );
+
+    if (allPillarsHaveSelections) {
+      // Log the pillar-category relationships
+      setIsModalOpen(false);
+      setShowProjectPlayerPreview(true);
+    }
+  };
+
+  const handlePathwaySelection = async (
+    id: string,
+    prefillSelection?: Record<string, PillarSelection>,
+  ) => {
+    try {
+      setSelectedPathway(id);
+      // Reset per-pillar category selections on every pathway pick — unless a resumed
+      // offline draft's prior selections for this exact pathway are being restored.
+      setSelectionByPillar(prefillSelection ?? {});
+      const res = await getCategoryList(id);
+      const pillars = res?.data ?? [];
+      setPillarData(pillars);
+
+      const pillarIdsWithCategories = pillars
+        .filter((pillar: any) => pillar?.hasChildCategories)
+        .map((pillar: any) => pillar._id);
+
+      const pillarIdsWithoutCategories = pillars
+        .filter((pillar: any) => pillar?.hasChildCategories === false)
+        .map((pillar: any) => pillar._id);
+      setPillarIdsToGetIdp(pillarIdsWithoutCategories);
+
+      // If no pillars have child categories, skip modal and directly show project player
+      if (pillarIdsWithCategories?.length === 0) {
+        setShowProjectPlayerPreview(true);
+        return;
+      }
+
+      // If pillars have child categories, show modal and fetch category hierarchy
+      setIsModalOpen(true);
+
+      const pillarCategoryHierarchy: PillarCategoryMap[] = await Promise.all(
+        pillarIdsWithCategories.map(async (pillarId: any) => {
+          // 1️⃣ categories under pillar
+          const categoryList = await getCategoryList(pillarId);
+          // const categoryList = categoryDetailsMockData.result;
+
+          // 2️⃣ categories + subcategories
+          const categories: Category[] = await Promise.all(
+            categoryList.data.map(async (category: any) => {
+              let subcategories: SubCategory[] = [];
+
+              // if (category?.hasChildCategories) {
+              //   const subCategoryList = await getCategoryList(category._id);
+              //   // const subCategoryList = subCategoryDetailsMockData.result;
+              //   subcategories = Array.isArray(subCategoryList?.data)
+              //     ? subCategoryList.data.map((sc: any) => ({
+              //       id: sc?._id ?? '',
+              //       label: sc?.name ?? '',
+              //     }))
+              //     : [];
+              // }
+
+              return {
+                id: category._id,
+                label: category.name,
+                hasChildren: category.hasChildCategories,
+                subcategories,
+              };
+            }),
+          );
+          
+          return {
+            pillarId,
+            categories,
+          };
+        }),
+      );
+
+      setPillarCategoryMap(pillarCategoryHierarchy);
+
+      // setCategories(categoriesData || []);
+    } catch (err) {
+      console.error('Failed to fetch project data', err);
+      setError('Failed to load templates');
+    }
+  };
+
+  const handleBackPress = () => {
+    // @ts-ignore
+    navigation.navigate('participant-detail', { id: participantId });
+    setShowProjectPlayerPreview(false);
+  };
+
+  /* -------------------- UI -------------------- */
+
+  return (
+    <VStack flex={1} {...(templateStyles.container as any)}>
+      <PageHeader
+        onBackPress={handleBackPress}
+        backButtonText={t('template.backButton')}
+        _content={templateStyles.backLinkContainer}
+        _leftSection={templateStyles.leftSection}
+        _rightSection={templateStyles.rightSection}
+        _container={templateStyles.headerContainer}
+        rightSection={
+          participant &&
+          <LogVisitModulePopup
+            participant={participant}
+            observationLogsTitle={t('actions.logVisit')}
+            noSolutionsMessage={t('logVisit.noSolutions')}
+            buttonText={t("actions.logVisit")}
+          />
+        }
+      >
+        <VStack {...(templateStyles.headerContent as any)}>
+          <Text {...(TYPOGRAPHY.h4 as any)}>
+            {t(existingProjectId ? "template.updatePageTitle" :'template.pageTitle')}
+          </Text>
+          {!existingProjectId && (
+            <Text {...(TYPOGRAPHY.bodySmall as any)}>
+              {t('template.pageSubtitle', { name: participantName })}
+            </Text>
+          )}
+        </VStack>
+      </PageHeader>
+
+      <Container flex={1}>
+        {/* Loading */}
+        {isLoading && (
+          <Box py="$10" alignItems="center">
+            <Text>{t('common.loading')}</Text>
+          </Box>
+        )}
+
+        {/* Error */}
+        {error && !isLoading && (
+          <Box py="$10" alignItems="center">
+            <Text color="$error500">{error}</Text>
+          </Box>
+        )}
+
+        {/* Templates */}
+        {!isLoading && !error && !showProjectPlayerPreview && (
+          <ScrollView flex={1} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={true} pb="$4">
+            <VStack gap="$4" {...(templateStyles.mainContent as any)}>
+              {templates?.map(pathway => (
+                <Pressable
+                  key={pathway?._id}
+                  {...(templateStyles.pressableCard as any)}
+                  {...(pathway._id === selectedPathway
+                    ? { borderColor: '$primary500', borderWidth: 2 }
+                    : {})}
+                  // onPress={handleCategorySelection()}
+                  onPress={() => handlePathwaySelection(pathway._id)}
+                >
+                  <HStack space="md" alignItems="flex-start">
+                    <Box
+                      {...(templateStyles.iconBox as any)}
+                      {...(templateStyles.iconContainer as any)}
+                    >
+                      <LucideIcon
+                        name="ClipboardList"
+                        size={25}
+                        color={theme.tokens.colors.gray600}
+                      />
+                    </Box>
+                    <VStack flex={1} space="xs">
+                      <HStack space="sm" alignItems="center">
+                        <Text {...TYPOGRAPHY.h3} color="$textLight900" fontWeight="$normal">
+                          {pathway.name}
+                        </Text>
+                        {pathway._id === selectedPathway && (
+                          <LucideIcon
+                            name="CircleCheck"
+                            size={18}
+                            color={theme.tokens.colors.primary500}
+                          />
+                        )}
+                      </HStack>
+                      <Text
+                        {...TYPOGRAPHY.bodySmall}
+                        color="$textMutedForeground"
+                        lineHeight="$lg"
+                      >
+                        {pathway.description}
+                      </Text>
+                      <HStack
+                        space="sm"
+                        alignItems="center"
+                        flexWrap="wrap"
+                        mt="$2"
+                      >
+                        <Box
+                          {...(templateStyles.badge as any)}
+                          bg={
+                            String(pathway.metaInformation?.tags || '')
+                              .toLowerCase()
+                              .includes(PATHWAY_TAGS.ENTREPRENEURSHIP.toLowerCase())
+                              ? '$badgeSuccessBg'
+                              : '$badgeInfoBg'
+                          }
+                        >
+                          <Text
+                            {...TYPOGRAPHY.caption}
+                            fontWeight="$medium"
+                            color={
+                              String(pathway.metaInformation?.tags || '')
+                                .toLowerCase()
+                                .includes(PATHWAY_TAGS.ENTREPRENEURSHIP.toLowerCase())
+                                ? '$badgeSuccessText'
+                                : '$badgeInfoText'
+                            }
+                          >
+                            {pathway.metaInformation?.tags || ''}
+                          </Text>
+                        </Box>
+                        <Text
+                          {...TYPOGRAPHY.caption}
+                          color="$textMutedForeground"
+                          mr="$2"
+                        >
+                          {pathway?.children?.length}{' '}
+                          {t('template.pathwayCard.pillars')}
+                        </Text>
+                      </HStack>
+                      <Box {...(templateStyles.pillarsSection as any)}>
+                        <Text {...TYPOGRAPHY.label} color="$textLight900" mb="$2">
+                          {t('template.pathwayCard.includedPillars')}
+                        </Text>
+                        <VStack>
+                          {pathway?.children?.map(
+                            (
+                              pillar: { name: string; tasks: number },
+                              index: number,
+                            ) => (
+                              <Text
+                                key={index}
+                                {...TYPOGRAPHY.bodySmall}
+                                color="$textMutedForeground"
+                                mb="$1"
+                              >
+                                <Text color="$hoverBorder" mr="$2">
+                                  •{' '}
+                                </Text>
+                                {pillar.name}
+                                {/* ({pillar.tasks}{' '}
+                            {t('template.pathwayCard.tasksLabel')}) */}
+                              </Text>
+                            ),
+                          )}
+                        </VStack>
+                      </Box>
+                    </VStack>
+                  </HStack>
+                </Pressable>
+              ))}
+            </VStack>
+          </ScrollView>
+        )}
+
+        {!isLoading && !error && showProjectPlayerPreview && (
+          <ProjectPlayer config={configData} data={ProjectPlayerConfigData} />
+        )}
+      </Container>
+
+      {/* Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        size={isMobile ? "lg" : "md"}
+        headerTitle={t('template.categoryModal.title')}
+        headerDescription={t('template.categoryModal.forParticipant', {
+          name: participantName,
+        })}
+        headerIcon={
+          <Box {...(templateStyles.modalHeaderIcon as any)}>
+            <LucideIcon
+              name="Briefcase"
+              size={20}
+              color={theme.tokens.colors.primary500}
+            />
+          </Box>
+        }
+        footerContent={
+          <VStack {...(templateStyles.modalFooter as any)}>
+            <Button 
+              // @ts-ignore
+              variant={'outlineghost'}
+              onPress={() => setIsModalOpen(false)}
+            >
+              <ButtonText
+                color={theme.tokens.colors.textPrimary}
+                {...TYPOGRAPHY.button}
+              >
+                {t('template.categoryModal.cancelButton')}
+              </ButtonText>
+            </Button>
+            <Button
+              variant={'solid'}
+              onPress={handleConfirm}
+              isDisabled={
+                !pillarData
+                  .filter((pillar: any) => pillar?.hasChildCategories)
+                  .every(
+                    (pillar: any) =>
+                      selectionByPillar[pillar._id]?.categoryId
+                      // && selectionByPillar[pillar._id]?.subCategoryId,
+                  )
+              }
+            >
+              <ButtonText>
+                {t('template.categoryModal.confirmButton')}
+              </ButtonText>
+            </Button>
+          </VStack>
+        }
+      //size={isWeb ? 'md' : 'lg'}
+      >
+        <VStack gap="$1">
+          <Text {...TYPOGRAPHY.bodySmall} color="$textSecondary" mb="$2">
+            {t('template.categoryModal.description')}
+          </Text>
+          {pillarData?.map((pillar: any) =>
+            pillar?.hasChildCategories ? (
+              <React.Fragment key={pillar._id}>
+                <VStack gap="$1" mb="$2">
+                  <Text {...TYPOGRAPHY.label} color="$textPrimary">
+                    {t('template.categoryModal.categoryLabel', { pillarName: pillar?.name })} <Text color="$error600">*</Text>
+                  </Text>
+                  <Box {...(templateStyles.selectWrapper as any)}>
+                    <Select
+                      options={getCategoriesForPillar(pillar._id).map(c => ({
+                        label: c.label,
+                        value: c.id,
+                      }))}
+                      value={selectionByPillar[pillar._id]?.categoryId || ''}
+                      onChange={value => {
+                        const selectedCategory = getCategoriesForPillar(
+                          pillar._id,
+                        ).find(c => c.id === value);
+                        setSelectionByPillar(prev => ({
+                          ...prev,
+                          [pillar._id]: {
+                            categoryId: value,
+                            categoryName: selectedCategory?.label || '',
+                            // subCategoryId: '', // reset
+                            // subCategoryName: '', // reset
+                          },
+                        }));
+                      }}
+                      placeholder={t(
+                        'template.categoryModal.categoryPlaceholder',
+                      )}
+                      borderColor="$transparent"
+                    />
+                  </Box>
+                </VStack>
+
+                {existingProjectId && <VStack gap="$1" mb="$1">
+                  <Text {...TYPOGRAPHY.label} color="$textPrimary">
+                    {t('template.categoryModal.subCategoryLabel', { pillarName: pillar?.name })}
+                  </Text>
+
+                  <Box
+                    opacity={
+                      !selectionByPillar[pillar._id]?.categoryId ? 0.5 : 1
+                    }
+                    pointerEvents={
+                      !selectionByPillar[pillar._id]?.categoryId
+                        ? 'none'
+                        : 'auto'
+                    }
+                  >
+                    <Box {...(templateStyles.selectWrapper as any)}>
+                      <Input variant="outline" size="md">
+                        <InputField
+                          onChange={(e:any) => {
+                            setSelectionByPillar(prev => ({
+                              ...prev,
+                              [pillar._id]: {
+                                ...(prev?.[pillar._id] || {}),
+                                keywords:[e.target.value]
+                              },
+                            }));
+                          }}
+                          placeholder='Enter Text here'
+                        />
+                      </Input>
+                    
+                      {/* <Select
+                        key={`subcategory-${pillar._id}-${selectionByPillar[pillar._id]?.categoryId || 'none'
+                          }`}
+                        options={getSubCategoriesForPillar(pillar._id).map(
+                          sc => ({
+                            label: sc.label,
+                            value: sc.id,
+                          }),
+                        )}
+                        value={selectionByPillar[pillar._id]?.subCategoryId || ''}
+                        onChange={value => {
+                          const selectedSubCategory = getSubCategoriesForPillar(
+                            pillar._id,
+                          ).find(sc => sc.id === value);
+                          setSelectionByPillar(prev => ({
+                            ...prev,
+                            [pillar._id]: {
+                              ...prev[pillar._id],
+                              subCategoryId: value,
+                              subCategoryName: selectedSubCategory?.label || '',
+                            },
+                          }));
+                        }}
+                        placeholder={t(
+                          'template.categoryModal.subCategoryPlaceholder',
+                        )}
+                        borderColor="$transparent"
+                      /> */}
+                    </Box>
+                  </Box>
+                </VStack>}
+              </React.Fragment>
+            ) : null,
+          )}
+          {/* Selected summary - blue info box */}
+          {pillarData
+            .filter((pillar: any) => pillar?.hasChildCategories)
+            .every(
+              (pillar: any) =>
+                selectionByPillar[pillar._id]?.categoryId
+                // && selectionByPillar[pillar._id]?.subCategoryId,
+            ) && (
+              <Box {...(templateStyles.summaryBox as any)}>
+                {pillarData
+                  .filter((pillar: any) => pillar?.hasChildCategories)
+                  .map((pillar: any) => {
+                    const selection = selectionByPillar[pillar._id];
+                    
+                    if (!selection?.categoryId 
+                      // || !selection?.subCategoryId
+                    ) {
+                      return null;
+                    }
+
+                    return (
+                      <React.Fragment key={pillar._id}>
+                        <Text
+                          key={pillar._id}
+                          {...TYPOGRAPHY.bodySmall}
+                          color="$blue800"
+                          fontWeight="$semibold"
+                          mb="$1"
+                        >
+                          {t('template.categoryModal.selectedLabel', {
+                            category: selection.categoryName,
+                            subcategory: selection?.keywords?.join(","),
+                            // subcategory: selection.subCategoryName,
+                          })}
+                        </Text>
+                        <Text
+                          {...TYPOGRAPHY.caption}
+                          color="$blue700"
+                        >
+                          {t('template.categoryModal.selectedDescription')}
+                        </Text>
+                      </React.Fragment>
+                    );
+                  })}
+              </Box>
+            )}
+        </VStack>
+      </Modal>
+    </VStack>
+  );
+};
+
+export default DevelopInterventionPlan;

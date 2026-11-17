@@ -1,16 +1,42 @@
 {
   "common": {
     "profile": "Profile",
+    "profileFields": {
+      "name": "Name",
+      "id": "ID",
+      "contact": "Contact",
+      "email": "Email",
+      "address": "Address",
+      "addressFields": {
+        "street": "Street Address",
+        "province": "Province",
+        "site": "Site",
+        "serviceArea": "Service Area"
+      }
+    },
+    "showMore": "Show More",
+    "showLess": "Show Less",
+    "comingSoon": "Coming soon.",
     "settings": "Settings",
     "logout": "Logout",
+    "userGuide": "User Guide",
+    "reportFeedback": "Report / Feedback",
+    "downloadApk": "Download APK",
+    "install": "Install",
     "loading": "Loading...",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
+    "upload": "Upload",
+    "uploading": "Uploading...",
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
     "search": "Search",
     "filter": "Filter",
+    "filters": "Filters",
+    "clearFilters": "Clear Filters",
+    "clear": "Clear",
     "submit": "Submit",
     "back": "Back",
     "next": "Next",
@@ -20,7 +46,159 @@
     "offline": "Offline Mode",
     "online": "Online",
     "selectOption": "Select an option",
-    "placeholder": "Search users, templates, logs..."
+    "selectAll": "Select All",
+    "selectAtLeastOneOption": "Select At Least One Option",
+    "placeholder": "Search users, templates, logs...",
+    "actions": "Actions",
+    "noDataFound": "No data found",
+    "optional": "(Optional)",
+    "participant": "Participant",
+    "complete": "Complete",
+    "trendOverTime": "Trend Over Time",
+    "show6MonthlyTrend": "Show 6-Monthly Trend",
+    "showMonthlyTrend": "Show Monthly Trend",
+    "serverError500": "Something went wrong. Try again.",
+    "somethingWentWrong": "Something went wrong. Try again."
+  },
+  "datePicker": {
+    "today": "Today",
+    "now": "Now",
+    "done": "Done",
+    "selectDate": "Select date",
+    "selectTime": "Select time",
+    "selectDateTime": "Select date & time"
+  },
+  "projectPlayer": {
+    "onboarding": "Onboarding the",
+    "participant": "Participant",
+    "status": "Status",
+    "progress": "Progress",
+    "pillar": "Pillar",
+    "pillars": "pillars",
+    "complete": "complete",
+    "stepsComplete": "Steps Complete",
+    "completeFormToMarkDone": "Complete the form first to mark this task as done",
+    "onboardingDescription": "Complete all required steps before enrolling the participant",
+    "statusTypes": {
+      "to-do": "To Do",
+      "completed": "Completed"
+    },
+    "viewForm": "View Form",
+    "completeForm": "Complete Form",
+    "uploadFile": "Upload File",
+    "upload": "Upload",
+    "updateProfile": "Update Profile",
+    "viewTask": "View Task",
+    "attachments": "Attachments",
+    "uploading": "Uploading...",
+    "uploadEvidence": "Upload Evidence",
+    "toDo": "To Do",
+    "done": "Done",
+    "clickToUpload": "📎 Click to upload files",
+    "maxFileSize": "Max file size: {{size}}MB",
+    "fileSizeError": "Some files exceed the maximum size of {{maxSize}}MB. Please choose smaller files.",
+    "fileValidationSummary": "Some files could not be uploaded. Please review the errors below and try again.",
+    "fileEmptyError_one": "This file is empty and cannot be uploaded.",
+    "fileEmptyError_other": "These files are empty and cannot be uploaded.",
+    "fileMaxSizeError_one": "This file exceeds the maximum allowed size of {{maxSize}}MB.",
+    "fileMaxSizeError_other": "These files exceed the maximum allowed size of {{maxSize}}MB.",
+    "fileTypeError_one": "This file type is not supported. Allowed: {{allowedTypes}}.",
+    "fileTypeError_other": "These file types are not supported. Allowed: {{allowedTypes}}.",
+    "fileDuplicateError_one": "This file was already added.",
+    "fileDuplicateError_other": "These files were already added.",
+    "fileCountExceededError_one": "This file exceeds the upload limit. Max {{maxCount}} files allowed.",
+    "fileCountExceededError_other": "These files exceed the upload limit. Max {{maxCount}} files allowed.",
+    "uploadFailed": "Upload failed. Please try again.",
+    "uploadSuccess": "Files uploaded successfully!",
+    "uploadedFiles": "Uploaded Files",
+    "previouslyUploadedFiles": "Previously Uploaded Files",
+    "observationForm": "Observation Form",
+    "formId": "Form ID",
+    "formFieldsPlaceholder": "Form fields will be rendered here",
+    "submit": "Submit",
+    "addCustomTask": "Add Custom Task",
+    "addCustomTaskSubtitle": "Create a custom task for this participant's intervention plan",
+    "editCustomTask": "Edit Custom Task",
+    "editCustomTaskSubtitle": "Update the details of this custom task",
+    "addTaskToPillar": "Add Task to This Pillar",
+    "selectPillar": "Select Pillar",
+    "selectPillarPlaceholder": "Choose a pillar for this task",
+    "taskName": "Task Name",
+    "taskNamePlaceholder": "e.g., Complete housing application",
+    "enterTaskName": "Enter task name",
+    "instructions": "Instructions",
+    "instructionsPlaceholder": "Provide detailed instructions for this task...",
+    "description": "Description",
+    "enterTaskDescription": "Enter task description",
+    "serviceProviderSelection": "Service Provider Selection (Optional)",
+    "serviceProvider": "Service Provider",
+    "selectServiceProvider": "Select service provider...",
+    "taskType": "Task Type",
+    "taskTypes": {
+      "simple": "Simple",
+      "file": "File Upload",
+      "observation": "Observation",
+      "project": "Project"
+    },
+    "addTask": "Add Task",
+    "chooseUploadMethod": "Choose Upload Method",
+    "uploadDocumentationFor": "Upload consent documentation for {{name}}",
+    "takePhoto": "Take a Photo",
+    "useDeviceCamera": "Use your device camera",
+    "uploadFromDevice": "Upload from Device",
+    "chooseFromGallery": "Choose from gallery or files",
+    "uploadSignedDocumentation": "Upload signed consent documentation for program enrollment.",
+    "uploadConsent": "Upload Consent",
+    "uploadSLA": "Upload SLA",
+    "completeProfile": "Complete Profile",
+    "tasks": "tasks",
+    "updateTask": "Update Task",
+    "deleteTask": "Delete Task",
+    "confirmDeleteTask": "Are you sure you want to delete '{{taskName}}'? This action cannot be undone.",
+    "taskDeleted": "Task deleted successfully.",
+    "customTaskAddSuccess": "Task added successfully.",
+    "customTaskUpdateSuccess": "Task updated successfully.",
+    "evidencePreview": "Evidence Preview",
+    "confirmPathwaySelection": "Confirm Your Pathway Selection",
+    "confirmPathwaySelectionSubtitle": "Do you want to continue with the {{pathwayName}}, or would you like to change it?",
+    "changeIt": "Change it",
+    "continue": "Continue",
+    "viewAllUploadedEvidence": "View all uploaded evidence files for this task",
+    "imagePreviewPlaceholder": "Image preview would be displayed here",
+    "noFilesUploaded": "No files uploaded yet",
+    "uploadedBy": "Uploaded by {{name}}",
+    "cameraPermissionDenied": "Camera access denied. Enable it in settings.",
+    "storagePermissionDenied": "Storage access denied. Enable it in settings.",
+    "cannotOpenFile": "Cannot open file.",
+    "unableToOpenFile": "Cannot open file. Try again.",
+    "file": "file",
+    "files": "files",
+    "graduationReadiness": "Graduation Readiness",
+    "progressSaved": "Progress saved successfully",
+    "previousProgress": "Previous: {{percent}}%",
+    "saveProgress": "Save Progress",
+    "taskUpdated": "{{count}} task updated",
+    "tasksUpdated": "{{count}} tasks updated",
+    "addToPlan": "Add to Plan",
+    "remove": "Remove",
+    "evidenceUploaded": "Evidence uploaded successfully.",
+    "evidenceUploadFailed": "Upload failed. Try again.",
+    "evidenceRequired": "Evidence Required",
+    "uploadEvidenceToMarkDone": "Upload evidence first to mark this task as done",
+    "consentUploaded": "Consent uploaded successfully",
+    "slaUploaded": "SLA uploaded successfully",
+    "selectedFiles": "Selected Files",
+    "untitledFile": "Untitled File",
+    "unknownSize": "Unknown size",
+    "enrolledParticiapantSucess": "Participant enrolled successfully.",
+    "socialProtectionPreviewInfo": "Review all Linkage To Additional Services tasks. Required tasks are pre-selected. You can change optional tasks.",
+    "important": "Important",
+    "failToLoad": "Failed to load or create project",
+    "unableToLoadObservation": "Could not load observation details.",
+    "SingleUploadMessage": "Selecting a new file replaces the existing one.",
+    "allowedFileTypes": "Allowed file types :",
+    "remainingUploads": "Remaining uploads :",
+    "IdpUpdateSentForApproval": "Your request to update the intervention plan for {{name}} has been sent for approval."
   },
   "navigation": {
     "menu": "Menu",
@@ -38,24 +216,1631 @@
   "languages": {
     "en": "English",
     "ar": "العربية",
-    "es": "Español",
+    "es": "Spanish",
     "hi": "हिन्दी"
   },
   "admin": {
+    "pageTitle": {
+      "home": "Home",
+      "user-management": "User Management",
+      "admin-dashboard": "Dashboard",
+      "template-management": "Template Management",
+      "csv-templates": "CSV Import Templates",
+      "ProfilePermissions": "Profile Field Edit Permissions",
+      "PasswordPolicy": "Password Management Policy",
+      "audit-log": "Audit Log",
+      "assign-users": "Assign Users",
+      "welcome": "Welcome",
+      "select-language": "Select Language",
+      "dashboard": "Dashboard",
+      "participant-detail": "Participant",
+      "log-visit": "Log Visit",
+      "check-ins-list": "Check-ins",
+      "observation": "Observation",
+      "template": "Develop Intervention Plan",
+      "participants": "Participants",
+      "project": "Project",
+      "review-requests": "Review Requests"
+    },
     "home": "Home",
-    "dashboard": "Dashboard",
-    "dashboardDescription": "Welcome back! Here's what's happening with your learning management system.",
+    "dashboard": "Dashboards",
+    "dashboardDescription": "Monitor key indicators organized by topic with cohort-specific filtering.",
+    "selectIndicatorType": "Select Indicator Type",
+    "indicatorTypeDescription": "Choose between Output or Outcome indicators to view relevant topics",
+    "backToIndicatorTypes": "Back to Indicator Types",
+    "outputIndicators": {
+      "title": "Output Indicators",
+      "description": "Direct program activities and deliverables: enrollment processes, Coach performance tracking, and immediate program outputs.",
+      "topicsCount": "7 Topics",
+      "selectTopic": "Select a Topic",
+      "selectTopicDescription": "Choose a topic to view detailed indicators and analytics",
+      "topics": {
+        "participantEnrollment": {
+          "title": "Participant Enrollment & Targeting",
+          "description": "Consent, profiling, SLA signing, and targeting metrics"
+        },
+        "socialProtectionReferrals": {
+          "title": "Linkage To Additional Services",
+          "description": "Referrals to Linkage To Additional programs and services"
+        },
+        "socialEmpowerment": {
+          "title": "Social Empowerment",
+          "description": "Social empowerment, community integration, and psychosocial support"
+        },
+        "bigPush": {
+          "title": "Big Push",
+          "description": "Big push interventions and intensive support activities"
+        },
+        "livelihoodPromotion": {
+          "title": "Livelihood Promotion",
+          "description": "Livelihood promotion activities and interventions"
+        },
+        "financialInclusion": {
+          "title": "Financial Inclusion",
+          "description": "Financial inclusion services and access to financial products"
+        },
+        "coaching": {
+          "title": "Coaching",
+          "description": "Coaching sessions, visit frequency, and Coach performance tracking"
+        },
+        "dropOuts": {
+          "title": "Drop Outs",
+          "description": "Dropout trends, reasons, and retention analytics"
+        }
+      }
+    },
+    "outcomeIndicators": {
+      "title": "Outcome Indicators",
+      "description": "Long-term results and behavioral changes: livelihood improvements, financial capability, agency development, and participant retention.",
+      "topics": "14 Topics",
+      "selectOutcomeType": "Select Outcome Type",
+      "selectOutcomeTypeDescription": "Choose between Cumulative or Individual outcome indicators",
+      "types": {
+        "cumulative": {
+          "title": "Cumulative Indicators",
+          "description": "Household and participant-level outcome measurements",
+          "topics": "6 Topics"
+        },
+        "individual": {
+          "title": "Individual Indicators",
+          "description": "Individual participant outcome measurements",
+          "topics": "6 Topics",
+          "selectParticipantFilters": "Select Participant Filters",
+          "selectParticipantFiltersDescription": "Select both Pathway and Participant to view individual outcome indicators",
+          "requiredFilters": "Required Filters",
+          "pathwayLabel": "Pathway",
+          "participantLabel": "Select Participant",
+          "pathwayPlaceholder": "Select a pathway",
+          "participantPlaceholder": "Select a participant",
+          "participantPlaceholderDisabled": "Select pathway first",
+          "emptyStateTitle": "Please select both Pathway and Participant to continue",
+          "emptyStateSubtitle": "Start by selecting a pathway"
+        }
+      }
+    },
+    "cumulativeIncome": {
+      "title": "Income by Household and Participant",
+      "description": "Income tracking for both households and individual participants",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "activeIncomeActivity": {
+          "title": "IGA Status",
+          "subtitle": "Current Status"
+        },
+        "profitability": {
+          "title": "Profitability",
+          "subtitle": "Entrepreneurship"
+        },
+        "perPersonIncome": {
+          "title": "Per Person Income",
+          "subtitle": "Household Average"
+        },
+        "participantIncomeBusiness": {
+          "title": "Participant Income",
+          "subtitle": "Current Monthly"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "activeIncomeTitle": "Presence of Active Income-Generating Activity",
+        "activeIncomeMeta": "Percentage of participants with active employment or business",
+        "profitabilityTitle": "Profitability of Income-Generating Activity",
+        "profitabilityMeta": "Entrepreneurship pathway only - Percentage of businesses profitable",
+        "perPersonTitle": "Per Person Income in the Household",
+        "perPersonMeta": "Household total income divided by number of household members (6-monthly)",
+        "fromBusinessTitle": "Participant Income from Business",
+        "fromBusinessMeta": "Monthly income generated from business activities only",
+        "bySourceTitle": "Participant Income By Source",
+        "bySourceMeta": "Monthly income generated from various sources"
+      }
+    },
+    "cumulativeAssetAccumulation": {
+      "title": "Asset Accumulation by Household and Participant",
+      "description": "Asset accumulation metrics for households and participants",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "assetAccumulationHousehold": {
+          "title": "Asset Accumulation - Household",
+          "subtitle": "from baseline"
+        },
+        "assetAccumulationParticipant": {
+          "title": "Asset Accumulation - Participant",
+          "subtitle": "from baseline"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "s61Title": "6.1 Self-Esteem and Confidence",
+        "s61Meta": "Target: Participant | Time: 6-monthly | Logic: Sum(Q1-Q6)/30 | GREEN ≥0.7, YELLOW 0.4-0.69, RED <0.4",
+        "s62Title": "6.2 Agency and Control",
+        "s62Meta": "Target: Participant | Time: 6-monthly | Logic: Max=12, divide by 12 | GREEN ≥0.7, YELLOW 0.4-0.69, RED <0.4",
+        "s63Title": "6.3 Attitudes towards Domestic Violence",
+        "s63Meta": "Target: Participant | Time: 6-monthly | Logic: Max=1, divide by 5 | GREEN ≥0.6, YELLOW 0.4-0.6, RED <0.4",
+        "s64Title": "6.4 Decision-making & Gender Equality",
+        "s64Meta": "Target: Participant | Time: 6-monthly | Logic: Max=12, divide by 12 | GREEN ≥0.75, YELLOW 0.5-0.74, RED <0.5"
+      }
+    },
+    "cumulativeSavings": {
+      "title": "Savings",
+      "description": "Savings behavior and accumulation tracking",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "savingsAmountHousehold": {
+          "title": "Savings Amount - Household",
+          "subtitle": "from baseline"
+        },
+        "savingsAmountParticipant": {
+          "title": "Savings Amount - Participant",
+          "subtitle": "from baseline"
+        },
+        "savingsFrequency": {
+          "title": "Savings Frequency - Adoption of Savings Culture",
+          "subtitle": "of participants"
+        },
+        "formalSavingsUsage": {
+          "title": "Usage of Formal Savings Products/Services",
+          "subtitle": "participants using formal products"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "savingsAmountHouseholdTitle": "Savings Amount - Household",
+        "savingsAmountHouseholdMeta": "Total household savings (6-monthly tracking)",
+        "savingsAmountParticipantTitle": "Savings Amount - Participant",
+        "savingsAmountParticipantMeta": "Individual participant savings over time (monthly tracking)",
+        "savingsFrequencyTitle": "Savings Frequency - Adoption of Savings Culture",
+        "savingsFrequencyMeta": "How often participants save (monthly tracking)",
+        "formalSavingsTitle": "Usage of Formal Savings Products/Services",
+        "formalSavingsMeta": "Type of savings account used by participants (monthly tracking)"
+      }
+    },
+    "cumulativeRecordKeeping": {
+      "title": "Record Keeping",
+      "description": "Financial and business record keeping practices",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "personal": {
+          "title": "Personal Record Keeping Practices",
+          "subtitle": "of participants"
+        },
+        "business": {
+          "title": "Business Record Keeping Practices",
+          "subtitle": "of businesses"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "personalTitle": "Personal Record Keeping Practices",
+        "personalMeta": "Personal financial record-keeping score (0-4 scale, monthly tracking)",
+        "businessTitle": "Business Record Keeping Practices",
+        "businessMeta": "Business financial record-keeping score (0-4 scale, monthly tracking)",
+        "combinedTitle": "Combined Record Keeping Trends",
+        "combinedMeta": "Personal vs Business record-keeping practices over time"
+      }
+    },
+    "cumulativeDebtCredit": {
+      "title": "Debt/Credit",
+      "description": "Debt levels, credit management, and borrowing patterns",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "reducedDebtParticipant": {
+          "title": "Reduced Level of Debt - Participant",
+          "subtitle": "of participants"
+        },
+        "creditUsageParticipant": {
+          "title": "Usage of Formal/Informal Credit - Participant",
+          "subtitle": "using formal credit"
+        },
+        "reducedDebtHousehold": {
+          "title": "Reduced Level of Debt - Household",
+          "subtitle": "of households"
+        },
+        "creditUsageHousehold": {
+          "title": "Usage of Formal/Informal Credit - Household",
+          "subtitle": "using formal credit"
+        },
+        "riskOverIndebtedness": {
+          "title": "Risk of Over-Indebtedness",
+          "subtitle": "participants at risk"
+        },
+        "riskOverIndebtednessResponses": {
+          "title": "Risk of Over-Indebtedness - Participant Responses",
+          "subtitle": "responded Yes"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "reducedDebtParticipantTitle": "Reduced Level of Debt - Participant",
+        "reducedDebtParticipantMeta": "Participant debt trend: Decreasing (Green), Same (Yellow), Increasing (Red) - Monthly tracking",
+        "creditUsageParticipantTitle": "Usage of Formal/Informal Credit - Participant",
+        "creditUsageParticipantMeta": "Source of loans by participant (monthly tracking)",
+        "reducedDebtHouseholdTitle": "Reduced Level of Debt - Household",
+        "reducedDebtHouseholdMeta": "Household debt trend: Decreasing (Green), Same (Yellow), Increasing (Red) - 6-monthly tracking",
+        "creditUsageHouseholdTitle": "Usage of Formal/Informal Credit - Household",
+        "creditUsageHouseholdMeta": "Source of loans by household (6-monthly tracking)",
+        "riskOverIndebtednessTitle": "Risk of Over-Indebtedness",
+        "riskOverIndebtednessMeta": "Loan > 1/3 income = High Risk (Red), otherwise Low Risk (Green) - Monthly tracking",
+        "riskResponsesTitle": "Risk of Over-Indebtedness - Participant Responses",
+        "riskResponsesMeta": "Participants reporting whether they are at risk of over-indebtedness",
+        "remainingBalanceTitle": "Remaining Balance by Loan Source",
+        "remainingBalanceMeta": "Remaining loan balance by source (for participants with active loans)"
+      }
+    },
+    "cumulativeSocialEmpowerment": {
+      "title": "Social Empowerment & Dignity",
+      "description": "Self-esteem, confidence, and personal empowerment",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "selfEsteemConfidence": {
+          "title": "Self-Esteem and Confidence",
+          "subtitle": "from baseline"
+        },
+        "agencyControl": {
+          "title": "Agency and Control",
+          "subtitle": "from baseline"
+        },
+        "attitudesDomesticViolence": {
+          "title": "Attitudes Towards Domestic Violence",
+          "subtitle": "from baseline"
+        },
+        "decisionMakingGenderEquality": {
+          "title": "Decision-Making & Gender Equality",
+          "subtitle": "from baseline"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "selfEsteemTitle": "Self-Esteem and Confidence",
+        "selfEsteemMeta": "Score = sum(Q1-Q6) / 30 (6-monthly tracking) | Green ≥0.7, Yellow 0.4-0.69, Red <0.4",
+        "agencyTitle": "Agency and Control",
+        "agencyMeta": "Max score = 12, divided by 12 for 0-1 scale (6-monthly tracking) | Green ≥0.7, Yellow 0.4-0.69, Red <0.4",
+        "dvTitle": "Attitudes Towards Domestic Violence",
+        "dvMeta": "Max score = 1, divided by 5 (6-monthly tracking) | Green >0.6, Yellow 0.4-0.6, Red <0.4",
+        "decisionTitle": "Decision-Making & Gender Equality",
+        "decisionMeta": "Max score = 12, divided by 12 (6-monthly tracking) | Green ≥0.75, Yellow 0.5-0.74, Red <0.5"
+      }
+    },
+    "individualIncome": {
+      "title": "Income",
+      "description": "Individual participant income tracking",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "activeIncomeActivity": {
+          "title": "Presence of Active Income-Generating Activity",
+          "subtitle": "of participants"
+        },
+        "profitability": {
+          "title": "Profitability of Income-Generating Activity",
+          "subtitle": "of businesses profitable"
+        },
+        "perPersonIncome": {
+          "title": "Per Person Income in the Household",
+          "subtitle": "from baseline"
+        },
+        "participantIncomeBusiness": {
+          "title": "Participant Income from Business",
+          "subtitle": "participants with business income"
+        },
+        "participantIncomeSource": {
+          "title": "Participant Income By Source",
+          "subtitle": "source"
+        }
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "activeTitle": "1. Presence of Active Income Generating Activity Led by Program Participant",
+        "activeMeta": "Target: Participant | Time: Monthly | Employment vs Entrepreneurship status",
+        "profitabilityTitle": "2. Profitability of Income Generating Activity Led by Participant (Entrepreneurship Pathway Only)",
+        "profitabilityMeta": "Target: Participant | Time: Monthly | Profitable, Breaking Even, Operating at Loss",
+        "perPersonTitle": "3. Per Person Income in the Household",
+        "perPersonMeta": "Total income of the household divided by the number of people in the household | Time: 6-monthly",
+        "participantIncomeTitle": "4. Participant Income",
+        "participantIncomeMeta": "Target: Participant | Time: Monthly | Threshold: R 3,000"
+      }
+    },
+    "individualAssetAccumulation": {
+      "title": "Asset Accumulation",
+      "description": "Individual asset accumulation and wealth building",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "householdAssets": {
+          "title": "Household Assets",
+          "subtitle": "Avg assets per household"
+        },
+        "householdValue": {
+          "title": "Household Value",
+          "subtitle": "Total asset value"
+        },
+        "participantAssets": {
+          "title": "Participant Assets",
+          "subtitle": "Avg assets per participant"
+        },
+        "participantValue": {
+          "title": "Participant Value",
+          "subtitle": "Total asset value"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Asset Accumulation (Individual Indicators)",
+        "item1": "Household average assets grew 152% from 2.1 to 5.3 assets per household, with total value of R 45,680",
+        "item2": "Participant personal assets increased 250% from 1.2 to 4.2 assets, demonstrating strong wealth accumulation",
+        "item3": "Top household asset growth: Agricultural Equipment (+29%), Dwelling/Housing (+26%), Livestock (+23%)",
+        "item4": "Top participant asset growth: Savings/Investments (+46%), Business Equipment (+39%), Technology (+39%)"
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "householdTitle": "2.1 Asset Accumulation - Household",
+        "householdMeta": "Target: Household | Time: 6-monthly | Track: quantity owned by participant, others, value/unit",
+        "participantTitle": "2.2 Asset Accumulation - Participant",
+        "participantMeta": "Target: Participant | Time: 6-monthly | Chart: Number + Line (% increase vs baseline)"
+      }
+    },
+    "individualRecordKeeping": {
+      "title": "Record Keeping",
+      "description": "Individual record keeping practices and behaviors",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "personalRecords": {
+          "title": "Personal Records",
+          "subtitle": "Avg score"
+        },
+        "businessRecords": {
+          "title": "Business Records",
+          "subtitle": "Avg score"
+        },
+        "overallAdoption": {
+          "title": "Overall Adoption",
+          "subtitle": "Keep records"
+        },
+        "topPractice": {
+          "title": "Top Practice",
+          "subtitle": "82% adoption"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Record-Keeping (Individual Indicators)",
+        "item1": "Personal record-keeping score increased 375% from 0.8 to 3.8 out of 4.0, showing strong adoption of financial discipline",
+        "item2": "Business record-keeping score increased 567% from 0.6 to 4.0 out of 4.0, reaching maximum score",
+        "item3": "92% of participants now maintain regular records, up from 28% at baseline",
+        "item4": "Top adopted practices: Sales/Income Records (82%), Expense Tracking (78%), Customer Records (72%)"
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "prevalenceTitle": "4.1 Prevalence of Record-Keeping Practices",
+        "prevalenceMeta": "Target: Participant | Time: Monthly | Logic: Personal vs Business (0-4 scale) | Keep separate trends"
+      }
+    },
+    "individualSavings": {
+      "title": "Savings",
+      "description": "Individual savings patterns and accumulation",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "householdSavings": {
+          "title": "Household Savings",
+          "subtitle": "Total savings amount"
+        },
+        "participantSavings": {
+          "title": "Participant Savings",
+          "subtitle": "Total savings amount"
+        },
+        "savingsCulture": {
+          "title": "Savings Culture",
+          "subtitle": "Save regularly"
+        },
+        "formalProducts": {
+          "title": "Formal Products",
+          "subtitle": "Use Stokvel/Bank"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Savings (Individual Indicators)",
+        "item1": "Household savings grew 655% from R 850 (baseline) to R 6,420 (12-month), demonstrating strong savings discipline.",
+        "item2": "Participant savings increased 1,198% from R 420 to R 5,450, showing remarkable wealth accumulation.",
+        "item3": "94% of participants now save regularly (monthly or more frequently), up from 32% at baseline.",
+        "item4": "64% use Stokvels, 58% use bank accounts, and 38% use mobile money - strong adoption of formal savings products."
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "householdTitle": "3.1 Savings Amount - Household",
+        "householdMeta": "Target: Household | Time: 6-monthly | Chart: Number card (optional linear trend)",
+        "participantTitle": "3.2 Savings Amount - Participant",
+        "participantMeta": "Target: Participant | Time: Monthly | Chart: Line chart (savings over time) + % by frequency",
+        "frequencyTitle": "3.3 Savings Frequency - Adoption of Savings Culture",
+        "frequencyMeta": "Target: Participant | Time: Monthly | Chart: Multi-line (Every day, Once a week, Once a month, Never)",
+        "formalTitle": "3.4 Usage of Formal Savings Products/Services",
+        "formalMeta": "Target: Participant | Time: Monthly | Focus: Bank, Mobile money, Stokvel (formal channels)"
+      }
+    },
+    "individualDebt": {
+      "title": "Debt",
+      "description": "Individual debt levels and management",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "snapshot": {
+        "placeholder": "Snapshot view is under development"
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here",
+        "s1Title": "1. Reduced Level of Debt for Consumption Purposes - Participant",
+        "s1Meta": "Data from Indicator \"Do you have any active debt / loans?\" and \"What is the purpose of the loan(s)?\"",
+        "s2Title": "2. Usage of Formal and Informal Sources of Credit - Participant",
+        "s2Meta": "Only for participants with a current borrowing credit / loans | Data: What is the source of your loan(s)? and remaining balance",
+        "s3Title": "3. Reduced Level of Debt for Consumption Purposes - Household",
+        "s3Meta": "Data from household borrowing module | Active debt / loans and purpose categories",
+        "s4Title": "4. Usage of Formal and Informal Sources of Credit - Household",
+        "s4Meta": "Data for household borrowing by credit source (formal vs informal) + remaining balance and shift over time",
+        "s5Title": "5. Risk of Overindebtedness (Ability to Pay Back Loan)",
+        "s5Meta": "Data from Indicator \"Do you think you can pay back loan(s)?\" | Trend across 12 months"
+      }
+    },
+    "individualAgencyDignity": {
+      "title": "Agency and Dignity",
+      "description": "Personal agency, dignity, and self-determination",
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "selfEsteem": {
+          "title": "Self-Esteem",
+          "subtitle": "Score"
+        },
+        "agencyControl": {
+          "title": "Agency & Control",
+          "subtitle": "Score"
+        },
+        "dvAttitudes": {
+          "title": "DV Attitudes",
+          "subtitle": "Score"
+        },
+        "decisionMaking": {
+          "title": "Decision-Making",
+          "subtitle": "Score"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Agency & Dignity (Individual Indicators)",
+        "item1": "Self-esteem score increased 123% from 35% to 78%, reaching GREEN threshold (≥70%)",
+        "item2": "Agency & Control score grew 134% from 32% to 75%, achieving GREEN status with strong participant empowerment",
+        "item3": "Attitudes towards domestic violence improved 164% to 74%, demonstrating major shift in gender norms",
+        "item4": "Decision-making equality score reached 82% (GREEN ≥75%), up 116% from baseline showing enhanced household equality"
+      },
+      "graphs": {
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "participantEnrollment": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "assigned": {
+          "title": "Assigned (CSG Lists)",
+          "subtitle": "By Coaches"
+        },
+        "contacted": {
+          "title": "Contacted by Coach",
+          "subtitle": "contacted"
+        },
+        "consent": {
+          "title": "Consent & Profiled",
+          "subtitle": "signed"
+        },
+        "sla": {
+          "title": "SLA Signed",
+          "subtitle": "with plans"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Participant Targeting & Onboarding",
+        "assigned": "2,718 prospective participants assigned to Coaches based on CSG lists across all sites.",
+        "contacted": "90% contact rate achieved - 2,456 participants reached through door-to-door outreach.",
+        "consent": "96% signed consent forms and completed profiling - 2,609 participants onboarded.",
+        "sla": "100% SLA completion - All profiled participants have signed SLAs with intervention plans."
+      },
+      "graphs": {
+        "sections": {
+          "assigned": {
+            "header": "1.1 Prospective Participants Assigned by Supervisors to Coaches (CSG Lists)",
+            "meta": "Target: Participant | Time: Monthly / Per graduation cycle | Data: Assigned Participants by Supervisor"
+          },
+          "contacted": {
+            "header": "1.2 Prospective Participants Contacted by Coaches",
+            "meta": "Target: Participant | Time: Monthly | Data: Door-to-door outreach logs | Logic: Count contacted / total assigned → %"
+          },
+          "consent": {
+            "header": "1.3 Participants Who Signed Consent Forms & Completed Profiling",
+            "meta": "Target: Participant | Time: Monthly | Data: Signed Consent Form Logs | Logic: Count signed / total assigned → %"
+          },
+          "sla": {
+            "header": "1.4 Participants Who Signed SLAs with Intervention Plans",
+            "meta": "Target: Participant | Time: Monthly | Data: Signed SLA Logs | Logic: Count signed / total assigned → %"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "socialProtectionReferrals": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "specialAttention": {
+          "title": "Special Attention Referrals",
+          "subtitle": "19% of participants | 100% referred"
+        },
+        "immediateAttention": {
+          "title": "Immediate Attention Referrals",
+          "subtitle": "46% of participants | 100% referred"
+        },
+        "supportCompletion": {
+          "title": "Support Completion Rate",
+          "subtitle": "1323 receiving out of 1438 referred"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Linkage To Additional Services",
+        "specialAttention": "526 participants (19%) requiring special attention - Substance Abuse, Mental Health, GBV",
+        "immediateAttention": "1,248 participants (46%) requiring immediate attention - Food Security, Health, Municipal Indigent Programs",
+        "referralRate": "100% referral rate achieved - All identified participants referred to appropriate support services",
+        "supportCompletion": "92% support completion rate - 1,323 participants successfully receiving or received support from referral services"
+      },
+      "graphs": {
+        "sections": {
+          "specialAttention": {
+            "header": "2.1 Special Attention Referrals",
+            "meta": "Target: Participant | Time: Monthly | Data: Special Attention Referral Logs | Logic: Count referred / total needing support → %"
+          },
+          "immediateAttention": {
+            "header": "2.2 Immediate Attention Referrals",
+            "meta": "Target: Participant | Time: Monthly | Data: Immediate Attention Referral Logs | Logic: Count referred / total needing support → %"
+          },
+          "receivedSupport": {
+            "header": "2.3 Participants Who Received Support",
+            "meta": "Target: Participant | Time: Monthly | Data: Support Completion Logs | Logic: Count received / total referred → %"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "socialEmpowerment": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "emotionalSelfAwareness": {
+          "title": "Emotional Self-Awareness",
+          "subtitle": "sessions completed"
+        },
+        "relationships": {
+          "title": "Relationships",
+          "subtitle": "sessions completed"
+        },
+        "communicationSkills": {
+          "title": "Communication Skills",
+          "subtitle": "sessions completed"
+        },
+        "familySupport": {
+          "title": "Family Support",
+          "subtitle": "engagement recorded"
+        },
+        "parentsInvolvement": {
+          "title": "Parents' Involvement",
+          "subtitle": "involvement recorded"
+        }
+      },
+      "insights": {
+        "title": "Social Empowerment - Task Completion Summary",
+        "emotionalSelfAwareness": "2,596 participants (95%) completed emotional self-awareness sessions",
+        "relationships": "2,623 participants (96%) completed relationship-focused sessions",
+        "communicationSkills": "2,650 participants (98%) completed communication skills sessions",
+        "familySupport": "2,569 participants (95%) have family support engagement recorded",
+        "parentsInvolvement": "2,528 participants (93%) have parental involvement in schooling recorded"
+      },
+      "graphs": {
+        "sections": {
+          "emotionalSelfAwareness": {
+            "header": "3.2.1 Emotional Self-Awareness Sessions Over Time",
+            "meta": "Data Source: Task completed - Emotional Self-Awareness session completed | One task = one count"
+          },
+          "communicationSkills": {
+            "header": "3.2.2 Communication Skills Sessions Over Time",
+            "meta": "Data Source: Task completed - Communication Skills session completed | One task = one count"
+          },
+          "familySupport": {
+            "header": "3.2.3 Family Support Engagement Over Time",
+            "meta": "Data Source: Task completed - Family Support session/visit logged | One task = one count"
+          },
+          "parentsInvolvement": {
+            "header": "3.2.4 Parents' Involvement in Schooling Over Time",
+            "meta": "Data Source: Task completed - Parents' involvement in schooling logged | One task = one count"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "bigPush": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "fundingSubmitted": {
+          "title": "Funding Applications Submitted",
+          "subtitle": "90% of 1,466 eligible"
+        },
+        "fundingApproved": {
+          "title": "Funding Applications Approved",
+          "subtitle": "85% of 1,320 submitted"
+        },
+        "assetTransfers45Days": {
+          "title": "Asset Transfers Within 45 Days",
+          "subtitle": "92% of 1,122 approved"
+        },
+        "avgAssetValue": {
+          "title": "Average Value of Asset Per Participant",
+          "subtitle": "ZAR 20,566.087 per participant"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Big Push",
+        "fundingSubmitted": "90% application submission rate - 1,320 of 1,466 eligible participants submitted funding applications",
+        "fundingApproved": "85% approval rate - 1,122 applications approved for funding",
+        "assetTransfers45Days": "92% timely transfer rate - 950 assets transferred within 45 days post-approval",
+        "totalAssetValue": "R23.1M total asset value transferred to 1,122 participants across all sites"
+      },
+      "graphs": {
+        "sections": {
+          "submittedFunding": {
+            "header": "3.1.1 Submitted Funding Applications",
+            "meta": "Target: Participant | Time: Per graduation cycle | Data: Funding Application Logs | Logic: Count submitted / eligible participants → %"
+          },
+          "approvedFunding": {
+            "header": "3.1.2 Approved Funding Applications",
+            "meta": "Target: Participant | Time: Per graduation cycle | Data: Approval Decision Logs | Logic: Count approved / submitted → %"
+          },
+          "assetTransfer45": {
+            "header": "3.1.3 Asset Transfers ≤ 45 Days Post Approval",
+            "meta": "Target: Participant | Time: Per graduation cycle | Data: Asset Transfer Logs | Logic: Count transferred ≤45 days / approved → %"
+          },
+          "assetValuePerSite": {
+            "header": "3.1.4 Cumulative Asset Value per Site (ZAR)",
+            "meta": "Target: Site | Time: Per graduation cycle | Data: Asset Transfer Logs | Logic: Sum asset values per site"
+          },
+          "assetValueByProvider": {
+            "header": "3.1.5 Cumulative Asset Value by Opportunity Provider (ZAR)",
+            "meta": "Target: Opportunity Provider | Time: Per graduation cycle | Data: Asset Transfer Logs | Logic: Sum asset values per provider"
+          },
+          "approvalWithin45": {
+            "header": "3.1.6 Funding Approval ≤ 45 Days Post Application",
+            "meta": "Target: Participant | Time: Per graduation cycle | Data: Application & Approval Logs | Logic: Days between application & approval ≤45 → %"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "livelihoodPromotion": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "sections": {
+        "pathwaySelection": "Livelihood Pathway Selection",
+        "entrepreneurshipKeyMetrics": "Entrepreneurship Pathway - Key Metrics",
+        "employmentKeyMetrics": "Employment Pathway - Key Metrics"
+      },
+      "common": {
+        "ofParticipants": "of participants",
+        "trained": "trained",
+        "supported": "supported",
+        "businesses": "businesses",
+        "linked": "linked",
+        "attended": "attended",
+        "employed": "employed"
+      },
+      "metrics": {
+        "entrepreneurshipPathway": {
+          "title": "Entrepreneurship Pathway",
+          "subtitle": "of participants"
+        },
+        "employmentPathway": {
+          "title": "Employment Pathway",
+          "subtitle": "of participants"
+        },
+        "livelihoodSpecificTraining": {
+          "title": "Livelihood Specific Training",
+          "subtitle": "trained"
+        },
+        "businessTraining": {
+          "title": "Business Training",
+          "subtitle": "trained"
+        },
+        "registrationSupport": {
+          "title": "Registration Support",
+          "subtitle": "supported"
+        },
+        "registrationRate": {
+          "title": "Registration Rate",
+          "subtitle": "businesses"
+        },
+        "linkageToMarket": {
+          "title": "Linkage to Market",
+          "subtitle": "linked"
+        },
+        "vocationalTraining": {
+          "title": "Vocational Training",
+          "subtitle": "trained"
+        },
+        "workReadiness": {
+          "title": "Work Readiness",
+          "subtitle": "attended"
+        },
+        "learnershipPublicEmployment": {
+          "title": "Learnerships/Public Employment",
+          "subtitle": "linked"
+        },
+        "permanentEmploymentRate": {
+          "title": "Permanent Employment Rate",
+          "subtitle": "employed"
+        },
+        "linkedToMentorship": {
+          "title": "Linked to Mentorship",
+          "subtitle": "linked"
+        }
+      },
+      "graphs": {
+        "groupHeaders": {
+          "entrepreneurship": "ENTREPRENEURSHIP PATHWAY",
+          "employment": "EMPLOYMENT PATHWAY"
+        },
+        "sections": {
+          "vocationalSkills": {
+            "header": "4.1 % Trained on Vocational/Livelihood Specific Skills",
+            "meta": "Target: Participant (Both Pathways) | Data: Training Logs | Chart: Number card + trend"
+          },
+          "businessTraining": {
+            "header": "4.2 % Trained in Business Management & Entrepreneurship",
+            "meta": "Target: Participant | Data: Training Logs | Chart: Number card + trend"
+          },
+          "registrationSupport": {
+            "header": "4.3 % Supported to Register New Businesses",
+            "meta": "Target: Participant | Data: Business Registration Support Logs | Chart: Number card + trend"
+          },
+          "registeredBusinesses": {
+            "header": "4.4 % Youth Registered Businesses (Added / Linked to Training)",
+            "meta": "Target: Participant | Data: Business Registration Logs | Chart: Number card + trend"
+          },
+          "linkedToMarket": {
+            "header": "4.5 % Linked to Market Opportunities",
+            "meta": "Target: Participant | Data: Market Linkage Logs | Chart: Number card + trend"
+          },
+          "workReadiness": {
+            "header": "5.1 % Attended Work Readiness Training",
+            "meta": "Target: Participant | Data: Work Readiness Attendance Logs | Chart: Number card + trend"
+          },
+          "linkedToEmployment": {
+            "header": "5.2 % Linked to Learnerships / Public Employment",
+            "meta": "Target: Participant | Data: Employment Linkage Logs | Chart: Number card + trend"
+          },
+          "permanentEmployment": {
+            "header": "5.3 % Linked to Permanent Employment (> 2 years)",
+            "meta": "Target: Participant | Data: Employment Outcomes Logs | Chart: Number card + trend"
+          },
+          "mentorship": {
+            "header": "5.4 % Linked to Mentorship Programme by Sector Specific Events",
+            "meta": "Target: Participant | Data: Mentorship Programme Logs | Chart: Number card + trend"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "financialInclusion": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "financialLiteracyAttendance": {
+          "title": "Financial Literacy Attendance",
+          "subtitle": "2650 of 2718 participants"
+        },
+        "formalSavingsProductUsage": {
+          "title": "Formal Savings Product Usage",
+          "subtitle": "2557 using formal savings"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Financial Inclusion",
+        "financialLiteracyAttendance": "97% attendance at financial literacy training - 2,650 participants completed the program",
+        "formalSavingsUsage": "94% usage of formal savings products - majority using bank accounts and stokvels",
+        "strongOutcomes": "Strong financial inclusion outcomes across both literacy and savings adoption"
+      },
+      "graphs": {
+        "sections": {
+          "financialLiteracy": {
+            "header": "6.1 % Attended Financial Literacy Program",
+            "meta": "Target: Participant | Data: Financial Literacy Attendance Logs | Chart: Number card + trend"
+          },
+          "formalSavings": {
+            "header": "6.2 Usage of Formal Savings Products/Services",
+            "meta": "Target: Participant | Data: Q37 / Home Visit Form Q8 | Chart: Multi-line or Pie chart + trend"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "coaching": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "participantsReceivingCoaching": {
+          "title": "Participants Receiving Coaching",
+          "subtitle": "100% coverage"
+        },
+        "totalSessionsDelivered": {
+          "title": "Total Sessions Delivered",
+          "subtitle": "Across all participants"
+        },
+        "avgSessionsPerParticipant": {
+          "title": "Average Sessions per Participant",
+          "subtitle": "Per graduation cycle"
+        }
+      },
+      "insights": {
+        "title": "Key Insights - Coaching",
+        "coverage": "100% of participants (2,718) received regular coaching support throughout the program",
+        "totalSessions": "21,744 total coaching sessions delivered - average of 8 sessions per participant",
+        "weeklySessions": "50% of participants received weekly coaching sessions (4+ per month)"
+      },
+      "graphs": {
+        "sections": {
+          "sessionsFrequency": {
+            "header": "7.1 # and Average Frequency of Sessions",
+            "meta": "Target: Participant | Data: Coaching Session Logs | Chart: Number card + line trend"
+          },
+          "challengingCases": {
+            "header": "7.2 Number and (%) with Challenging Cases Flagged",
+            "meta": "Target: Participant | Data: Home Visit Form - Check-in | Logic: Count flagged as challenging case / total → %"
+          },
+          "refresherTrainings": {
+            "header": "7.3 Number and (%) Attended Refresher Trainings",
+            "meta": "Target: Participant | Data: Employment & Entrepreneurship IDPs | Logic: Count with refresher training ticked / total → %"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "dropOuts": {
+      "tabs": {
+        "snapshot": "Snapshot",
+        "graphs": "Graphs"
+      },
+      "metrics": {
+        "totalDroppedOff": {
+          "title": "Total Participants Dropped Off",
+          "subtitle": "Participants who left the program"
+        }
+      },
+      "breakdown": {
+        "title": "Detailed Reasons Breakdown",
+        "reasons": {
+          "personalFamily": "Personal / Family Reasons",
+          "healthIssues": "Health Issues",
+          "financialConstraints": "Financial Constraints",
+          "relocation": "Relocation",
+          "foundOtherEmployment": "Found Other Employment",
+          "lostInterestMotivation": "Lost Interest / Motivation",
+          "refusedToParticipate": "Refused to Participate",
+          "unknownNoContact": "Unknown / No Contact",
+          "other": "Other"
+        }
+      },
+      "graphs": {
+        "sections": {
+          "dropoutOverTime": {
+            "header": "Dropout Rates - Number & Percentage Dropping Out",
+            "meta": "Comprehensive dropout analysis including aggregate totals, trends over time by reason, reasons breakdown, and provincial heatmap"
+          },
+          "reasonsDistribution": {
+            "header": "Dropout Reasons Distribution",
+            "meta": "Breakdown of why participants dropped out of the program"
+          },
+          "provinceHeatmap": {
+            "header": "Dropout Heatmap by Province (Supervisor View)",
+            "meta": "Provincial dropout rates showing intensity across all 9 provinces"
+          },
+          "cumulativeTimeline": {
+            "header": "Cumulative Dropout Timeline",
+            "meta": "Total cumulative dropouts building up over the year"
+          }
+        },
+        "placeholder": "Graphs view will be displayed here"
+      }
+    },
+    "dashboardFilters": {
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "timePeriod": "Time Period",
+      "champions": "Coaches",
+      "genders": "Genders",
+      "datePlaceholder": "dd/mm/yyyy",
+      "last6Months": "Last 6 Months",
+      "last3Months": "Last 3 Months",
+      "lastMonth": "Last Month",
+      "lastWeek": "Last Week",
+      "custom": "Custom",
+      "allChampions": "All Coaches",
+      "allGenders": "All Genders",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "user-management": "User Management",
     "quickActions": "Quick Actions",
     "recentActivity": "Recent Activity",
     "menu": {
       "userManagement": "User Management",
+      "assignUsers": "Assign Users",
+      "reviewRequests": "Review Requests",
       "templateManagement": "Template Management",
       "auditLog": "Audit Log",
       "uploadUsers": "Upload Users",
       "createUser": "Create User",
-      "main": "Main",
-      "quickActions": "Quick Actions"
+      "main": "Main Navigation",
+      "quickActions": "Quick Actions",
+      "moreInformation": "MORE INFORMATION",
+      "userStory": "USER STORY",
+      "userStoryGblAdminGuide": "GBL Admin Guide",
+      "userStoryGblDashboardGuide": "GBL Dashboard Guide",
+      "userStoryGblLcGuide": "GBL Coach Guide",
+      "csvImportTemplates": "CSV Import Templates",
+      "passwordManagementPolicy": "Password Management Policy",
+      "profileFieldEditPermissions": "Profile Field Edit Permissions"
+    },
+    "userManagementDescription": "Manage all users across your organization with unified controls and bulk operations.",
+    "assignUsersDescription": "Assign Coaches to Supervisors and Participants to Coaches",
+    "reviewRequestsDescription": "Review and decide on pathway switch and dropout requests submitted for your organization",
+    "actions": {
+      "bulkUploadCSV": "Bulk Upload (CSV)",
+      "createUser": "Create User",
+      "lctosupervisior": "Coach to Supervisor",
+      "participanttolc": "Participant to Coach",
+      "exportCSV": "Export CSV",
+      "uploadUsers": "Upload Users",
+      "uploadUsersDescription": "Choose how you would like to add users to the system.",
+      "uploadCSV": "Upload CSV",
+      "uploadCSVDescription": "Import multiple users from a CSV file",
+      "addUser": "Add User",
+      "addUserDescription": "Manually add a single user",
+      "downloadSampleCsv": "Download Sample CSV",
+      "uploadTemplateCsv": "Upload Template (CSV)",
+      "viewDetails": "View Details",
+      "logVisit": "Log Visit",
+      "viewLog": "View Log",
+      "view": "View",
+      "fill": "Fill",
+      "dropout": "Dropout",
+      "confirmDropout": "Confirm Dropout",
+      "dropoutMessage": "Mark {{name}} as dropout from the program",
+      "dropoutReasonLabel": "Reason for Dropout",
+      "dropoutReasonPlaceholder": "Enter reason for dropout...",
+      "dropoutHint": "This will change the participant's status to \"Dropped Out\" and log the action in their history.",
+      "dropoutSuccess": "Participant marked as dropout.",
+      "dropoutError": "Could not mark participant as dropout. Try again.",
+      "observationLogs": "Observation Logs",
+      "uploadSuccess": "CSV uploaded successfully.",
+      "uploadError": "Could not upload CSV. Try again.",
+      "uploadErrorSignedUrl": "Could not prepare upload. Try again.",
+      "uploadErrorFileUpload": "Failed to upload file. Please try again.",
+      "uploadErrorBulkCreate": "File uploaded but failed to process. Please contact support.",
+      "csvValidationError": "Upload a valid CSV file.",
+      "uploadErrorFilePathNotFound": "Upload failed. File path missing.",
+      "assignLCsToSupervisor": "Assign Coaches to Supervisor"
+    },
+    "filters": {
+      "role": "Role",
+      "status": "Status",
+      "province": "Province",
+      "district": "District",
+      "searchPlaceholder": "Search by name",
+      "searchOfferingsPlaceholder": "Search by Offerings...",
+      "searchParticipantsPlaceholder": "Search participants",
+      "allRoles": "All Roles",
+      "admin": "Admin",
+      "supervisor": "Supervisor",
+      "linkageChampion": "Coach",
+      "participant": "Participant",
+      "allStatus": "All Status",
+      "active": "Active",
+      "deactivated": "Deactivated",
+      "filterByProvince": "Province",
+      "allTimePeriod": "All Time",
+      "allProvinces": "All Provinces",
+      "selectSupervisor": "Select Supervisor",
+      "chooseSupervisor": "Choose Supervisor",
+      "selectLC": "Select Coach",
+      "chooseLC": "Choose Coach",
+      "allDistrict": "All District",
+      "site": "Site",
+      "allSites": "All Sites",
+      "bio": "Bio",
+      "allBio": "All",
+      "youthDevelopment": "Youth Development",
+      "skillsTraining": "Skills Training",
+      "entrepreneurship": "Entrepreneurship",
+      "productivity": "Productivity",
+      "allProductivity": "All",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "users": {
+      "allUsers": "All Users",
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "province": "Province",
+      "site": "Site",
+      "lastLogin": "Last Login",
+      "details": "Details",
+      "activity": "Activity",
+      "permissions": "Permissions",
+      "profileModal": {
+        "personalInformation": "Personal Information",
+        "geographicAssignment": "Geographic Assignment",
+        "roleAndAssignment": "Role & Assignment",
+        "fullName": "Full Name",
+        "phoneNumber": "Phone Number",
+        "idNumber": "ID Number",
+        "districtMunicipality": "District/Municipality",
+        "dateJoined": "Date Joined",
+        "close": "Close",
+        "editUser": "Save",
+        "editProfile": "Edit Profile",
+        "defaultRole": "Admin",
+        "activityComingSoonDescription": "Activity tab will be available soon.",
+        "permissionsComingSoonDescription": "Permissions tab will be available soon."
+      },
+      "actions": "Actions",
+      "noUsersFound": "No users found",
+      "loadingUsers": "Loading users...",
+      "showing": "Showing {{count}} of {{total}} users",
+      "actionMenu": {
+        "viewProfile": "View Profile",
+        "edit": "Edit",
+        "resetPassword": "Reset Password",
+        "deactivate": "Deactivate",
+        "confirmDeactivate": "Confirm deactivation",
+        "deactivateMessage": "Deactivate {{name}}? They will lose access.",
+        "view-progress": "View Progress"
+      },
+      "resetPassword": {
+        "title": "Reset Password",
+        "description": "Enter a new password for the user",
+        "email": "Email",
+        "username": "Username",
+        "newPassword": "New Password",
+        "passwordPlaceholder": "Enter new password",
+        "passwordRequired": "Password is required",
+        "submit": "Reset Password",
+        "success": "Password reset successfully",
+        "error": "Failed to reset password"
+      },
+      "edit": {
+        "nameRequired": "Enter a name.",
+        "success": "User updated successfully.",
+        "error": "Failed to update user"
+      },
+      "deactivate": {
+        "success": "User deactivated successfully."
+      },
+      "allProvinces": "All Provinces",
+      "selectSupervisor": "Select Supervisor",
+      "chooseSupervisor": "Choose Supervisor",
+      "selectLC": "Select Coach",
+      "chooseLC": "Choose Coach",
+      "allDistrict": "All District",
+      "allSites": "All Sites",
+      "bio": "Bio",
+      "allBio": "All",
+      "youthDevelopment": "Youth Development",
+      "skillsTraining": "Skills Training",
+      "entrepreneurship": "Entrepreneurship",
+      "productivity": "Productivity",
+      "allProductivity": "All",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "createUser": {
+        "title": "Create New User",
+        "description": "Training / Session Description",
+        "personalInformation": "Personal Information",
+        "firstName": "First Name",
+        "firstNamePlaceholder": "Enter first name",
+        "lastName": "Last Name",
+        "lastNamePlaceholder": "Enter last name",
+        "email": "Email Address",
+        "emailPlaceholder": "user@skillssa.co.za",
+        "idNumberPlaceholder": "0000000000000",
+        "phoneNumber": "Phone Number",
+        "phoneNumberPlaceholder": "00 000 0000",
+        "alternativePhone": "Alt Phone Number",
+        "alternativePhonePlaceholder": "00 000 0000",
+        "alternativeCountryCode": "Alt Country Code",
+        "nationalId": "National ID",
+        "nationalIdPlaceholder": "Enter National ID",
+        "roleAndPermissions": "Role & Permissions",
+        "role": "Role",
+        "rolePlaceholder": "Select user role",
+        "geographicAssignment": "Geographic Assignment",
+        "province": "Province",
+        "provincePlaceholder": "Select province",
+        "site": "Site",
+        "sitePlaceholder": "Select province first",
+        "sitePlaceholderReady": "Select site",
+        "passwordNote": "A temporary password will be generated and sent to the user's email address. The user will be required to change their password on first login.",
+        "additionalInformation": "Additional Information",
+        "organisation": "Organisation",
+        "organisationPlaceholder": "Select organisation",
+        "position": "Position",
+        "positionPlaceholder": "Select position",
+        "employeeId": "Employee ID",
+        "employeeIdPlaceholder": "Enter Employee ID",
+        "gender": "Gender",
+        "dob": "DOB",
+        "username": "Username",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "countryCode": "Country Code",
+        "cancel": "Cancel",
+        "create": "Create User",
+        "validation": {
+          "firstNameRequired": "First name is required.",
+          "lastNameRequired": "Last name is required.",
+          "emailRequired": "Email is required.",
+          "emailInvalid": "Enter a valid email address.",
+          "phoneRequired": "Phone number is required.",
+          "phoneInvalid": "Phone number must be 9 or 10 digits.",
+          "altPhoneInvalid": "Alternative phone must be 9 or 10 digits.",
+          "roleRequired": "Role is required.",
+          "organisationRequired": "Organisation is required.",
+          "positionRequired": "Position is required.",
+          "employeeIdRequired": "Employee ID is required.",
+          "employeeIdInvalid": "Employee ID must be 3 letters followed by 5 digits (e.g. ADM00001).",
+          "nationalIdRequired": "National ID is required.",
+          "nationalIdInvalid": "20 digits only required",
+          "genderRequired": "Gender is required.",
+          "dobRequired": "Date of Birth is required.",
+          "usernameRequired": "Username is required.",
+          "passwordRequired": "Password is required.",
+          "passwordLength": "Password must be at least 8 characters.",
+          "passwordComplexity": "Password must contain at least one uppercase, one lowercase, one number and one special character."
+        },
+        "success": "User created successfully.",
+        "error": "Failed to create user."
+      }
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "allRoles": "All roles",
+      "participants": "Participants",
+      "activeLearners": "Active learners",
+      "linkageChampions": "Coaches",
+      "activeCoaches": "Active coaches",
+      "supervisors": "Supervisors",
+      "activeSupervisors": "Active supervisors"
+    },
+    "assignUsers": {
+      "assignParticipantsToLCsDescription": "Assign Participants to Coaches",
+      "step1SelectSupervisor": "Step 1: Select Supervisor",
+      "step1SelectSupervisorAndLC": "Step 1: Select Supervisor and Coach",
+      "step1SelectLC": "Step 1: Select Coach",
+      "filterByProvince": "Filter by province and choose a supervisor",
+      "step2AssignLinkageChampions": "Step 2: Assign Coaches",
+      "filterByGeography": "Filter by geography and select Coaches to assign",
+      "chooseSupervisor": "Choose a supervisor to view their assigned Coaches",
+      "chooseLC": "Choose Coach",
+      "step2SelectLC": "Step 2: Select Coach",
+      "chooseLcFrom": "Choose a Coach from {{supervisor}}'s team",
+      "step2AssignParticipants": "Step 2: Assign Participants",
+      "step3AssignParticipants": "Step 3: Assign Participants",
+      "filterAndSelectParticipants": "Filter and select participants to assign to {{lc}}",
+      "selectParticipants": "Select Participants ({{count}} selected)",
+      "assignParticipantsToLc": "Assign {{count}} Participants to Coach",
+      "assignLCsToSupervisor": "Assign {{count}} Coaches to Supervisor",
+      "listOfParticipantsMappedToLc": "List of Participants Mapped to Coach",
+      "currentParticipantAssignmentsFor": "Current participant assignments for {{lc}}",
+      "participant": "Participant",
+      "selectedLinkageChampions": "Selected Coaches",
+      "listOfLcsMappedToSupervisor": "List of Coaches Mapped to Supervisor",
+      "currentLcAssignmentsFor": "Current Coach assignments for {{supervisor}}",
+      "linkageChampion": "Coach",
+      "linkageChampions": "Coaches",
+      "email": "Email",
+      "location": "Location",
+      "site": "Site",
+      "supervisor": "Supervisor",
+      "confirmLcAssignment": "Confirm Coach Assignment",
+      "confirmLcAssignmentDescription": "You are about to assign {{count}} Coach(es) to {{supervisor}}",
+      "confirmParticipantAssignment": "Confirm Participant Assignment",
+      "confirmParticipantAssignmentDescription": "You are about to assign {{count}} participant(s) to {{lc}}",
+      "confirmAssignment": "Confirm Assignment",
+      "lcsAssignedSuccess": "{{count}} coach(es) assigned to {{supervisor}}.",
+      "lcsAssignmentError": "Could not assign coaches. Try again.",
+      "participantsAssignedSuccess": "{{count}} participant(s) assigned to {{lc}}.",
+      "participantsAssignmentError": "Could not assign participants. Try again.",
+      "participants": "Participants",
+      "status": {
+        "assigned": "Assigned",
+        "unassigned": "Unassigned"
+      }
+    },
+    "reviewRequests": {
+      "tabs": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "declined": "Declined"
+      },
+      "filters": {
+        "type": "Request Type",
+        "pathwaySwitch": "Pathway Switch",
+        "dropoutRequest": "Dropout Request"
+      },
+      "table": {
+        "participant": "Participant",
+        "type": "Type",
+        "change": "Change",
+        "province": "Province",
+        "site": "Site",
+        "requestor": "Requestor",
+        "submitted": "Submitted",
+        "status": "Status",
+        "actions": "Actions",
+        "noRequests": "No requests found"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "approveSuccess": "Request approved successfully.",
+      "rejectSuccess": "Request rejected successfully.",
+      "decisionError": "Could not update the request. Try again.",
+      "accessDenied": "You do not have permission to view this page."
+    },
+    "bulkOperations": {
+      "title": "Bulk Operations & CSV Templates",
+      "csvImportTemplates": "CSV Import Templates",
+      "participantImportTemplate": "Participant Import Template",
+      "lcAssignmentTemplate": "Coach Assignment Template",
+      "supervisorMappingTemplate": "Supervisor Mapping Template",
+      "userMapping": "User Mapping",
+      "userMappingDescription": "Use CSV uploads to map relationships between users:",
+      "assignParticipantsToLCs": "Assign participants to Coaches",
+      "linkLCsToSupervisors": "Link Coaches to supervisors",
+      "updateRoleHierarchies": "Update role hierarchies in bulk",
+      "passwordManagement": "Password Management",
+      "passwordManagementDescription": "Supervisors and admins can reset passwords for:",
+      "participantsAllLevels": "Participants (all levels)",
+      "linkageChampions": "Coaches (supervisors+)",
+      "otherSupervisors": "Other supervisors (admin only)"
+    },
+    "templateManagement": {
+      "templateManagementDescription": "Manage IDP templates via CSV upload. All templates are view-only after creation.",
+      "infoBox": {
+        "title": "CSV-Only Template Creation",
+        "description": "For MVP, all template creation and editing is performed via CSV upload. Download the sample CSV template to ensure proper formatting. Templates can only be viewed or activated/deactivated through this interface."
+      }
+    },
+    "templates": {
+      "tableTitle": "Template Library (View Only)",
+      "templateName": "Template Name",
+      "status": "Status",
+      "creator": "Creator",
+      "tasks": "Tasks",
+      "tasksLabel": "tasks",
+      "createdDate": "Created Date",
+      "actions": "Actions",
+      "uploadedViaCsv": "Uploaded via CSV",
+      "noTemplatesFound": "No templates found",
+      "loadingTemplates": "Loading templates...",
+      "actionMenu": {
+        "view": "View (Read-Only)",
+        "deactivate": "Deactivate",
+        "export": "Export as CSV"
+      },
+      "csvUploadGuide": {
+        "title": "CSV Upload Guide",
+        "requiredColumns": "Required CSV Columns",
+        "templateWorkflow": "Template Workflow",
+        "columns": {
+          "templateName": "Name of the IDP template",
+          "taskId": "Unique identifier for each task",
+          "taskName": "Name of the development task",
+          "taskDescription": "Detailed description",
+          "outputIndicator": "Output measurement criteria",
+          "outcomeIndicator": "Outcome measurement criteria"
+        },
+        "steps": {
+          "step1": "Download sample CSV template",
+          "step2": "Fill in template details and tasks",
+          "step3": "Upload completed CSV file",
+          "step4": "Review and activate template"
+        }
+      }
+    },
+    "auditLog": {
+      "description": "View audit log for all actions performed in the system",
+      "actions": {
+        "exportlogsCSV": "Export logs (CSV)"
+      },
+      "filters": {
+        "actionType": "Action Type",
+        "allActions": "All Actions",
+        "userImport": "User Import",
+        "passwordReset": "Password Reset",
+        "templateCreation": "Template Creation",
+        "userCreation": "User Creation",
+        "systemConfiguration": "System Configuration",
+        "dataView": "Data View",
+        "templateActivation": "Template Activation",
+        "userRole": "User Role",
+        "allRoles": "All Roles",
+        "administrator": "Administrator",
+        "supervisor": "Supervisor",
+        "learningCoach": "Learning Coach",
+        "participant": "Participant",
+        "dateFrom": "Date From",
+        "dateTo": "Date To",
+        "datePlaceholder": "dd/mm/yyyy"
+      },
+      "table": {
+        "timestamp": "Timestamp",
+        "action": "Action",
+        "user": "User",
+        "role": "Role",
+        "targetId": "Target ID",
+        "changeSummary": "Change Summary",
+        "noEntries": "No audit log entries found"
+      }
+    },
+    "profilePermissionsPage": {
+      "pageTitle": "Profile Field Edit Permissions",
+      "pageSubtitle": "Configuration-driven editable/read-only field settings based on user hierarchy",
+      "infoAlert": "You can edit your profile. Some changes need approval.",
+      "tableHeaders": {
+        "profileField": "Profile Field",
+        "admin": "Admin",
+        "adminSubtitle": "Global",
+        "supervisor": "Supervisor",
+        "supervisorSubtitle": "District",
+        "lc": "Coach",
+        "lcSubtitle": "Site",
+        "participant": "Participant",
+        "participantSubtitle": "Self",
+        "approvalRequired": "Approval Required"
+      },
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "role": "Role",
+        "province": "Province",
+        "district": "District",
+        "siteLocation": "Site/Location",
+        "address": "Address",
+        "assignedSupervisor": "Assigned Supervisor",
+        "assignedLC": "Assigned Coach",
+        "status": "Status (Active/Inactive)",
+        "password": "Password"
+      },
+      "approvalBadges": {
+        "supervisor": "Supervisor",
+        "siteDataChange": "Supervisor (if site changes)"
+      },
+      "legend": {
+        "title": "Legend",
+        "canEdit": "Can Edit - User has permission to modify this field",
+        "viewOnly": "View Only - User can see but not modify this field"
+      },
+      "keyRules": {
+        "title": "Key Rules",
+        "rule1": "Supervisors can only edit Coach profiles (limited fields)",
+        "rule2": "Users can edit their own profiles with broader permissions",
+        "rule3": "Site/location changes always require supervisor approval",
+        "rule4": "Address changes need approval if they involve site modifications"
+      }
+    },
+    "csvTemplatePage": {
+      "pageTitle": "CSV Import Templates",
+      "pageSubtitle": "Download pre-formatted CSV templates for bulk user operations",
+      "sectionTitle": "CSV Import Templates",
+      "sectionSubtitle": "Download pre-formatted CSV templates for bulk operations",
+      "downloadTemplate": "Download Template",
+      "templates": {
+        "user_import": {
+          "title": "Bulk User Import",
+          "description": "Import multiple users at once"
+        },
+        "participant_assignment": {
+          "title": "Participant Assignment",
+          "description": "Assign participants to Coaches"
+        },
+        "lc_supervisor_mapping": {
+          "title": "Coach to Supervisor Mapping",
+          "description": "Map Coaches to Supervisors"
+        },
+        "bulk_status_update": {
+          "title": "Bulk Status Update",
+          "description": "Activate or deactivate multiple users"
+        },
+        "geographic_reassignment": {
+          "title": "Geographic Reassignment",
+          "description": "Update province and district assignments"
+        }
+      },
+      "guidelines": {
+        "title": "CSV Import Guidelines",
+        "items": [
+          "Ensure all required fields are filled in",
+          "Use the exact format provided in the template",
+          "Email addresses must be unique and valid",
+          "Role values must match exactly: Admin, Supervisor, Coach, or Participant",
+          "Province and District values must match the system's configured administrative divisions",
+          "File size limit: 5MB (approximately 5,000 rows)",
+          "Duplicates will be skipped with a warning"
+        ]
+      },
+      "downloadSuccess": "{{title}} template downloaded.",
+      "downloadMobileInfo": "Download available on desktop/web."
+    },
+    "passwordPolicyPage": {
+      "pageTitle": "Password Management Policy",
+      "pageSubtitle": "Comprehensive password reset permissions and security requirements for the GBL Learning Management Console",
+      "section1": {
+        "title": "Password Reset Hierarchy",
+        "subtitle": "Who can reset passwords for whom in the user hierarchy"
+      },
+      "cards": {
+        "admin": {
+          "title": "Admin",
+          "badge": "Full Password Control",
+          "canResetFor": [
+            "All Admins",
+            "All Supervisors",
+            "All Coaches",
+            "All Participants"
+          ],
+          "note": "No restrictions: Admins can reset passwords for any user in the system regardless of role or location."
+        },
+        "supervisor": {
+          "title": "Supervisor",
+          "badge": "District-Limited",
+          "canResetFor": [
+            "Coaches under their supervision",
+            "Participants under their Coaches"
+          ],
+          "cannotResetFor": [
+            "Other Supervisors",
+            "Admins",
+            "Users outside their district"
+          ]
+        },
+        "lc": {
+          "title": "Coach",
+          "badge": "Participant",
+          "selfServiceOnly": [
+            "Can change own password",
+            "Must know current password",
+            "Password strength rules apply"
+          ],
+          "cannotResetFor": [
+            "Any other users",
+            "Participants (Coach role)",
+            "Must request reset from supervisor"
+          ]
+        }
+      },
+      "section2": {
+        "title": "Forgot Password, OTP Verification & Password Policy",
+        "strengthRequirements": {
+          "title": "Strength Requirements:",
+          "items": [
+            "Minimum 8 characters",
+            "At least 1 uppercase letter (A-Z)",
+            "At least 1 lowercase letter (a-z)",
+            "At least 1 number (0-9)",
+            "At least 1 special character (e.g. @, $, !, %, *, ?, &)",
+            "No spaces allowed",
+            "Passwords must match (Confirm Password)"
+          ]
+        },
+        "forgotPasswordProcess": {
+          "title": "Forgot Password, OTP Verification & Password Policy:",
+          "items": [
+            "Enter registered username / email",
+            "Set a new password as per policy",
+            "OTP will be sent to registered contact",
+            "Enter 6-digit OTP for verification",
+            "OTP expires in 60 seconds",
+            "Resend OTP available after timer ends"
+          ]
+        }
+      },
+      "labels": {
+        "canResetFor": "Can Reset For:",
+        "cannotResetFor": "Cannot Reset For:",
+        "selfServiceOnly": "Self-Service Only:"
+      }
     }
+  },
+  "observation": {
+    "noParticipantFound": "This form is not assigned to you. Contact your admin.",
+    "noParticipantFoundError": "Could not update observation. Try again."
   },
   "brand": {
     "primaryName": "brac",
@@ -67,20 +1852,73 @@
     "offline": "System Inactive"
   },
   "login": {
-    "pleaseEnterBothEmailAndPassword": "Please enter both email and password",
-    "invalidEmailOrPassword": "Invalid email or password",
-    "anErrorOccurredDuringLogin": "An error occurred during login",
-    "logIn": "Log In",
+    "pleaseEnterBothEmailAndPassword": "Enter email and password.",
+    "invalidEmailOrPassword": "Email or password is incorrect. Try again.",
+    "anErrorOccurredDuringLogin": "Something went wrong. Try logging in again.",
+    "lcLogin": "Login as Coach / Supervisor",
+    "lcLoginNative": "Login as Coach",
     "testAccounts": "Test Accounts:",
     "welcomeToYourAccount": "Welcome To Your Account",
+    "welcomeToYourAccountAdmin": "Welcome To Your Account Admin / Supervisor",
     "logInToContinue": "Log in to Continue",
+    "backToLogin": "Back to Coach Login",
     "description": "Log in to Continue",
-    "username": "Username",
+    "username": "Username / Email",
     "password": "Password",
     "rememberMe": "Remember Me",
     "rememberMeDescription": "Remember me on this device for 30 days",
     "testAccountsCredentials": "admin@brac.net | supervisor@brac.net | lc@brac.net",
-    "title": "Generating Better Livelihoods"
+    "title": "Generating Better Livelihoods",
+    "adminLogin": "Login as Admin",
+    "adminLoginFailed": "Email or password is incorrect. Try again.",
+    "logIn": "Log In",
+    "forgotPassword": "Forgot Password?"
+  },
+  "forgotPassword": {
+    "heading": "Forgot Password",
+    "title": "Reset Password",
+    "description": "Enter your username or email and choose a new password to receive an OTP.",
+    "identifierLabel": "Username / Email",
+    "identifierPlaceholder": "Username / Email",
+    "identifierRequired": "Enter your username or email.",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "passwordPlaceholder": "Enter new password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "confirmPasswordRequired": "Confirm your new password.",
+    "passwordValidation": "Password must be at least 8 characters and include uppercase, lowercase, number, special character, and no spaces.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordRules": "Password must contain at least 8 characters, one uppercase, one lowercase, one number, one special character, and no spaces.",
+    "sendOtp": "Send OTP",
+    "sendOtpError": "Could not send OTP. Try again.",
+    "otpTitle": "Enter OTP",
+    "otpDescription": "Enter the OTP sent to {{identifier}}",
+    "otpHelperText": "Use the 6-digit code to verify your password reset request.",
+    "invalidOtpLength": "Enter the 6-digit OTP.",
+    "verifyOtp": "Verify OTP",
+    "verifyOtpError": "Could not verify OTP. Try again.",
+    "resendPrompt": "Didn't receive the OTP?",
+    "resendOtp": "Resend",
+    "resendOtpError": "Could not resend OTP. Try again.",
+    "resendAvailable": "You can request a new OTP now.",
+    "otpExpiresIn": "OTP will expire in {{seconds}} seconds.",
+    "passwordResetSuccess": "Password reset successfully.",
+    "backToLogin": "Back to Login"
+  },
+  "logout": {
+    "sessionExpired": "Session expired.",
+    "sessionExpiredMessage": "Session expired. Log in again."
+  },
+  "auth": {
+    "loginAttemptedEmptyCredentials": "Login attempted with empty credentials",
+    "loginAttemptedEmptyCredentialsAdmin": "Admin Login attempted with empty credentials",
+    "userEntityNotFound": "User entity not found: You are not authorized to access the system",
+    "roleNotAuthorized": "Access denied. Contact your admin.",
+    "userLoggedInSuccessfully": "User logged in successfully",
+    "userLoggedInSuccessfullyAdmin": "Admin User logged in successfully",
+    "noUserDataInResponse": "Could not load account details. Try again.",
+    "errorOccurredDuringLogin": "Something went wrong. Try logging in again.",
+    "accessTokenRequired": "Session missing or expired. Log in again."
   },
   "welcome": {
     "welcomeBack": "Welcome back",
@@ -91,6 +1929,874 @@
     "myLearningProgressDescription": "Access training materials, track your professional development",
     "connectWithExperts": "Connect with Experts",
     "connectWithExpertsDescription": "Get support, ask questions, and connect with specialists",
-    "getStarted": "Get started"
+    "getStarted": "Get started",
+    "dashboard": "Dashboard",
+    "dashboardDescription": "View your dashboard and get a quick overview of your progress"
+  },
+  "participantDetail": {
+    "notFound": {
+      "title": "Participant Not Found",
+      "message": "No participant found with ID: {{id}}",
+      "noIdProvided": "No participant ID provided",
+      "availableIds": "Available participant IDs: 1001, 1002, 1003, 1004, 1005"
+    },
+    "header": {
+      "inactiveAccount": "Deactivated",
+      "inactiveAccountTitle": "Participant Deactivated",
+      "inactiveAccountWarning": "Deactivated Participant: Participant account {{name}} has been deactivated. Please contact your admin",
+      "backToCaseload": "Back to Caseload",
+      "viewProfile": "View Profile",
+      "enrollParticipant": "Enroll Participant",
+      "logVisit": "Individual Check-Ins",
+      "completeGraduationReadinessForm": "Complete Graduation Readiness Form",
+      "projectCompleteSuccess": "Project completed successfully.",
+      "projectCompleteFailure": "Could not complete project. Try again.",
+      "taskStatusUpdateFailed": "Could not update task status. Try again.",
+      "projectCompleteRefreshFailed": "Project status could not be confirmed after refresh",
+      "downloadCertificate": "Download Certificate",
+      "viewCertificate": "View Certificate",
+      "checkInsHistory": "Check-ins History",
+      "checkInsHistoryDescription": "Past forms and surveys for {{name}}",
+      "droppedOut": "Dropped Out",
+      "graduationReadiness": "Graduation Readiness",
+      "programStatus": "Program Status",
+      "completeStatus": "Completed - 100% Complete",
+      "graduatedStatus": "Graduated - 100% Complete",
+      "graduatedOn": "Graduated on {{date}}",
+      "graduationDateNotAvailable": "Graduation date not available",
+      "participantDroppedOut": "Participant Dropped Out",
+      "dropoutWarning": "This participant has dropped out of the program. You are viewing their records in read-only mode. No changes can be made.",
+      "viewLog": "View Log",
+      "previous": "Previous",
+      "complete": "Complete",
+      "targetingCriteria": "Targeting Criteria",
+      "targetingCriteriaDescription": "Mark if the participant meets the targeting criteria",
+      "targetingCriteriaCSGSRDGrant": "Participants is receiving CSG/SRD Grant",
+      "targetingCriteriaAge": "Age of participant is between 18-50",
+      "proceed": "Proceed",
+      "notEligible": "Not Eligible",
+      "confirmNotEligible": "Participant Not Eligible",
+      "confirmNotEligibleSubtitle": "Are you sure that this participant does not meet the Targeting Criteria and is not Eligible for onboarding?",
+      "dropoutUnderReview": "Dropout Request Under Review"
+    },
+    "profileModal": {
+      "title": "Participant Profile",
+      "subtitle": "View basic profile information for {{name}}",
+      "editAddress": "Edit Address",
+      "save": "Save",
+      "saveLocation": "Save Location",
+      "selectProvince": "Select province",
+      "selectSite": "Select site",
+      "addressUpdated": "Profile updated successfully.",
+      "fillAllFields": "Please fill in all required fields (Street) before saving.",
+      "streetRequired": "Street address is required.",
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "saveConfigurationError": "Unable to save. Program configuration is missing.",
+      "viewConsent": "View Consent",
+      "viewSLA": "View SLA"
+    },
+    "pathways": {
+      "employment": "Employment Pathway",
+      "entrepreneurship": "Entrepreneurship Pathway"
+    },
+    "tabs": {
+      "interventionPlan": "Intervention Plan",
+      "assessmentSurveys": "Assessment Surveys"
+    },
+    "interventionPlan": {
+      "noPlanAssigned": "No Intervention Plan Assigned",
+      "noPlanDescription": "Pillars and tasks will appear here once an intervention plan is assigned to this participant.",
+      "projectUnavailableOfflineTitle": "Project Information",
+      "projectUnavailableOfflineDescription": "Project information is not available offline. Please download the project data to access it offline.",
+      "developPlan": "Develop Intervention Plan",
+      "submitInterventionPlan": "Submit Intervention Plan",
+      "changePathway": "Change Pathway",
+      "changePathwayCofirmationMsg": "Are you sure you want to change the Pathway? Your current changes made to the IDP will be discarded.",
+      "socialProtectionWarning": "Complete all Linkage To Additional Services tasks before assigning the plan.",
+      "actionRequired": "Action Required",
+      "warningMsg": "Complete all Linkage to Additional Services tasks before assigning the plan.",
+      "challenges": "Challenges Noted",
+      "successNotes": "Success Noted"
+    },
+    "assessmentSurveys": {
+      "title": "Assessment Surveys",
+      "noSurveys": "No assessment surveys available",
+      "noSurveysTitle": "No Assessment Surveys Available",
+      "noSurveysDescription": "There are no assessment surveys available for this participant at this time.",
+      "status": {
+        "notStarted": "Not Started",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "graduated": "Graduated",
+        "percentComplete": "{{percentage}}% Complete"
+      },
+      "householdProfile": {
+        "title": "Household Profile",
+        "description": "Comprehensive household profiling information including household composition, human capital, economic activities, and development goals.",
+        "actionButton": "View Household Profile"
+      },
+      "midlineSurvey": {
+        "title": "Midline Survey",
+        "description": "Comprehensive re-assessment at Month 12 milestone",
+        "additionalInfo": "All sections are mandatory for completion",
+        "actionButton": "Fill Midline Survey"
+      },
+      "graduationReadiness": {
+        "title": "Graduation Readiness Survey",
+        "description": "Complete the graduation readiness assessment to issue certificate",
+        "additionalInfo": "Submit survey to generate and issue graduation certificate",
+        "actionButton": "Fill Graduation Survey"
+      },
+      "endlineSurvey": {
+        "title": "Endline Survey",
+        "description": "Final assessment at Month 24 milestone (Graduation Readiness)",
+        "additionalInfo": "Must be 100% complete before graduation",
+        "actionButton": "Fill Endline Survey"
+      }
+    },
+    "notAvailableOffline": "This participant's data is not available offline."
+  },
+  "participants": {
+    "myParticipants": "My Participants",
+    "dashboard": "Dashboard",
+    "searchByNameOrId": "Search by name",
+    "notEnrolled": "Not Onboarded",
+    "notEligible": "Not Eligible",
+    "enrolled": "Onboarded",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "droppedOut": "Dropped out",
+    "graduatedStatus": "Graduated",
+    "name": "Name",
+    "participantID": "Participant ID",
+    "overallProgress": "Overall Progress",
+    "contact": "Contact",
+    "actions": "Actions",
+    "noParticipantsFound": "No participants found",
+    "loadingParticipants": "Loading participants...",
+    "dashboardComingSoon": "Dashboard coming soon...",
+    "showingParticipants": "Showing {{count}} of {{total}} participants",
+    "graduated": "Ready to Graduate",
+    "active": "Active",
+    "inactive": "Inactive",
+    "groupCheckIns": "Group Check-ins",
+    "groupCheckInsNoSolutions": "No group check-in solutions found.",
+    "fetchSolutionsError": "Could not fetch solutions. Try again.",
+    "selectStatus": "Select Status",
+    "bulkDownload": "Bulk Download",
+    "cancelSelection": "Cancel",
+    "downloadSelected": "Download Selected ({{count}})",
+    "selectedCount": "{{count}}/{{max}} selected",
+    "selectAllOnPage": "Select all on this page",
+    "maxBulkSelectionReached": "You can select up to {{max}} participants at a time."
+  },
+  "table": {
+    "showing": "Showing {{start}} to {{end}} of {{total}} entries",
+    "limit": "Limit"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "logVisit": "Log Visit",
+    "viewLog": "View Log",
+    "viewCheckInsLogs": "Check-ins and Logs",
+    "view": "View",
+    "fill": "Fill",
+    "dropout": "Dropout",
+    "confirmDropout": "Confirm Dropout",
+    "dropoutMessage": "Mark {{name}} as dropout from the program",
+    "dropoutReasonLabel": "Reason for Dropout",
+    "dropoutReasonPlaceholder": "Enter reason for dropout...",
+    "selectDropoutReason": "Select a reason",
+    "customReasonLabel": "Please specify",
+    "customReasonPlaceholder": "Enter custom reason.",
+    "enterCustomReason": "Please enter a custom reason",
+    "downloadScript": "Engagement Script",
+    "downloadParticipantEngagementScript": "Download Participant Engagement Script",
+    "viewVisitLogs": "Visit Actions",
+    "dropoutReasons": {
+      "personalFamilyReasons": "Personal / Family Reasons",
+      "healthIssues": "Health Issues",
+      "financialConstraints": "Financial Constraints",
+      "relocation": "Relocation",
+      "foundOtherEmployment": "Found Other Employment",
+      "lostInterestMotivation": "Lost Interest / Motivation",
+      "refusedToParticipate": "Refused to Participate",
+      "unknownNoContact": "Unknown / No Contact",
+      "other": "Other"
+    },
+    "dropoutHint": "This will change the participant's status to \"Dropped Out\" and log the action in their history.",
+    "dropoutSuccess": "Participant marked as dropout.",
+    "dropoutSentForApproval": "Your request to mark {{name}} as dropout has been sent for approval.",
+    "dropoutError": "Could not mark participant as dropout. Try again.",
+    "offlineDataFoundTitle": "Offline Data Found",
+    "offlineDataFoundMessage": "This participant has offline downloaded data.",
+    "offlineDataFoundDetail": "Dropping out this participant will permanently remove all offline data associated with them, including Projects, Observations, Intervention Plans, Pending Sync data, Pending Files, and any other offline records.",
+    "offlineDataFoundConfirmPrompt": "Do you want to continue?",
+    "confirmRemoveOfflineDropout": "Confirm & Remove Offline Data",
+    "observationLogs": "Observation Logs",
+    "viewAllActivity": "View all activity and history for {{name}}",
+    "viewAndDownloadCertificate": "View & Download Certificate",
+    "observation": {
+      "forms": "Observation From"
+    },
+    "downloadOffline": "Download Offline",
+    "removeOffline": "Remove Offline",
+    "TARGETING_CRITERIA_NOT_COMPLETED": "Targeting criteria not completed",
+    "download": "Download",
+    "downloadHint": "Download this participant for offline use",
+    "downloadParticipant": "Participant Details",
+    "downloadProject": "Project, Tasks & Observation",
+    "downloadLogVisit": "Log Visit Form",
+    "downloadHouseholdProfile": "Household Profile Form",
+    "downloadIndividualVisit": "Individual Visit Form",
+    "downloadMidline": "Midline Form",
+    "downloadInterventionPlan": "Intervention Plan Form",
+    "downloadEndline": "Endline Form",
+    "downloadSuccess": "Participant downloaded for offline use.",
+    "downloadPartial": "Download completed with some errors.",
+    "downloadError": "Download failed. Please try again.",
+    "downloadNoProject": "No project found for this participant.",
+    "downloadNoModulesAvailable": "None of the selected modules are available for this participant.",
+    "downloadNeedsOnboardingProject": "Participant is IN PROGRESS but has no onboarding project. Cannot download.",
+    "syncOffline": "Sync Changes",
+    "syncSuccess": "Participant data synced successfully.",
+    "syncPartial": "Sync completed with some errors.",
+    "syncError": "Sync failed. Please try again.",
+    "bulkDownloadHint": "Choose what to download — this selection applies to every selected participant.",
+    "bulkDownloadInProgress": "Downloading participants…",
+    "bulkDownloadPending": "Pending",
+    "bulkDownloadDownloading": "Downloading…",
+    "bulkDownloadCompleted": "Completed",
+    "bulkDownloadFailed": "Failed",
+    "bulkDownloadSummary": "Bulk download finished",
+    "bulkDownloadParticipantCount": "{{count}} participants selected",
+    "bulkDownloadTotalSelected": "Total Selected",
+    "bulkDownloadSuccessCount": "Downloaded Successfully",
+    "bulkDownloadFailedCount": "Failed",
+    "bulkDownloadStop": "Stop Download",
+    "bulkDownloadStopping": "Stopping…",
+    "bulkDownloadRemainingCount": "Not Downloaded",
+    "reDownloadFailed": "Re-download Failed"
+  },
+  "logVisit": {
+    "noSolutions": "No solutions found",
+    "viewForm": "View Form",
+    "selectSolution": "Select Solution",
+    "selectSolutionPlaceholder": "Select a solution...",
+    "selectFormTypeMessage": "Please select form type from top right selection using select dropdown",
+    "selectVisitType": "Select visit type for {{name}}",
+    "viewCheckIns": "View Logs and Check-ins",
+    "by": "By",
+    "multipleAssessemtsNotAllowed": "Only one assessment allowed per participant.",
+    "thisFormNotFound": "Form not found for #{{submissionNumberInput}}.",
+    "note": "Note:",
+    "logVisitNote": "Individual/Enterprise visits are used for one-on-one coaching sessions. Group visits are for training sessions with multiple participants. Midline surveys track progress at key milestones.",
+    "individualEnterpriseVisit": {
+      "title": "Individual/Enterprise Visit",
+      "description": "Log a one-on-one visit with the participant or visit to their enterprise"
+    },
+    "groupVisitForm": {
+      "title": "Group Visit Form",
+      "description": "Log a group session or training attended by multiple participants"
+    },
+    "midlineSurvey": {
+      "title": "Midline Survey",
+      "description": "Conduct a midline assessment survey to track progress"
+    },
+    "noCheckInsYet": "No Check-Ins Yet",
+    "noCheckInsYetDescription": "Check-ins will appear here once forms and surveys are completed for this participant.",
+    "errors": {
+      "observationIdNotFound": "Observation ID not found",
+      "entityIdNotFound": "Entity ID not found for participant",
+      "userNotFound": "User not found."
+    },
+    "submissionDate": "Form Submitted"
+  },
+  "lcProfile": {
+    "myProfile": "My Profile",
+    "linkageChampionProfile": "Coach Profile",
+    "profileDetails": "Profile Details",
+    "fullName": "Full Name",
+    "lcId": "Coach ID",
+    "emailAddress": "Email Address",
+    "phoneNumber": "Phone Number",
+    "serviceArea": "Service Area",
+    "startDate": "Start Date",
+    "languagePreference": "Language Preference",
+    "programStatistics": "Program Statistics",
+    "activeParticipants": "Active Participants",
+    "completedIdps": "Completed IDPs",
+    "visitsLogged": "Visits Logged",
+    "pendingTasks": "Pending Tasks",
+    "certificationsTraining": "Certifications & Training",
+    "completed": "Completed",
+    "certified": "Certified",
+    "notes": "Notes"
+  },
+  "lc": {
+    "pageTitle": {
+      "welcome": "Welcome",
+      "select-language": "Select Language",
+      "dashboard": "Dashboard",
+      "participant-detail": "Participant",
+      "log-visit": "Log Visit",
+      "check-ins-list": "Check-ins",
+      "observation": "Observation",
+      "template": "Develop Intervention Plan",
+      "participants": "Participants",
+      "sessions-support": "Sessions & Support",
+      "project": "Project",
+      "home": "Home",
+      "download-apk": "Download APK"
+    },
+    "menu": {
+      "home": "Home",
+      "dashboard": "Dashboard",
+      "sessionsSupport": "Sessions & Support",
+      "myProfile": "My Profile",
+      "serviceProviders": "Service Providers"
+    },
+    "sessionsSupport": {
+      "subtitle": "Browse sessions, additional services, and assets available in your province and site",
+      "createSession": "Create A Session",
+      "requestSupport": "Request New Support",
+      "sessionsFound": "sessions found",
+      "mySessionCard": {
+        "assignParticipants": "Assign Participants",
+        "manageSession": "Manage Session",
+        "participants": "participants"
+      },
+      "mySessionsDescription": "Sessions created and conducted by you.",
+      "emptyState": {
+        "title": "No history yet",
+        "description": "Completed support will appear here"
+      },
+      "alerts": {
+        "assignSuccess": "{{count}} participant(s) assigned to session successfully."
+      }
+    },
+    "createSession": {
+      "title": "Create a Session",
+      "badge": "Training Session"
+    },
+    "requestSession": {
+      "title": "Request a Session",
+      "badge": "Training Session"
+    }
+  },
+  "template": {
+    "pageTitle": "Develop Intervention Plan",
+    "updatePageTitle": "Update Intervention Plan",
+    "pageSubtitle": "Select a development plan template for {{name}}",
+    "backButton": "Back",
+    "IdpCreationSuccess": "Plan assigned successfully.",
+    "IdpQueuedOffline": "Plan saved offline. It will be created once you're back online.",
+    "categoryModal": {
+      "title": "Indicative Livelihood Pathway",
+      "forParticipant": "For participant: {{name}}",
+      "description": "Please select the livelihood category for this pathway.",
+      "categoryLabel": "Category of {{pillarName}}",
+      "categoryPlaceholder": "Select a category",
+      "subCategoryLabel": "Sub-Category of {{pillarName}}",
+      "subCategoryPlaceholder": "Select a sub-category",
+      "subCategoryPlaceholderDisabled": "First select a category",
+      "selectedLabel": "Selected: {{category}} - {{subcategory}}",
+      "selectedDescription": "This information will be used to tailor support and track progress for this specific business type.",
+      "confirmButton": "Confirm & Continue",
+      "cancelButton": "Cancel"
+    },
+    "pathwayCard": {
+      "pillars": "Pillars",
+      "tasks": "Tasks",
+      "includedPillars": "Included Pillars:",
+      "tasksLabel": "tasks"
+    },
+    "loadError": "Failed to load templates. Please try again."
+  },
+  "permissions": {
+    "camera": {
+      "title": "Camera permission required.",
+      "message": "Allow camera access to continue.",
+      "buttonNeutral": "Ask Me Later",
+      "buttonNegative": "Cancel",
+      "buttonPositive": "OK"
+    },
+    "storage": {
+      "title": "Storage permissions required.",
+      "message": "Allow storage access to continue.",
+      "buttonNeutral": "Ask Me Later",
+      "buttonNegative": "Cancel",
+      "buttonPositive": "OK"
+    }
+  },
+  "projectPlayerWeb": {
+    "missingProjectId": "Project ID missing.",
+    "fileNotFoundForProject": "Files not found for this project.",
+    "fileNotFoundOffline": "File not found offline.",
+    "previewFailed": "Preview failed. Try again.",
+    "invalidProjectIdMessage": "Project ID missing. Pass a valid ID."
+  },
+  "downloadForms": {
+    "downloadForms": "Download Forms",
+    "downloadNecessaryForms": "Download the necessary forms for the participant",
+    "Download": "Download",
+    "downloadSuccess": "Download started.",
+    "downloadError": "Download failed. Try again.",
+    "downloadUriError": "File not found. Contact support."
+  },
+  "offlineSync": {
+    "deleteOfflineDataTitle": "Delete Offline Data",
+    "deleteOfflineDataMessage": "This participant has offline data. Do you want to delete offline data and continue?",
+    "deleteOfflineDataConfirm": "Delete & Continue",
+    "deleteOfflineDataAction": "Delete Offline Data",
+    "offlineDataIneligibleMessage": "This participant is no longer eligible for offline access. Please delete the offline data to continue.",
+    "banner": "You are offline. Some data may not be available.",
+    "dataUnavailable": "You are offline and this data is not available offline.",
+    "backOnline": "You're back online. {{count}} item(s) pending sync.",
+    "pendingChanges": "{{count}} item(s) pending sync.",
+    "syncNow": "Sync Now",
+    "syncButton": "Sync",
+    "syncButtonPending": "Sync ({{count}})",
+    "syncAll": "Sync All",
+    "syncing": "Syncing...",
+    "syncProgress": "{{percentage}}%",
+    "syncSuccess": "All data synced successfully.",
+    "syncPartial": "Sync completed with some errors.",
+    "syncFailed": "Sync failed. Please try again.",
+    "noData": "No data available offline.",
+    "modalTitle": "Sync Pending Changes",
+    "pendingItems": "{{count}} item(s) pending upload",
+    "pendingFiles": "{{count}} file(s)",
+    "pendingForms": "{{count}} form(s)",
+    "pendingTasks": "{{count}} task(s)",
+    "pendingIdp": "Intervention Plan pending",
+    "failedItems": "{{count}} item(s) failed last sync",
+    "allSynced": "All changes synced!",
+    "startSync": "Start Sync",
+    "skipForNow": "Skip for Now",
+    "stageFiles": "Uploading files...",
+    "stageForms": "Syncing forms...",
+    "stageTasks": "Syncing tasks...",
+    "stageIdp": "Syncing Intervention Plan...",
+    "offlineListNote": "Showing downloaded participants only.",
+    "cannotSyncOffline": "You must be online to sync.",
+    "offlineDataAvailableTitle": "Offline Data Available",
+    "offlineDataAvailableShort": "This participant is available offline.",
+    "offlineDataAvailableFull": "This participant is available offline.\n\nIf you perform any actions while online, the downloaded offline data may not be updated automatically. To keep your offline data up to date, refresh or download the participant again after making online changes.",
+    "learnMore": "Learn More",
+    "downloading": "Downloading…",
+    "available": "Offline",
+    "partial": "Partial",
+    "downloadFailed": "Failed",
+    "pageUnavailableOffline": "This page is not available offline.",
+    "dataNotDownloaded": "Offline data has not been downloaded for this participant.",
+    "goBack": "Go Back",
+    "sync": "Sync",
+    "participantId": "ID: {{id}}",
+    "logoutConfirmTitle": "Unsynced Changes",
+    "logoutConfirmMessage": "You have {{count}} unsynced item(s). Logging out now may cause data loss.",
+    "logoutAnyway": "Log Out Anyway",
+    "syncSelected": "Sync Selected",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selected": "selected",
+    "syncError": "Sync failed",
+    "syncComplete": "Sync Complete",
+    "labelFiles": "Files",
+    "labelForms": "Observations",
+    "labelTasks": "Tasks",
+    "labelIdp": "Intervention Plan",
+    "validating": "Validating...",
+    "participantProgressTitle": "Participant Progress Updated",
+    "participantProgressMessage": "This participant has already progressed further online (Current Status: {{onlineStatus}}). The offline data for this participant can no longer be synced. Would you like to remove all offline data related to this participant from this device?",
+    "removeAllOfflineData": "Remove Offline Data",
+    "projectUpdatedTitle": "Project Already Updated",
+    "projectUpdatedMessage": "This project has already progressed further online. The offline version can no longer be synced. Would you like to remove this project's offline data?",
+    "pathwayConflictTitle": "Project Pathway Conflict",
+    "pathwayConflictMessage": "The selected pathway for this project has changed online since this project was downloaded offline.\n\nYour offline Intervention Plan belongs to a different pathway and cannot be synchronized safely.",
+    "syncSummaryTitle": "Sync Summary",
+    "syncSummaryProjectSync": "Project Sync",
+    "syncSummaryTaskSync": "Task Sync",
+    "syncSummaryObservationSync": "Observation Sync",
+    "syncSummarySynced": "Synced",
+    "syncSummarySkipped": "Skipped",
+    "syncSummaryCancelled": "Cancelled",
+    "syncSummaryRemaining": "Remaining",
+    "syncInterruptedTitle": "Sync Stopped — You're Offline",
+    "syncInterruptedMessage": "The device went offline while syncing. Nothing further was changed — you can try syncing again once you're back online.",
+    "taskUpdatedTitle": "Task Already Updated",
+    "taskUpdatedMessage": "This task has already progressed further online and cannot be synced from offline data. This task will be skipped during the current sync.",
+    "taskObservationUpdatedTitle": "Task Observation Already Updated",
+    "taskObservationUpdatedMessage": "This task observation has already progressed further online. The offline observation can no longer be synced. Would you like to remove this offline observation?",
+    "observationCompletedTitle": "Observation Already Completed",
+    "observationCompletedMessage": "This observation has already been completed online. The offline version cannot be updated. Would you like to remove this offline observation from your device?",
+    "observationConflictTitle": "Observation Conflict Detected",
+    "observationConflictMessage": "This observation has changed online after it was downloaded offline. Please review the differences below before deciding how to proceed.",
+    "observationConflictDraftMessage": "This observation has already been started online. Syncing may overwrite the online progress. What would you like to do?",
+    "observationConflictTimestampMessage": "This observation has been updated online after it was downloaded. Syncing will overwrite the latest online version. Do you want to continue?",
+    "observationConflictName": "Observation Name",
+    "observationConflictObsId": "Observation ID",
+    "observationConflictSubmissionNumber": "Submission Number",
+    "observationConflictSubmissionId": "Submission ID",
+    "observationConflictStatus": "Status",
+    "observationConflictResponses": "Response Summary",
+    "observationConflictAnswered": "Answered",
+    "observationConflictUnanswered": "Unanswered",
+    "observationConflictEvidence": "Evidence",
+    "observationConflictReason": "Conflict Reason",
+    "observationConflictReasonCompleted": "The online observation has already been completed.",
+    "observationConflictReasonStatusAhead": "The online observation status has progressed further than the offline observation.",
+    "observationConflictReasonDraftAhead": "The online observation status has progressed further than the offline observation.",
+    "observationConflictReasonTimestamp": "The online observation was updated after the offline download.",
+    "conflictDetectedTitle": "Data Conflict Detected",
+    "conflictDetectedMessage": "This record has been updated online after it was downloaded offline. Syncing will overwrite the latest online changes. Do you want to continue?",
+    "overrideAndSync": "Override & Sync",
+    "skipAndRemove": "Skip & Remove",
+    "taskConflictTitle": "Task Conflict Detected",
+    "taskConflictMessage": "This task has changed online after it was downloaded offline. Please review the differences below before deciding how to proceed.",
+    "taskConflictParentTaskName": "Parent Task",
+    "taskConflictTaskName": "Task Name",
+    "taskConflictExternalId": "External ID",
+    "taskConflictStatus": "Status",
+    "taskConflictEvidence": "Evidence",
+    "taskConflictOffline": "Offline",
+    "taskConflictOnline": "Online",
+    "taskConflictFiles": "file(s)",
+    "taskConflictNoFiles": "No files uploaded",
+    "taskConflictReason": "Conflict Reason",
+    "taskConflictReasonStatusAhead": "Online task status is ahead of the offline task.",
+    "taskConflictReasonTimestamp": "Online task was updated after the offline download.",
+    "taskConflictReasonEvidence": "Online evidence differs from the offline evidence.",
+    "taskConflictReasonMultiple": "Multiple differences detected."
+  },
+  "schemaformrenderer": {
+    "file" : {
+      "fileSize" : "Max {{ size }} MB"
+    }
+  },
+  "supportProvider": {
+    "header": {
+      "gblPartnerPlatform": "GBL Partner Platform"
+    },
+    "menu": {
+      "dashboard": "Dashboard",
+      "mySupportOfferings": "My Support Offerings",
+      "requests": "Requests",
+      "materialsLibrary": "Materials Library",
+      "profile": "Profile"
+    },
+    "pageTitle": {
+      "dashboard": "Dashboard",
+      "dashboard1": "Dashboard",
+      "opportunities": "My Support Offerings",
+      "create-opportunity": "Create New Support",
+      "create-training-session": "Create Training Session",
+      "create-additional-service": "Create Additional Service",
+      "create-asset": "Create Asset",
+      "requests": "Support Requests",
+      "materials": "Template & Resource Library",
+      "profile": "Organisation Profile"
+    },
+    "supportOfferings": {
+      "title": "My Support Offerings",
+      "subtitle": "Manage all published support — training sessions, services, and assets",
+      "createNew": "Create New",
+      "tabs": {
+        "trainingsAndSessions": "Trainings & Sessions",
+        "additionalServices": "Additional Services",
+        "assets": "Assets"
+      },
+      "filters": {
+        "allStatuses": "All Statuses",
+        "allProvinces": "All Provinces",
+        "allSites": "All Sites"
+      },
+      "statusOptions": {
+        "allStatuses": "All Statuses",
+        "upcoming": "Upcoming",
+        "inProgress": "In progress",
+        "completed": "Completed",
+        "draft": "Draft"
+      },
+      "cards": {
+        "hideDetails": "Hide Details",
+        "viewDetails": "View Details",
+        "requestedBy": "Requested by: {{name}}",
+        "copySession": "Copy Session",
+        "copyOffering": "Copy Offering",
+        "viewRequests": "View Requests",
+        "complete": "Complete",
+        "sessionComplete": "Session Complete",
+        "virtualLink": "Virtual Link",
+        "location": "Location",
+        "attendance": "Attendance",
+        "confirmAttendance": "Confirm Attendance",
+        "expectedParticipants": "Expected Participants",
+        "confirmedPresent": "Confirmed Present",
+        "notConfirmed": "Not confirmed",
+        "sessionMaterials": "Session Materials",
+        "uploadMaterial": "Upload Material",
+        "sessionNotes": "Session Notes",
+        "completionNotes": "Completion Notes",
+        "sector": "Sector: {{sector}}",
+        "value": "Value: {{value}}",
+        "locationLabel": "Location: {{location}}",
+        "hub": "Hub: {{hub}}",
+        "alerts": {
+          "draftSaved": "Support offering saved as draft!",
+          "supportPublished": "Support published successfully!",
+          "sessionSaved": "Session saved successfully!",
+          "supportCopied": "Support copied successfully!",
+          "sessionCompleted": "Session marked as completed successfully!",
+          "materialUploaded": "Material uploaded successfully!",
+          "downloading": "Downloading {{name}}...",
+          "navigatingRequests": "Navigating to support requests...",
+          "offeringCopied": "Offering copied successfully!",
+          "offeringCompleted": "Offering marked as complete!"
+        }
+      },
+      "modal": {
+        "headerTitle": "Confirm Attendance",
+        "markedPresentCount": "{{count}} of {{total}} participants marked present",
+        "markAll": "Mark all",
+        "clearAll": "Clear all",
+        "skipAndMarkComplete": "Skip & Mark Complete",
+        "confirmAndComplete": "Confirm & Complete"
+      },
+      "buttonTexts": {
+        "publishSupport": "Publish support",
+        "loadMoreSessions": "Load More Sessions"
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your impact and activities",
+      "createSupportBtn": "Create Support for Participants"
+    },
+    "createSupport": {
+      "title": "Create New Support",
+      "subtitle": "Choose the type of support you want to create",
+      "changeType": "Change type",
+      "training": {
+        "title": "Create Training Session"
+      },
+      "additionalService": {
+        "title": "Create Additional Service"
+      },
+      "asset": {
+        "title": "Create Asset"
+      },
+      "cards": {
+        "training": {
+          "title": "Trainings & Sessions",
+          "description": "Structured learning sessions with a schedule, objectives, and participant capacity."
+        },
+        "additionalServices": {
+          "title": "Additional Services",
+          "description": "Advisory, legal, healthcare, or specialist services for participants."
+        },
+        "assets": {
+          "title": "Assets",
+          "description": "Cash, in-kind, or voucher support for livelihood activities."
+        }
+      },
+      "errors": {
+        "saveFailed": "Something went wrong while saving. Please try again.",
+        "incompleteWarning": "Please Complete your Profile before proceeding."
+      }
+    },
+    "supportRequests": {
+      "buttonTexts": {
+        "cancel": "Cancel",
+        "sendRequest": "Send Request",
+        "confirmDecline": "Confirm Decline",
+        "confirmSchedule": "Confirm & Schedule",
+        "requestInfo": "Request Info",
+        "decline": "Decline",
+        "acceptSchedule": "Accept & Schedule",
+        "acceptRequest": "Accept Request",
+        "viewFullDetails": "View Full Details"
+      },
+      "titles": {
+        "header": "Support Requests",
+        "subheader": "Review and respond to requests from Coaches",
+        "viewDetails": "View Details",
+        "requestDetails": "Request Details",
+        "requestInfo": "Request More Information",
+        "decline": "Decline Request",
+        "acceptSchedule": "Accept & Schedule Training",
+        "coachInformation": "Coach Information"
+      },
+      "declineReasons": {
+        "capacity": "Capacity / Resource Constraints",
+        "outsideScope": "Outside Scope of Service",
+        "scheduleConflict": "Schedule Conflict",
+        "other": "Other / Custom Reason"
+      },
+      "durationOptions": {
+        "1hour": "1 hour",
+        "1_5hours": "1.5 hours",
+        "2hours": "2 hours",
+        "3hours": "3 hours",
+        "fullDay": "Full Day (4+ hours)"
+      },
+      "labels": {
+        "request": "Request:",
+        "coach": "Coach",
+        "yourQuestion": "Your Question or Request",
+        "selectReason": "Select Reason",
+        "reasonDetails": "Reason Details",
+        "date": "Date",
+        "time": "Time",
+        "duration": "Duration",
+        "locationVenue": "Location / Venue",
+        "meetingLink": "Meeting Link (if online)",
+        "notesForCoach": "Notes for Coach (optional)",
+        "participants": "Participants",
+        "requestedDate": "Requested Date",
+        "preferredDate": "Preferred Date",
+        "preferredTime": "Preferred Time",
+        "preferredLocation": "Preferred Location",
+        "province": "Province",
+        "category": "Category",
+        "requestJustification": "Request Justification",
+        "participantDetails": "Participant Details",
+        "specialRequirements": "Special Requirements"
+      },
+      "placeholders": {
+        "requestInfo": "What additional information do you need from the Coach?",
+        "declineReason": "Choose a preset reason or write your own",
+        "declineDetails": "Provide additional context or details for the Coach...",
+        "location": "e.g. Online via Zoom or BRAC Hub Room 1",
+        "meetingLink": "https://...",
+        "notes": "Any additional information or instructions...",
+        "search": "Search requests..."
+      },
+      "hints": {
+        "requestInfo": "The Coach will receive this message and can respond with the requested information",
+        "decline": "This feedback will be shared with the Coach"
+      },
+      "fallbacks": {
+        "date": "03/25/2024",
+        "time": "09:00 AM",
+        "location": "Online via Zoom",
+        "meetingLink": "https://meet.example.com/sp-session",
+        "notAvailable": "N/A"
+      },
+      "cardBadges": {
+        "overdue": "Overdue",
+        "days": "days"
+      },
+      "tabs": {
+        "sessions": "Sessions & Trainings",
+        "additional_services": "Additional Services",
+        "assets": "Assets",
+        "declined": "Declined",
+        "pending": "Pending",
+        "overdue": "Overdue"
+      }
+    },
+    "materialsLibrary": {
+      "title": "Template & Resource Library",
+      "subtitle": "Standalone content repository of all workbooks, guides, templates, and manuals uploaded for support offerings.",
+      "uploadResource": "Upload Resource",
+      "stats": {
+        "totalResources": "Total Resources",
+        "pdfDocuments": "PDFs & Documents",
+        "templatesDecks": "Templates & Decks",
+        "totalDownloads": "Total Downloads"
+      },
+      "filters": {
+        "searchPlaceholder": "Search resources, templates, or linked sessions...",
+        "allCategories": "All Categories",
+        "allFormats": "All Formats"
+      },
+      "categories": {
+        "financialLiteracy": "Financial Literacy",
+        "businessManagement": "Business Management",
+        "assetEquipment": "Asset & Equipment Support",
+        "legalCompliance": "Legal & Compliance"
+      },
+      "formats": {
+        "pdf": "PDF Document",
+        "template": "Templates & Decks",
+        "video": "Video Guide"
+      },
+      "card": {
+        "linked": "Linked: {{offering}}",
+        "uploaded": "Uploaded {{date}}",
+        "downloads": "{{count}} downloads",
+        "preview": "Preview",
+        "download": "Download",
+        "delete": "Delete"
+      },
+      "uploadModal": {
+        "title": "Upload Resource Material",
+        "labelTitle": "Title",
+        "labelDescription": "Description",
+        "labelCategory": "Category",
+        "labelFormatType": "Format Type",
+        "labelFileName": "File Name (Optional)",
+        "labelAssociatedOffering": "Associated Support Offering (Optional)",
+        "placeholderTitle": "e.g. Micro-Enterprise Accounting Guide",
+        "placeholderDescription": "Describe the material contents and how it helps coaches/participants...",
+        "placeholderFileName": "e.g. accounting-guide.pdf",
+        "placeholderAssociatedOffering": "e.g. Financial Literacy Workshop",
+        "cancel": "Cancel",
+        "addLibrary": "Add to Library",
+        "successMsg": "Resource uploaded successfully!",
+        "errorMsg": "Failed to upload resource. Please fill all required fields."
+      },
+      "previewModal": {
+        "title": "Category & Purpose",
+        "associatedOffering": "Associated Support Offering",
+        "fileName": "File Name",
+        "fileSize": "File Size",
+        "uploadDate": "Upload Date",
+        "downloads": "Downloads",
+        "close": "Close",
+        "downloadFile": "Download File"
+      },
+      "deleteModal": {
+        "title": "Confirm Delete",
+        "description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "successMsg": "Resource deleted successfully!"
+      }
+    }
+  },
+  "downloadApk": {
+    "appName": "Download APK Application",
+    "description": "Download the GBL Coach mobile application to log field visits, manage cases, and track progress on Android.",
+    "downloadButton": "Download APK",
+    "defaultDownloadButton": "Download APK",
+    "readyStatus": "100% Ready",
+    "scanWithPhone": "Scan with Phone",
+    "hideQr": "Hide QR",
+    "copyDirectLink": "Copy Direct Link",
+    "linkCopied": "Direct link copied to clipboard",
+    "pointCamera": "Point camera to download directly",
+    "installationGuide": "Installation Guide for Android",
+    "step1Title": "1. Download:",
+    "step1Desc": "Download the APK file to your device.",
+    "step2Title": "2. Open File:",
+    "step2Desc": "Open the downloaded APK file.",
+    "step3Title": "3. Allow Permission:",
+    "step3Desc": "If prompted, allow installation from this source in Settings.",
+    "step4Title": "4. Install & Launch:",
+    "step4Desc": "Install the application and open it.",
+    "setupRequired": "Setup Required",
+    "unconfiguredTitle": "Mobile App Setup in Progress",
+    "unconfiguredDescription": "The download URL has not been configured yet. Please contact your administrator or continue in web browser.",
+    "noticeTitle": "Notice:",
+    "noticeMessage": "Download URL is not configured. Please contact your administrator.",
+    "continueInBrowser": "Continue in Web Browser",
+    "demoLabel": "DEMO:",
+    "demoReady": "Ready",
+    "demoUnconfigured": "Unconfigured",
+    "close": "Close",
+    "urlNotConfigured": "Download URL is not configured. Please contact your administrator."
   }
 }
