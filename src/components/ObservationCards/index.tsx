@@ -69,7 +69,7 @@ export const AssessmentCard: React.FC<AssessmentSurveyCardProps> = ({
     }
 
     if (
-      isReadOnlyParticipant &&
+      (isReadOnlyParticipant || isEndlineLocked) &&
       entity?.allowMultipleAssessemts
     ) {
       if(participantId) {
