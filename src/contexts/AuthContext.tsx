@@ -124,17 +124,17 @@ const determineUserRole = (
     return 'Mentor';
   }
 
-  // Check for participant roles (user)
-  const participantOrganizations = userData.organizations.filter((org: any) => {
+  // Check for LC roles
+  const lcOrganizations = userData.organizations.filter((org: any) => {
     if (!org?.roles || !Array.isArray(org.roles)) {
       return false;
     }
-    return org.roles.some((role: any) => PARTICIPANT_ROLES.includes(role?.title));
+    return org.roles.some((role: any) => LC_ROLES.includes(role?.title));
   });
 
-  if (participantOrganizations.length > 0) {
-    logger.info('User has participant role based on organizations');
-    return 'Participant';
+  if (lcOrganizations.length > 0) {
+    logger.info('User has LC role based on organizations');
+    return 'LC';
   }
 
   // If no matching roles found in organizations, throw unauthorized error
