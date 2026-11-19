@@ -25,7 +25,7 @@ const lazyScreen = (
   loader: () => Promise<{ default: ScreenComponent }>,
 ): ScreenComponent => lazy(loader) as unknown as ScreenComponent;
 
-const HomeScreen = lazyScreen(() => import('../screens/Home'));
+const LcDashboardScreen = lazyScreen(() => import('../screens/LcDashboard'));
 const UserManagementScreen = lazyScreen(() => import('../screens/UserManagement'));
 const SelectLanguageScreen = lazyScreen(() => import('../screens/Language/Index'));
 const WelcomePage = lazyScreen(() => import('../screens/Welcome'));
@@ -45,6 +45,10 @@ const AuditLogScreen = lazyScreen(() => import('../screens/AuditLog'));
 const AssignUsersScreen = lazyScreen(() => import('../screens/AssignUsers'));
 const ReviewRequestsScreen = lazyScreen(() => import('../screens/ReviewRequests'));
 const AdminDashboard = lazyScreen(() => import('../screens/AdminDashboard'));
+const ParticipantsReport = lazyScreen(() => import('../screens/ParticipantsReport'));
+const SupportProviderDashboard = lazyScreen(() => import('../screens/SupportProviderDashboard'));
+const SPDashboardScreen = lazyScreen(() => import('../screens/ServiceProvider/Dashboard'));
+const ParticipantJourneyScreen = lazyScreen(() => import('../screens/ParticipantJourney'));
 const ProfilePermissions = lazyScreen(() => import('../screens/ProfilePermissions'));
 const ForgotPasswordScreen = lazyScreen(() => import('../screens/Auth/ForgotPasswordScreen'));
 
@@ -100,6 +104,7 @@ const getAccessPages = (
           component: UserManagementScreen,
         },
         { name: 'admin-dashboard', path: '/admin-dashboard', component: AdminDashboard },
+        { name: 'participants-report', path: '/participants-report', component: ParticipantsReport },
         {
           name: 'template-management',
           path: '/template-managemnt',
@@ -142,6 +147,7 @@ const getAccessPages = (
           component: UserManagementScreen,
         },
         { name: 'admin-dashboard', path: '/admin-dashboard', component: AdminDashboard },
+        { name: 'participants-report', path: '/participants-report', component: ParticipantsReport },
         {
           name: 'assign-users',
           path: '/assign-users',
@@ -171,11 +177,26 @@ const getAccessPages = (
         { name: 'check-ins-list', path: '/participants/:id/check-ins-list/:solutionId?', component: CheckInsList },
         { name: 'observation', path: '/participants/:id/observation/:solutionId/:submissionNumber?', component: Observation },
       ];
+    case 'report_manager':
+      // Reports and dashboards only, no user management or other admin pages
+      return [
+        { name: 'participants-report', path: '/', component: ParticipantsReport },
+        { name: 'support-provider-dashboard', path: '/support-provider-dashboard', component: SupportProviderDashboard },
+      ];
+    case 'mentor':
+      return [
+        { name: 'dashboard1', path: '/', component: SPDashboardScreen },
+        { name: 'dashboard', path: '/dashboard', component: SPDashboardScreen },
+      ];
+    case 'participant':
+      return [
+        { name: 'participant-portal', path: '/', component: ParticipantJourneyScreen },
+      ];
     case 'lc':
       return [
         { name: 'welcome', component: WelcomePage },
         { name: 'select-language', component: SelectLanguageScreen },
-        { name: 'dashboard', component: HomeScreen },
+        { name: 'dashboard', component: LcDashboardScreen },
         { name: 'participant-detail', path: '/participants/:id', component: ParticipantDetail },
         { name: 'log-visit', path: '/participants/:id/log-visit', component: LogVisit },
         { name: 'check-ins-list', path: '/participants/:id/check-ins-list/:solutionId?', component: CheckInsList },
@@ -308,8 +329,11 @@ const AppNavigator: React.FC = () => {
   // Navigate to main screen when user logs in successfully
   useEffect(() => {
     if (isLoggedIn && accessPages.length > 0 && navigationRef.isReady()) {
-      // Check current route to avoid unnecessary navigation
-      const currentRoute = navigationRef.getCurrentRoute();
+      // Check the root-level route (getCurrentRoute() returns the nested leaf, e.g.
+      // 'participant-portal', which would force a reset that remounts 'main' and
+      // re-fires every landing-screen API call)
+      const rootState = navigationRef.getRootState();
+      const currentRoute = rootState?.routes?.[rootState.index ?? 0];
       if (currentRoute?.name !== 'main') {
         // Small delay to ensure navigation stack is updated after navigationKey change
         const timer = setTimeout(() => {

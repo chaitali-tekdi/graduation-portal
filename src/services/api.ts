@@ -224,6 +224,9 @@ api.interceptors.request.use(
         config.headers['x-tenant-code'] = tenantCode; // Required by accountCreate
         config.headers['tenant'] = tenantCode;        // Keep for backward compatibility
       }
+      // Mentoring (Support Provider dashboard) APIs need the client's timezone
+      config.headers['timeZone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
       // Log request details (optional - can be removed in production)
       // logger.info(`API Request: ${config.method?.toUpperCase()} ${config.url}`, {
       //   headers: config.headers,

@@ -2,6 +2,8 @@ import React, { ReactNode, ComponentType } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 import AdminLayout from './admin/Layout';
 import LcLayout from './lc/Layout';
+import MentorLayout from './mentor/Layout';
+import ParticipantJourneyLayout from './ParticipantJourney/Layout';
 
 // Layout components can accept children and any additional props
 export type LayoutComponent = ComponentType<any>;
@@ -60,10 +62,17 @@ const LayoutWrapper: React.FC<LayoutWrapperProps> = ({
   switch (userRole) {
     case 'admin':
     case 'supervisor':
+    case 'report_manager':
       SelectedLayout = AdminLayout as LayoutComponent;
       break;
     case 'lc':
       SelectedLayout = LcLayout as LayoutComponent;
+      break;
+    case 'mentor':
+      SelectedLayout = MentorLayout as LayoutComponent;
+      break;
+    case 'participant':
+      SelectedLayout = ParticipantJourneyLayout as LayoutComponent;
       break;
     default:
       // No layout for unknown roles or when not logged in

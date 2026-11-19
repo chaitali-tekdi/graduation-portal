@@ -50,6 +50,7 @@ import {
   ImageOff,
   Info,
   Key,
+  Layers,
   LayoutDashboard,
   LifeBuoy,
   HelpCircle,
@@ -95,7 +96,8 @@ import {
   Video,
   Wrench,
   Smartphone,
-  CheckCircle2
+  CheckCircle2,
+  Save
 } from 'lucide-react-native';
 import { theme } from '@config/theme';
 
@@ -166,6 +168,7 @@ const ICONS: Record<string, React.ComponentType<any>> = {
   ImageOff,
   Info,
   Key,
+  Layers,
   LayoutDashboard,
   LifeBuoy,
   HelpCircle,
@@ -210,7 +213,8 @@ const ICONS: Record<string, React.ComponentType<any>> = {
   CircleCheckBig,
   Video,
   Wrench,
-  Smartphone
+  Smartphone,
+  Save
 };
 
 /**

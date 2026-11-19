@@ -201,5 +201,26 @@
     "dropout": "انسحاب",
     "confirmDropout": "تأكيد الانسحاب",
     "dropoutMessage": "هل أنت متأكد من رغبتك في وضع {{name}} كمنسحب؟ يمكن التراجع عن هذا الإجراء لاحقًا."
+  },
+  "participantJourney": {
+    "cards": {
+      "coachName": "اسم المدرب",
+      "contact": "جهة الاتصال",
+      "graduation": "تخرجي",
+      "graduationDescription": "عرض معايير التخرج",
+      "idpProgress": "تقدم خطة التنمية الفردية",
+      "idpProgressDescription": "عرض مهامك وتقدمك",
+      "sessions": "جلساتي",
+      "sessionsDescription": "عرض الجلسات المجدولة والفائتة"
+    },
+    "menu": {
+      "myProfile": "ملفي الشخصي"
+    },
+    "title": "بوابة المشارك",
+    "welcomeBack": "مرحبًا بعودتك!",
+    "welcomeBackNamed": "مرحبًا بعودتك، {{name}}!",
+    "pageTitle": {
+      "participant-portal": "بوابة المشارك"
+    }
   }
 }

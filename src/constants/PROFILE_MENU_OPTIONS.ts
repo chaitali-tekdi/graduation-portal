@@ -56,7 +56,6 @@ export const LC_MENU_OPTIONS: MenuItemData[] = [
     iconColor: theme.tokens.colors.textForegroundColor,
     showDividerAfter: false,
     route: 'dashboard', // Navigation route for dashboard menu item
-    isComingSoon: true,
   },
   {
     key: 'myProfile',
@@ -122,6 +121,28 @@ export const LC_MENU_OPTIONS: MenuItemData[] = [
     iconColor: theme.tokens.colors.error600, // Error color indicates destructive action
     showDividerAfter: false,
     // No route for logout - handled by logout function
+  },
+];
+
+// Participant menu options containing Profile and Logout
+export const PARTICIPANT_MENU_OPTIONS: MenuItemData[] = [
+  {
+    key: 'myProfile',
+    label: 'participantJourney.menu.myProfile',
+    textValue: 'myProfile',
+    iconName: 'User',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.textForegroundColor,
+    showDividerAfter: false,
+  },
+  {
+    key: 'logout',
+    label: 'common.logout',
+    textValue: 'logout',
+    iconName: 'LogOut',
+    iconSizeValue: 16,
+    iconColor: theme.tokens.colors.error600,
+    showDividerAfter: false,
   },
 ];
 
