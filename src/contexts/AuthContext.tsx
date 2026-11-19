@@ -124,19 +124,6 @@ const determineUserRole = (
     return 'Mentor';
   }
 
-  // Check for LC roles
-  const lcOrganizations = userData.organizations.filter((org: any) => {
-    if (!org?.roles || !Array.isArray(org.roles)) {
-      return false;
-    }
-    return org.roles.some((role: any) => LC_ROLES.includes(role?.title));
-  });
-
-  if (lcOrganizations.length > 0) {
-    logger.info('User has LC role based on organizations');
-    return 'LC';
-  }
-
   // If no matching roles found in organizations, throw unauthorized error
   // Note: Error message will be translated in the login function
   throw new Error(unauthorizedMessage);
