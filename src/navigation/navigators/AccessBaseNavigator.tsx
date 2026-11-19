@@ -3,7 +3,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useLanguage } from '@contexts/LanguageContext';
 import { useAuth } from '@contexts/AuthContext';
 import LayoutWrapper from '@layout/LayoutWrapper';
-import { MENTOR_ROLES } from '@constants/ROLES';
 
 const Stack = createStackNavigator();
 
@@ -42,18 +41,10 @@ const createScreenWithLayout = (
   return ScreenWithLayout;
 };
 
-function titleNamespaceForRole(
-  role?: string,
-): 'admin' | 'lc' | 'supportProvider' | 'participantJourney' {
+function titleNamespaceForRole(role?: string): 'admin' | 'lc' {
   const r = role?.toLowerCase();
   if (r === 'admin' || r === 'supervisor' || r === 'report_manager') {
     return 'admin';
-  }
-  if (MENTOR_ROLES.includes(r || '')) {
-    return 'supportProvider';
-  }
-  if (r === 'participant') {
-    return 'participantJourney';
   }
   return 'lc';
 }

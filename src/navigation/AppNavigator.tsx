@@ -46,9 +46,6 @@ const AssignUsersScreen = lazyScreen(() => import('../screens/AssignUsers'));
 const ReviewRequestsScreen = lazyScreen(() => import('../screens/ReviewRequests'));
 const AdminDashboard = lazyScreen(() => import('../screens/AdminDashboard'));
 const ParticipantsReport = lazyScreen(() => import('../screens/ParticipantsReport'));
-const SupportProviderDashboard = lazyScreen(() => import('../screens/SupportProviderDashboard'));
-const SPDashboardScreen = lazyScreen(() => import('../screens/ServiceProvider/Dashboard'));
-const ParticipantJourneyScreen = lazyScreen(() => import('../screens/ParticipantJourney'));
 const ProfilePermissions = lazyScreen(() => import('../screens/ProfilePermissions'));
 const ForgotPasswordScreen = lazyScreen(() => import('../screens/Auth/ForgotPasswordScreen'));
 
@@ -181,16 +178,6 @@ const getAccessPages = (
       // Reports and dashboards only, no user management or other admin pages
       return [
         { name: 'participants-report', path: '/', component: ParticipantsReport },
-        { name: 'support-provider-dashboard', path: '/support-provider-dashboard', component: SupportProviderDashboard },
-      ];
-    case 'mentor':
-      return [
-        { name: 'dashboard1', path: '/', component: SPDashboardScreen },
-        { name: 'dashboard', path: '/dashboard', component: SPDashboardScreen },
-      ];
-    case 'participant':
-      return [
-        { name: 'participant-portal', path: '/', component: ParticipantJourneyScreen },
       ];
     case 'lc':
       return [
@@ -329,11 +316,8 @@ const AppNavigator: React.FC = () => {
   // Navigate to main screen when user logs in successfully
   useEffect(() => {
     if (isLoggedIn && accessPages.length > 0 && navigationRef.isReady()) {
-      // Check the root-level route (getCurrentRoute() returns the nested leaf, e.g.
-      // 'participant-portal', which would force a reset that remounts 'main' and
-      // re-fires every landing-screen API call)
-      const rootState = navigationRef.getRootState();
-      const currentRoute = rootState?.routes?.[rootState.index ?? 0];
+      // Check current route to avoid unnecessary navigation
+      const currentRoute = navigationRef.getCurrentRoute();
       if (currentRoute?.name !== 'main') {
         // Small delay to ensure navigation stack is updated after navigationKey change
         const timer = setTimeout(() => {

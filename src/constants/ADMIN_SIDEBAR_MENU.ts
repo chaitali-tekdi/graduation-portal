@@ -30,26 +30,12 @@ const PARTICIPANTS_REPORT_MENU_CHILD: SidebarMenuItem = {
   route: 'participants-report',
 };
 
-// Admin / Supervisor: Participants report only
+// Admin / Supervisor / Report Manager: Participants report only
 export const REPORTS_AND_DASHBOARDS_MENU_ITEM: SidebarMenuItem = {
   key: 'reports-and-dashboards',
   label: 'admin.menu.reportsAndDashboards',
   icon: 'LayoutDashboard',
   children: [PARTICIPANTS_REPORT_MENU_CHILD],
-};
-
-// Report Manager: Participants report + Support Provider dashboard
-export const REPORT_MANAGER_REPORTS_MENU_ITEM: SidebarMenuItem = {
-  ...REPORTS_AND_DASHBOARDS_MENU_ITEM,
-  children: [
-    PARTICIPANTS_REPORT_MENU_CHILD,
-    {
-      key: 'support-provider-dashboard',
-      label: 'admin.menu.supportProvider',
-      icon: 'ChartColumn',
-      route: 'support-provider-dashboard',
-    },
-  ],
 };
 
 export const MAIN_MENU_ITEMS: SidebarMenuItem[] = [
@@ -130,7 +116,7 @@ export const MORE_INFORMATION_MENU_ITEMS: SidebarMenuItem[] = [
 ];
 
 // Report Manager sees only the reports menu
-export const REPORT_MANAGER_MENU_ITEMS: SidebarMenuItem[] = [REPORT_MANAGER_REPORTS_MENU_ITEM];
+export const REPORT_MANAGER_MENU_ITEMS: SidebarMenuItem[] = [REPORTS_AND_DASHBOARDS_MENU_ITEM];
 export const REPORT_MANAGER_USER_STORY_KEYS: string[] = ['user-story-dashboard-guide', 'report-feedback'];
 
 /** GBL help guides and feedback links */

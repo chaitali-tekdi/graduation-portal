@@ -8,7 +8,6 @@ export const LC_ROLES: readonly string[] = ['lc','session_manager','org_admin'] 
 export const REPORT_MANAGER_ROLES: readonly string[] = ['report_manager'] as const;
 export const MENTOR_ROLES: readonly string[] = ['mentor'] as const;
 export const PARTICIPANT: readonly string[] = ['user'] as const;
-export const PARTICIPANT_ROLES: readonly string[] = PARTICIPANT;
 
 export const ROLE_NAMES = {
   ADMIN: 'Admin',

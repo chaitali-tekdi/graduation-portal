@@ -192,10 +192,9 @@ export default function FilterButton({
         setValue((prev: any) => {
           const updated = { ...prev };
           delete updated[item.attr];
-          (item.resetOnChange || []).forEach((k: string) => delete updated[k]);
           // Clear any paginated-select fields that depend on this attr
           (data || []).forEach((d: any) => {
-            if (d.dependencyAttr === item.attr) {
+            if (d.type === 'paginated-select' && d.dependencyAttr === item.attr) {
               delete updated[d.attr];
               delete updated[`${d.attr}_label`];
               delete updated[`${d.attr}_item`];
@@ -207,10 +206,9 @@ export default function FilterButton({
         // Otherwise store the selected value (including string "null")
         setValue((prev: any) => {
           const updated = { ...prev, [item.attr]: v };
-          (item.resetOnChange || []).forEach((k: string) => delete updated[k]);
           // Clear any paginated-select fields that depend on this attr
           (data || []).forEach((d: any) => {
-            if (d.dependencyAttr === item.attr) {
+            if (d.type === 'paginated-select' && d.dependencyAttr === item.attr) {
               delete updated[d.attr];
               delete updated[`${d.attr}_label`];
               delete updated[`${d.attr}_item`];
