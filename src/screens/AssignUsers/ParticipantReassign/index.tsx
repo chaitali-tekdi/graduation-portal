@@ -337,7 +337,16 @@ const ParticipantReassign = () => {
         {t('admin.assignUsers.participantReassign.step1Description')}
       </Text>
 
-      <FilterButton data={filterOptions} showClearButton={false} onFilterChange={setFilterValues} />
+      <FilterButton
+        data={filterOptions}
+        showClearButton={false}
+        hideTitleHeader
+        showLabels
+        searchAtEnd
+        _container={{ bg: '$backgroundLight50', borderRadius: '$xl', p: '$4' }}
+        _input={{ bg: '$white' }}
+        onFilterChange={setFilterValues}
+      />
 
       <Text {...(styles.tableSubtitleText as TextProps)} fontSize="$sm" mt="$4" mb="$2">
         {t('admin.assignUsers.participantReassign.showingAssigned').replace('{{count}}', String(total))}

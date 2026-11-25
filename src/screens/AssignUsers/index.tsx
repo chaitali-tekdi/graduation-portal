@@ -952,6 +952,14 @@ return (
               : titleHeaderStyles.outlineButton)}
             onPress={() => setActiveTab('PARTICIPANT_REASSIGN')}
           >
+            <Box alignItems="center" justifyContent="center">
+              <LucideIcon
+                name="ArrowLeftRight"
+                size={18}
+                strokeWidth={2}
+                color={activeTab === 'PARTICIPANT_REASSIGN' ? '#FFFFFF' : '#2d2d2d'}
+              />
+            </Box>
             <Text
               {...(activeTab === 'PARTICIPANT_REASSIGN'
                 ? titleHeaderStyles.solidButtonText
