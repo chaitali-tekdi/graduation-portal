@@ -303,7 +303,7 @@ export default function FilterButton({
             placeholder={getPlaceholder()}
             disabled={item.disabled}
             size="sm"
-            bg={filterStyles.input.bg}
+            bg={item.bg ?? filterStyles.input.bg}
             borderColor={filterStyles.input.borderColor}
             borderRadius={filterStyles.input.borderRadius}
             modalTitle={getPlaceholder()}

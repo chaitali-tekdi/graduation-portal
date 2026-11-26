@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ViewProps, TextProps } from 'react-native';
-import { VStack, HStack, Text, Card, Heading, Button, ButtonText, LucideIcon } from '@ui';
+import { VStack, HStack, Text, Card, Heading, Button, ButtonText, LucideIcon, Pressable } from '@ui';
 import Select from '@components/ui/Inputs/Select';
+import PaginatedSelect from '@components/PaginatedSelect';
 import { useLanguage } from '@contexts/LanguageContext';
-import {
-  getLinkageChampions,
-  getMappedParticipantsForLC,
-} from '../../../../services/assignUsersService';
+import { useAuth, useIsSupervisor } from '@contexts/AuthContext';
+import { useParticipantFilterOptions } from '@constants/ASSIGN_USERS_FILTERS';
+import { loadLinkageChampions } from '../lcData';
+import { getSupervisorsByProvince, getMappedLCsForSupervisor } from '../../../../services/assignUsersService';
 import { REASSIGNMENT_REASONS, DEFAULT_REASON } from './constants';
 import { DestinationPolicyStyles as styles } from './Styles';
 
@@ -15,13 +16,33 @@ declare const process: { env: { [key: string]: string | undefined } } | undefine
 type Props = {
   /** Number of participants selected in Step 1 */
   selectedCount: number;
+  /** Called when Proceed is pressed, with the chosen destination LC and reason */
+  /** Province/Site chosen in Step 1 (ids); pre-populate Step 2, which can then change them independently */
+  initialProvince?: string;
+  initialSite?: string;
+  onProceed?: (data: { targetLcId: string; targetLcName: string; reason: string }) => void;
 };
 
-const DestinationPolicy = ({ selectedCount }: Props) => {
+const DestinationPolicy = ({ selectedCount, initialProvince, initialSite, onProceed }: Props) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const isSupervisor = useIsSupervisor();
+  const supervisorId = isSupervisor ? String((user as any)?.id || (user as any)?._id || '') : undefined;
   const [targetLc, setTargetLc] = useState('');
   const [reason, setReason] = useState<string>(DEFAULT_REASON);
-  const [lcs, setLcs] = useState<Array<{ id: string; name: string; site: string; count: number }>>([]);
+  const [province, setProvince] = useState('all-provinces');
+  const [site, setSite] = useState('all-sites');
+  // Follow Step 1's Province/Site whenever they change there (Step 2 edits never flow back)
+  useEffect(() => {
+    setProvince(initialProvince || 'all-provinces');
+    setSite(initialSite || 'all-sites');
+  }, [initialProvince, initialSite]);
+  const [supervisor, setSupervisor] = useState<{ id: string; label: string } | null>(null);
+  // LC ids mapped to the chosen supervisor (null = no supervisor filter)
+  const [supervisorLcIds, setSupervisorLcIds] = useState<Set<string> | null>(null);
+  // supervisorId -> mapped LC ids (same API Assign Users uses); each supervisor is fetched at most once
+  const supLcCache = useRef(new Map<string, Promise<Set<string>>>());
+  const [lcs, setLcs] = useState<Array<{ id: string; name: string; site: string; province: string; count: number }>>([]);
 
   // All eligible Linkage Champions (not limited to the LC chosen in Step 1)
   useEffect(() => {
@@ -31,32 +52,8 @@ const DestinationPolicy = ({ selectedCount }: Props) => {
       const programId = process.env.GLOBAL_LC_PROGRAM_ID;
       if (!programId) return;
       try {
-        const response = await getLinkageChampions(programId, { excludeMapped: false, limit: 100 });
-        const list = await Promise.all(
-          (response.result?.data || []).map(async (lc: any) => {
-            const id = String(lc.id || lc._id || '');
-            const res = await getMappedParticipantsForLC({
-              userId: id,
-              programId,
-              type: 'user',
-              page: 1,
-              limit: 1,
-              search: '',
-            });
-            return {
-              id,
-              name: lc.name || lc.full_name || lc.email || '',
-              site:
-                lc.site?.label ||
-                lc.userDetails?.site?.label ||
-                lc.userDetails?.district?.label ||
-                lc.userDetails?.local_municipality?.label ||
-                '',
-              count: res.total ?? res.result?.total ?? res.result?.count ?? 0,
-            };
-          })
-        );
-        if (!cancelled) setLcs(list.filter((lc) => lc.id));
+        const list = await loadLinkageChampions(programId, supervisorId);
+        if (!cancelled) setLcs(list);
       } catch (error) {
         console.error('Error fetching destination linkage champions:', error);
         if (!cancelled) setLcs([]);
@@ -66,11 +63,74 @@ const DestinationPolicy = ({ selectedCount }: Props) => {
     return () => {
       cancelled = true;
     };
+  }, [supervisorId]);
+
+  const getSupervisorLcIds = useCallback((supId: string) => {
+    let p = supLcCache.current.get(supId);
+    if (!p) {
+      // @ts-ignore - injected by webpack DefinePlugin / available in React Native
+      const programId = process.env.GLOBAL_LC_PROGRAM_ID as string;
+      p = getMappedLCsForSupervisor({ userId: supId, programId, type: 'org_admin', page: 1, limit: 500 })
+        .then((res) => new Set<string>((res.result?.data || []).map((lc: any) => String(lc.userId || ''))))
+        .catch((e) => {
+          supLcCache.current.delete(supId);
+          throw e;
+        });
+      supLcCache.current.set(supId, p);
+    }
+    return p;
   }, []);
+
+  // Province/Site changed -> the chosen supervisor may no longer be eligible
+  useEffect(() => {
+    setSupervisor(null);
+  }, [province, site]);
+
+  // Supervisor selected -> the LCs mapped to them
+  useEffect(() => {
+    if (!supervisor) {
+      setSupervisorLcIds(null);
+      return;
+    }
+    let cancelled = false;
+    getSupervisorLcIds(supervisor.id)
+      .then((ids) => !cancelled && setSupervisorLcIds(ids))
+      .catch(() => !cancelled && setSupervisorLcIds(new Set()));
+    return () => {
+      cancelled = true;
+    };
+  }, [supervisor, getSupervisorLcIds]);
+
+  // Same Province/Site options as Step 1
+  const { filters: [provinceFilter, siteFilter] } = useParticipantFilterOptions(province, true);
+  const toOptions = (filter: any) =>
+    (filter?.data || []).map((o: any) => ({ value: o.value, label: o.label ?? t(o.labelKey) }));
+  const provinceOptions = useMemo(() => toOptions(provinceFilter), [provinceFilter, t]);
+  const siteOptions = useMemo(() => toOptions(siteFilter), [siteFilter, t]);
+
+  // LC province/site are labels; filter values are ids, so compare via the option labels
+  const visibleLcs = useMemo(() => {
+    const norm = (v: any) => String(v ?? '').trim().toLowerCase();
+    const labelOf = (opts: any[], value: string) =>
+      value.startsWith('all-') ? '' : norm(opts.find((o) => o.value === value)?.label);
+    const pl = labelOf(provinceOptions, province);
+    const sl = labelOf(siteOptions, site);
+    return lcs.filter(
+      (lc) =>
+        (!pl || norm(lc.province) === pl) &&
+        (!sl || norm(lc.site) === sl) &&
+        (!supervisorLcIds || supervisorLcIds.has(lc.id))
+    );
+  }, [lcs, province, site, provinceOptions, siteOptions, supervisorLcIds]);
+
+  // Drop a chosen LC that the filters no longer show
+  useEffect(() => {
+    if (targetLc && !visibleLcs.some((lc) => lc.id === targetLc)) setTargetLc('');
+  }, [visibleLcs, targetLc]);
 
   const lcOptions = useMemo(
     () =>
-      lcs.map((lc) => ({
+      visibleLcs.map((lc) => ({
         value: lc.id,
         label: t(
           lc.site
@@ -81,7 +141,52 @@ const DestinationPolicy = ({ selectedCount }: Props) => {
           .replace('{{site}}', lc.site)
           .replace('{{count}}', String(lc.count)),
       })),
-    [lcs, t]
+    [visibleLcs, t]
+  );
+
+  // Feeds the shared LC modal from the (province/site filtered) LC options; search/paging local
+  const fetchLCsForSelect = useCallback(
+    async ({ page, limit, search }: { page: number; limit: number; search?: string }) => {
+      const q = (search || '').trim().toLowerCase();
+      const items = visibleLcs
+        .map((lc, i) => ({ value: lc.id, label: lcOptions[i].label, name: lc.name }))
+        .filter((o) => !q || o.name.toLowerCase().includes(q));
+      return { data: items.slice((page - 1) * limit, page * limit), total: items.length };
+    },
+    [visibleLcs, lcOptions]
+  );
+
+  // Supervisors for the shared modal. Same API as Assign Users -> Participant to Coach.
+  // With a destination LC chosen, only supervisors that LC is mapped to are listed.
+  const fetchSupervisorsForSelect = useCallback(
+    async ({ page, limit, search }: { page: number; limit: number; search?: string }) => {
+      const toItem = (s: any) => ({
+        label: s.name || s.full_name || s.email || 'Unknown',
+        value: String(s.id || s._id || s.email || ''),
+      });
+      if (!targetLc) {
+        const res = await getSupervisorsByProvince({ provinceId: province, siteId: site, page, limit, search });
+        const data = res.result?.data || [];
+        return { data: data.map(toItem), total: res.result?.total ?? res.result?.count ?? data.length };
+      }
+      const all: any[] = [];
+      for (let pg = 1; pg <= 10; pg++) {
+        const res = await getSupervisorsByProvince({ provinceId: province, siteId: site, page: pg, limit: 100 });
+        const data = res.result?.data || [];
+        all.push(...data);
+        if (!data.length || all.length >= (res.result?.total ?? res.result?.count ?? data.length)) break;
+      }
+      const flags = await Promise.all(
+        all.map((sv) => getSupervisorLcIds(String(sv.id || sv._id || '')).then((ids) => ids.has(targetLc)).catch(() => false))
+      );
+      const q = (search || '').trim().toLowerCase();
+      const items = all
+        .filter((_, i) => flags[i])
+        .map(toItem)
+        .filter((o) => !q || o.label.toLowerCase().includes(q));
+      return { data: items.slice((page - 1) * limit, page * limit), total: items.length };
+    },
+    [targetLc, province, site, getSupervisorLcIds]
   );
 
   const reasonOptions = useMemo(
@@ -100,16 +205,76 @@ const DestinationPolicy = ({ selectedCount }: Props) => {
 
       <VStack {...(styles.fieldsRow as any)}>
         <VStack {...(styles.field as ViewProps)}>
-          <Text {...(styles.label as TextProps)}>
-            {t('admin.assignUsers.participantReassign.step2.targetLC')}{' '}
-            <Text {...(styles.required as TextProps)}>*</Text>
-          </Text>
+          <Text {...(styles.label as TextProps)}>{t('admin.assignUsers.participantReassign.province')}</Text>
           <Select
-            value={targetLc}
-            onChange={(v: string) => setTargetLc(v)}
-            placeholder={t('admin.assignUsers.participantReassign.step2.targetLCPlaceholder')}
-            options={lcOptions}
+            value={province}
+            onChange={(v: string) => {
+              setProvince(v);
+              setSite('all-sites');
+            }}
+            options={provinceOptions}
             {...styles.input}
+          />
+        </VStack>
+        <VStack {...(styles.field as ViewProps)}>
+          <Text {...(styles.label as TextProps)}>{t('admin.assignUsers.participantReassign.site')}</Text>
+          <Select value={site} onChange={(v: string) => setSite(v)} options={siteOptions} {...styles.input} />
+        </VStack>
+        {!isSupervisor && (
+        <VStack {...(styles.field as ViewProps)}>
+          <HStack justifyContent="space-between" alignItems="center">
+            <Text {...(styles.label as TextProps)}>{t('admin.filters.selectSupervisor')}</Text>
+            {supervisor && (
+              <Pressable onPress={() => setSupervisor(null)}>
+                <Text fontSize="$xs" color="$textLight500">{t('common.clear', 'Clear')}</Text>
+              </Pressable>
+            )}
+          </HStack>
+          <PaginatedSelect
+            value={supervisor?.id || ''}
+            displayValue={supervisor?.label || ''}
+            onChange={(v: string, label: string) => setSupervisor(v ? { id: v, label } : null)}
+            fetchFn={fetchSupervisorsForSelect}
+            placeholder={t('admin.filters.chooseSupervisor')}
+            modalTitle={t('admin.filters.chooseSupervisor')}
+            size="sm"
+            bg={styles.input.bg}
+            borderColor={styles.input.borderColor}
+            borderRadius={styles.input.borderRadius}
+            pageSize={20}
+            showSearch
+          />
+        </VStack>
+        )}
+      </VStack>
+
+      <VStack {...(styles.fieldsRow as any)}>
+        <VStack {...(styles.field as ViewProps)}>
+          <HStack justifyContent="space-between" alignItems="center">
+            <Text {...(styles.label as TextProps)}>
+              {t('admin.assignUsers.participantReassign.step2.targetLC')}{' '}
+              <Text {...(styles.required as TextProps)}>*</Text>
+            </Text>
+            {targetLc ? (
+              <Pressable onPress={() => setTargetLc('')}>
+                <Text fontSize="$xs" color="$textLight500">{t('common.clear', 'Clear')}</Text>
+              </Pressable>
+            ) : null}
+          </HStack>
+          <PaginatedSelect
+            value={targetLc}
+            displayValue={lcOptions.find((o) => o.value === targetLc)?.label || ''}
+            onChange={(v: string) => setTargetLc(v)}
+            fetchFn={fetchLCsForSelect}
+            placeholder={t('admin.assignUsers.participantReassign.step2.targetLCPlaceholder')}
+            modalTitle={t('admin.assignUsers.participantReassign.step2.targetLCPlaceholder')}
+            dependencyKey={`${province}|${site}|${lcs.length}|${supervisor?.id || ''}`}
+            size="sm"
+            bg={styles.input.bg}
+            borderColor={styles.input.borderColor}
+            borderRadius={styles.input.borderRadius}
+            pageSize={20}
+            showSearch
           />
         </VStack>
         <VStack {...(styles.field as ViewProps)}>
@@ -126,7 +291,16 @@ const DestinationPolicy = ({ selectedCount }: Props) => {
         </VStack>
       </VStack>
 
-      <Button {...(styles.proceedButton as any)} isDisabled={!canProceed} opacity={canProceed ? 1 : 0.5}>
+      <Button
+        {...(styles.proceedButton as any)}
+        onPress={() =>
+          onProceed?.({
+            targetLcId: targetLc,
+            targetLcName: lcs.find((lc) => lc.id === targetLc)?.name || '',
+            reason,
+          })
+        }
+        isDisabled={!canProceed} opacity={canProceed ? 1 : 0.5}>
         <HStack space="sm" alignItems="center">
           <LucideIcon name="ArrowLeftRight" size={14} color="white" />
           <ButtonText {...(styles.proceedButtonText as TextProps)}>

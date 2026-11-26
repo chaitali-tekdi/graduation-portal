@@ -913,8 +913,9 @@ return (
     <TitleHeader
       title="admin.menu.assignUsers"
       description={isSupervisor ? "admin.assignUsers.assignParticipantsToLCsDescription" : "admin.assignUsersDescription"}
-      bottom={!isSupervisor && (
+      bottom={(
         <HStack space="md" alignItems="center" flexWrap="wrap" gap="$2">
+          {!isSupervisor && (
           <Button
             {...(activeTab === 'LC_TO_SUPERVISOR'
               ? titleHeaderStyles.solidButton
@@ -929,6 +930,7 @@ return (
               {t('admin.actions.lctosupervisior')}
             </Text>
           </Button>
+          )}
 
 
           <Button

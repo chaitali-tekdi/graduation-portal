@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ViewProps, TextProps } from 'react-native';
 import {
   VStack,
@@ -16,46 +16,85 @@ import {
   CheckboxIndicator,
   CheckboxIcon,
   CheckIcon,
+  Pressable,
 } from '@ui';
 import DataTable from '@components/DataTable';
+import PaginationControls from '@components/DataTable/PaginationControls';
 import FilterButton from '@components/Filter';
 import { AssignUsersStyles as CardStyles } from '@components/UserAvatarCard/Styles';
 import { styles as tableStyles } from '@components/DataTable/Styles';
 import type { ColumnDef } from '@app-types/components';
 import { useLanguage } from '@contexts/LanguageContext';
+import { useAuth, useIsSupervisor } from '@contexts/AuthContext';
 import { theme } from '@config/theme';
 import { TYPOGRAPHY } from '@constants/TYPOGRAPHY';
 import { getInitials } from '@utils/helper';
 import { useParticipantFilterOptions } from '@constants/ASSIGN_USERS_FILTERS';
-import {
-  getLinkageChampions,
-  getMappedParticipantsForLC,
-  getParticipants,
-} from '../../../services/assignUsersService';
+import { loadLinkageChampions, type LCItem } from './lcData';
 import { ParticipantReassignStyles as styles } from './Styles';
 import DestinationPolicy from './DestinationPolicy';
+import ReassignParticipantModal, { type ReassignParticipant } from './ReassignParticipantModal';
 
 declare const process: { env: { [key: string]: string | undefined } } | undefined;
 
-type LCItem = { id: string; name: string; participantIds: string[]; count: number };
 
 const ALL_LCS = 'all-lcs';
 
 const ParticipantReassign = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const isSupervisor = useIsSupervisor();
+  // Supervisor / tenant admin only works with their own mapped LCs
+  const supervisorId = isSupervisor ? String((user as any)?.id || (user as any)?._id || '') : undefined;
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
   const [lcs, setLcs] = useState<LCItem[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+    const [lcsLoaded, setLcsLoaded] = useState(false);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [reassignTarget, setReassignTarget] = useState<ReassignParticipant | null>(null);
+  const [bulkTarget, setBulkTarget] = useState<{ id: string; name: string; participants: ReassignParticipant[] } | null>(null);
 
   const { filterByProvince, site, search, fromLC } = filterValues;
   const selectedLcId = fromLC && fromLC !== ALL_LCS ? String(fromLC) : '';
 
   const { filters: provinceSiteFilters } = useParticipantFilterOptions(filterByProvince, true);
+
+  // Feeds the shared modal from the already loaded LCs (search + paging done locally)
+  const fetchLCsForSelect = useCallback(
+    async ({ page, limit, search }: { page: number; limit: number; search?: string }) => {
+      const q = (search || '').trim().toLowerCase();
+      // Province/site filter values are ids; LCs carry labels, so compare via the option labels
+      const norm = (v: any) => String(v ?? '').trim().toLowerCase();
+      const labelOf = (filter: any, value: any) =>
+        value && !String(value).startsWith('all-')
+          ? norm(filter?.data?.find((o: any) => o.value === value)?.label)
+          : '';
+      const provinceLabel = labelOf(provinceSiteFilters[0], filterByProvince);
+      const siteLabel = labelOf(provinceSiteFilters[1], site);
+      const items = [
+        // Only LCs that actually have participants mapped to them, within the chosen province/site
+        ...lcs
+          .filter(
+            (lc) =>
+              lc.participantIds.length > 0 &&
+              (!provinceLabel || norm(lc.province) === provinceLabel) &&
+              (!siteLabel || norm(lc.site) === siteLabel)
+          )
+          .map((lc) => ({
+          value: lc.id,
+          label: t('admin.assignUsers.participantReassign.lcOption')
+            .replace('{{name}}', lc.name)
+            .replace('{{count}}', String(lc.count)),
+          name: lc.name,
+        })),
+      ].filter((i: any) => !q || String(i.name ?? i.label).toLowerCase().includes(q));
+      return { data: items.slice((page - 1) * limit, page * limit), total: items.length };
+    },
+    [lcs, t, provinceSiteFilters, filterByProvince, site]
+  );
 
   const filterOptions = useMemo(() => {
     const [provinceFilter, siteFilter] = provinceSiteFilters;
@@ -65,17 +104,14 @@ const ParticipantReassign = () => {
       {
         nameKey: 'admin.assignUsers.participantReassign.fromCurrentLC',
         attr: 'fromLC',
-        type: 'select' as const,
-        placeholderKey: '',
-        data: [
-          { labelKey: 'admin.assignUsers.participantReassign.allLCs', value: ALL_LCS },
-          ...lcs.map((lc) => ({
-            label: t('admin.assignUsers.participantReassign.lcOption')
-              .replace('{{name}}', lc.name)
-              .replace('{{count}}', String(lc.count)),
-            value: lc.id,
-          })),
-        ],
+        // Opens the shared paginated "choose LC" modal; its title comes from placeholderKey
+        type: 'paginated-select' as const,
+        bg: '#FFFFFF',
+        placeholderKey: 'admin.assignUsers.participantReassign.allLCs',
+        fetchFn: fetchLCsForSelect,
+        dependencyKey: lcsLoaded ? 'loaded' : 'loading',
+        pageSize: 20,
+        showSearch: true,
       },
       {
         nameKey: 'admin.assignUsers.participantReassign.searchLabel',
@@ -85,7 +121,7 @@ const ParticipantReassign = () => {
         placeholderKey: 'admin.assignUsers.participantReassign.searchPlaceholder',
       },
     ].filter(Boolean);
-  }, [provinceSiteFilters, lcs, t]);
+  }, [provinceSiteFilters, fetchLCsForSelect, lcsLoaded]);
 
   // Fetch all LCs with the participants currently assigned to each
   useEffect(() => {
@@ -95,117 +131,86 @@ const ParticipantReassign = () => {
       const programId = process.env.GLOBAL_LC_PROGRAM_ID;
       if (!programId) {
         console.error('GLOBAL_LC_PROGRAM_ID is not defined in environment variables');
+        setLcsLoaded(true);
         return;
       }
       try {
-        const lcResponse = await getLinkageChampions(programId, { excludeMapped: false, limit: 100 });
-        const list = await Promise.all(
-          (lcResponse.result?.data || []).map(async (lc: any): Promise<LCItem> => {
-            const id = String(lc.id || lc._id || '');
-            const res = await getMappedParticipantsForLC({
-              userId: id,
-              programId,
-              type: 'user',
-              page: 1,
-              limit: 500,
-              search: '',
-            });
-            const participantIds = (res.result?.data || [])
-              .map((r: any) => String(r.userId || r.userDetails?.id || ''))
-              .filter(Boolean);
-            return {
-              id,
-              name: lc.name || lc.full_name || lc.email || '',
-              participantIds,
-              count: res.total ?? res.result?.total ?? res.result?.count ?? participantIds.length,
-            };
-          })
-        );
-        if (!cancelled) setLcs(list.filter((lc) => lc.id));
+        const list = await loadLinkageChampions(programId, supervisorId);
+        if (!cancelled) setLcs(list);
       } catch (error) {
         console.error('Error fetching linkage champions:', error);
         if (!cancelled) setLcs([]);
+      } finally {
+        if (!cancelled) setLcsLoaded(true);
       }
     };
     load();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [supervisorId]);
 
   const scopeLCs = useMemo(
     () => (selectedLcId ? lcs.filter((lc) => lc.id === selectedLcId) : lcs),
     [lcs, selectedLcId]
   );
 
+  // Participants assigned to the selected LC (or all LCs), taken from the already loaded LC-mapped
+  // records (accurate name/province/site). Province, site and search are applied on those rows,
+  // so the table always matches the filters (no extra API call, ids never need to be matched).
+  useEffect(() => {
+    if (!lcsLoaded) return;
+    const all: any[] = [];
+    const seen = new Set<string>();
+    scopeLCs.forEach((lc) =>
+      lc.participants.forEach((r: any) => {
+        const id = String(r.userId || r.userDetails?.id || '');
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        const d = r.userDetails || {};
+        all.push({
+          id,
+          value: id,
+          name: d.name || r.name || d.email || '',
+          currentLc: lc.name,
+          currentLcId: lc.id,
+          pathway: d.pathway?.label || d.pathway || r.pathway?.label || r.pathway || '',
+          province: d.province?.label || '',
+          site: d.site?.label || d.district?.label || d.local_municipality?.label || '',
+        });
+      })
+    );
+
+    // Province/site filter values are ids; rows carry labels, so compare via the option labels
+    const norm = (v: any) => String(v ?? '').trim().toLowerCase();
+    const labelOf = (filter: any, value: any) =>
+      value && !String(value).startsWith('all-')
+        ? norm(filter?.data?.find((o: any) => o.value === value)?.label)
+        : '';
+    const provinceLabel = labelOf(provinceSiteFilters[0], filterByProvince);
+    const siteLabel = labelOf(provinceSiteFilters[1], site);
+    const q = norm(search);
+
+    const rows = all.filter(
+      (p) =>
+        (!provinceLabel || norm(p.province) === provinceLabel) &&
+        (!siteLabel || norm(p.site) === siteLabel) &&
+        (!q || norm(p.name).includes(q))
+    );
+    setTotal(rows.length);
+    setParticipants(rows);
+  }, [lcsLoaded, scopeLCs, filterByProvince, site, search, provinceSiteFilters]);
+
+  // Back to page 1 whenever the filtered result set changes
   useEffect(() => {
     setPage(1);
   }, [selectedLcId, filterByProvince, site, search]);
 
-  // Fetch participants assigned to the selected LC (or all LCs) with filters applied
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      // @ts-ignore
-      const programId = process.env.GLOBAL_LC_PROGRAM_ID;
-      const lcByParticipant = new Map<string, string>();
-      scopeLCs.forEach((lc) => lc.participantIds.forEach((pid) => lcByParticipant.set(pid, lc.name)));
-      const userIds = Array.from(lcByParticipant.keys());
-      if (!programId || userIds.length === 0) {
-        setParticipants([]);
-        setTotal(0);
-        return;
-      }
-      try {
-        setIsLoading(true);
-        const response = await getParticipants(programId, {
-          excludeMapped: false,
-          page,
-          limit: pageSize,
-          userIds,
-          province: filterByProvince && filterByProvince !== 'all-provinces' ? filterByProvince : undefined,
-          site: site && site !== 'all-sites' ? site : undefined,
-          search: search && String(search).trim() ? String(search).trim() : undefined,
-        });
-        if (cancelled) return;
-        setTotal((response as any).total || response.result?.total || response.result?.count || 0);
-        setParticipants(
-          (response.result?.data || []).map((p: any) => {
-            const id = String(p.id || p._id || '');
-            return {
-              id,
-              value: id,
-              name: p.name || p.full_name || p.email || '',
-              currentLc: lcByParticipant.get(id) || '',
-              pathway: p.pathway?.label || p.pathway || p.userDetails?.pathway?.label || p.userDetails?.pathway || '',
-              province: p.province?.label || p.userDetails?.province?.label || '',
-              site:
-                p.site?.label ||
-                p.userDetails?.site?.label ||
-                p.userDetails?.district?.label ||
-                p.userDetails?.local_municipality?.label ||
-                '',
-            };
-          })
-        );
-      } catch (error) {
-        console.error('Error fetching assigned participants:', error);
-        if (!cancelled) {
-          setParticipants([]);
-          setTotal(0);
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [scopeLCs, page, pageSize, filterByProvince, site, search]);
-
-  const allOnPageSelected =
-    participants.length > 0 && participants.every((p) => selected.has(p.value));
+  const pageRows = useMemo(
+    () => participants.slice((page - 1) * pageSize, page * pageSize),
+    [participants, page, pageSize]
+  );
+  const allOnPageSelected = pageRows.length > 0 && pageRows.every((p) => selected.has(p.value));
 
   const toggle = (ids: string[], checked: boolean) =>
     setSelected((prev) => {
@@ -306,12 +311,21 @@ const ParticipantReassign = () => {
         ...columnLayout.action,
         render: (item: any) => (
           <Button
-            size="sm"
+            size="xs"
             variant="outline"
-            onPress={() => setSelected(new Set([item.value]))}
+            action="secondary"
+            h={32}
+            px="$3"
+            borderRadius="$md"
+            borderWidth={1}
+            borderColor="$borderLight200"
+            bg="$white"
+            $hover-bg="$backgroundLight50"
+            $hover-borderColor={theme.tokens.colors.primary500}
+            onPress={() => setReassignTarget(item)}
           >
             <LucideIcon name="ArrowLeftRight" size={14} color={theme.tokens.colors.primary500} />
-            <ButtonText ml="$2">{t('admin.assignUsers.participantReassign.reassign')}</ButtonText>
+            <ButtonText ml="$1.5" size="sm" fontWeight="$normal" color="$textForeground" $hover-color={theme.tokens.colors.primary500}>{t('admin.assignUsers.participantReassign.reassign')}</ButtonText>
           </Button>
         ),
       },
@@ -348,9 +362,18 @@ const ParticipantReassign = () => {
         onFilterChange={setFilterValues}
       />
 
-      <Text {...(styles.tableSubtitleText as TextProps)} fontSize="$sm" mt="$4" mb="$2">
-        {t('admin.assignUsers.participantReassign.showingAssigned').replace('{{count}}', String(total))}
-      </Text>
+      <HStack justifyContent="space-between" alignItems="center" mt="$5" mb="$3">
+        <Text {...(styles.tableSubtitleText as TextProps)} fontSize="$sm">
+          {t('admin.assignUsers.participantReassign.showingAssigned').replace('{{count}}', String(pageRows.length))}
+        </Text>
+        {selected.size > 0 && (
+          <Pressable onPress={() => setSelected(new Set())}>
+            <Text fontSize="$sm" color="$textLight500" $hover-color="$textForeground">
+              {t('admin.assignUsers.participantReassign.clearSelection').replace('{{count}}', String(selected.size))}
+            </Text>
+          </Pressable>
+        )}
+      </HStack>
 
       <Box borderWidth={1} borderColor="$borderLight300" borderRadius="$2xl" overflow="hidden">
         <HStack {...tableStyles.tableHeader} minWidth={800}>
@@ -362,7 +385,7 @@ const ParticipantReassign = () => {
             >
               {cell.checkbox ? (
                 renderCheckbox('all', allOnPageSelected, (c) =>
-                  toggle(participants.map((p) => p.value), c)
+                  toggle(pageRows.map((p) => p.value), c)
                 )
               ) : (
                 <Text {...TYPOGRAPHY.label} color="$textForeground">
@@ -373,32 +396,61 @@ const ParticipantReassign = () => {
           ))}
         </HStack>
         <DataTable
-          data={participants}
+          data={pageRows}
           columns={columns}
           showHeader={false}
           _css={{ _table: { borderWidth: 0, borderRadius: 0 } }}
           getRowKey={(item: any) => item.value}
-          isLoading={isLoading}
+          isLoading={!lcsLoaded}
           emptyMessage="common.noDataFound"
           responsive={false}
           minWidth={800}
-          pagination={{
-            enabled: true,
-            pageSize,
-            maxPageNumbers: 5,
-            showPageSizeSelector: true,
-            pageSizeOptions: [5, 10, 25, 50],
-            serverSide: { total, count: page },
-          }}
-          onPageChange={setPage}
-          onPageSizeChange={(size: number) => {
-            setPageSize(size);
-            setPage(1);
-          }}
         />
+        {/* Same shared pagination controls, rendered here so only this screen gets 10px side padding */}
+        <Box px={10}>
+          <PaginationControls
+            currentPage={page}
+            totalPages={Math.max(1, Math.ceil(total / pageSize))}
+            pageSize={pageSize}
+            totalItems={total}
+            startIndex={(page - 1) * pageSize}
+            endIndex={Math.min(page * pageSize, total)}
+            onPageChange={setPage}
+            onPageSizeChange={(size: number) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+            config={{
+              enabled: true,
+              pageSize,
+              maxPageNumbers: 5,
+              showPageSizeSelector: true,
+              pageSizeOptions: [5, 10, 25, 50],
+            }}
+          />
+        </Box>
       </Box>
     </Card>
-    <DestinationPolicy selectedCount={selected.size} />
+    <DestinationPolicy
+      selectedCount={selected.size}
+      initialProvince={filterByProvince}
+      initialSite={site}
+      onProceed={({ targetLcId, targetLcName }) =>
+        setBulkTarget({
+          id: targetLcId,
+          name: targetLcName,
+          participants: participants.filter((p) => selected.has(p.value)),
+        })
+      }
+    />
+    <ReassignParticipantModal
+      participant={reassignTarget}
+      bulk={bulkTarget}
+      onClose={() => {
+        setReassignTarget(null);
+        setBulkTarget(null);
+      }}
+    />
     </>
   );
 };
